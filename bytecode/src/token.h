@@ -42,7 +42,6 @@ typedef struct TokenArray {
 } TokenArray;
 
 
-Token token_create(TokenType type, char* lexeme, void *literal);
 TokenArray token_array_create();
 void token_array_append(TokenArray* array, Token token);
 

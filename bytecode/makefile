@@ -1,6 +1,7 @@
 all: setup compile run
 
-setup:
+
+setup: dependencies
 	cmake -S . -B build
 
 compile:
@@ -11,3 +12,6 @@ run: compile
 
 clean:
 	rm -rf "build"
+
+test:
+	cd "build" && make test

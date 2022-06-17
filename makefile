@@ -1,18 +1,18 @@
 
 .PHONY: treewalker bytecode
 
+compile: setup
+	$(MAKE) -s -C "build" 
 
-treewalker:
-	$(MAKE) -C "treewalker" all
+setup:
+	cmake -S . -B build
 
-bytecode:
-	$(MAKE) -C "bytecode" all
-
-compile:
-	$(MAKE) -C "treewalker" compile
-	# $(MAKE) -C "CLoxVM" compile
+treewalker: setup compile
+	"./build/treewalker/clox"
 
 clean:
-	$(MAKE) -C "treewalker" clean
+	rm -rf "external"
+	rm -rf "build"
 
-
+test: compile
+	"./build/cloxTW_runner"

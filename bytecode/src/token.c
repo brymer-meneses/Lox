@@ -5,7 +5,7 @@
 #include "token.h"
 
 
-Token token_create(TokenType type, char* lexeme, void *literal) {
+Token token_create(TokenType type, char lexeme[], void *literal) {
   Token new_token = {.type = type, .literal = literal, .lexeme = *lexeme};
   return new_token;
 }
