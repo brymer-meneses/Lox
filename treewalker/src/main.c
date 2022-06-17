@@ -3,12 +3,14 @@
 #include "stdbool.h"
 #include "string.h"
 
+#include "strutils.h"
+
 #include "declarations.h"
 
 
 void run(char source[]) {
   Scanner scanner = scanner_create(source);
-  scanner_scan(&scanner);
+  scanner_scan_tokens(&scanner);
 
   printf("%s", source);
 
@@ -30,8 +32,15 @@ void run_prompt() {
 
 }
 
-
 int main(int argc, char *argv[]) {
+
+  // char str[] = "one two three";
+  // char *result = substring(str, 0, 2);
+  // char *result = substring(str, 0, 2);
+  // 
+  //
+  // // ASSERT_EQ(hi, substring(str, 0, 3));
+  // printf("%s", result);
 
   if (argc == 2) {
     run_file(argv[0]);

@@ -8,7 +8,7 @@ setup:
 	cmake -S . -B build
 
 treewalker: setup compile
-	"./build/treewalker/clox"
+	"./build/cloxTW"
 
 clean:
 	rm -rf "external"

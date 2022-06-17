@@ -6,18 +6,18 @@
 
 
 Token token_create(TokenType type, char* lexeme, void *literal) {
-  Token new_token = {.type = type, .literal = literal, .lexeme = *lexeme};
-  return new_token;
+  Token token = {.type = type, .literal = literal, .lexeme = lexeme};
+  return token;
 }
 
-void print_token(Token *token) {
+void token_print(Token *token) {
   printf("Token\n");
-  printf("\t%s", to_string(token->type));
-  printf("\t%d", token->line);
+  printf("\t%s", token_to_string(token->type));
+  printf("\t%zu", token->line);
 }
 
 
-char *to_string(TokenType type) {
+char *token_to_string(TokenType type) {
   switch (type) {
     case LEFT_PAREN:      return "(";
     case RIGHT_PAREN:     return ")";
@@ -63,22 +63,3 @@ char *to_string(TokenType type) {
 
 }
 
-TokenArray token_array_create() {
-  Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
-  TokenArray token_array = { 
-    .tokens = tokens,
-    .size = 0,
-    .used = 0,
-  };
-  return token_array;
-}
-
-void token_array_append(TokenArray *array, Token token) {
-  if (array->used + 1 == array->size) {
-    array->size = 2 * array->size;
-    array->tokens = realloc(array->tokens, array->size);
-  } 
-  array->used++;
-  array->tokens[array->used + 1] = token;
-
-}

@@ -37,6 +37,7 @@ add_library(utilslib STATIC ${util_SOURCES})
 # LINK EXECUTABLES
 add_executable(cloxTW ${cloxTW_MAIN})
 target_link_libraries(cloxTW cloxTWlib utilslib)
+target_include_directories(cloxTW PUBLIC "${PROJECT_SOURCE_DIR}/utils/src/")
 
 # COMPILE TESTS
 file(GLOB

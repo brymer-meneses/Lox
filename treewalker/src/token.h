@@ -29,21 +29,12 @@ typedef enum TokenType {
 typedef struct Token {
   TokenType type;
   void *literal;
-  unsigned int line;
-  char lexeme[100];
+  size_t line;
+  char *lexeme;
 } Token;
-
-char *to_string(TokenType type);
-
-typedef struct TokenArray {
-  Token *tokens;
-  size_t size;
-  size_t used;
-} TokenArray;
 
 
 Token token_create(TokenType type, char* lexeme, void *literal);
-TokenArray token_array_create();
-void token_array_append(TokenArray* array, Token token);
+char *token_to_string(TokenType type);
 
 #endif
