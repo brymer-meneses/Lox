@@ -15,4 +15,4 @@ clean:
 	rm -rf "build"
 
 test: compile
-	"./build/cloxTW_runner"
+	"./build/test_runner"

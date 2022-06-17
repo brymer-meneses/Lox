@@ -5,6 +5,7 @@ extern "C" {
 }
 
 TEST(Scanner, testAdvance) {
+  EXPECT_FALSE(true);
 
 }
 

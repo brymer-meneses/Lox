@@ -24,20 +24,15 @@ if (NOT googletest_POPULATED)
 endif()
 
 # COMPILE LIBRARIES
-file(GLOB
-  cloxTW_SOURCES
-  "${PROJECT_SOURCE_DIR}/treewalker/src/*.c"
-)
 
-file(GLOB 
-  util_SOURCES
-  "${PROJECT_SOURCE_DIR}/utils/src/*.c"
-)
-
+# clox treewalker
+file(GLOB cloxTW_SOURCES "${PROJECT_SOURCE_DIR}/treewalker/src/*.c")
 list(REMOVE_ITEM cloxTW_SOURCES ${cloxTW_MAIN}) # avoid 'main.c' from being added twice
-
-add_library(utilslib STATIC ${util_SOURCES})
 add_library(cloxTWlib STATIC ${cloxTW_SOURCES})
+
+# utils 
+file(GLOB util_SOURCES "${PROJECT_SOURCE_DIR}/utils/src/*.c")
+add_library(utilslib STATIC ${util_SOURCES})
 
 # LINK EXECUTABLES
 add_executable(cloxTW ${cloxTW_MAIN})
@@ -45,24 +40,30 @@ target_link_libraries(cloxTW cloxTWlib utilslib)
 
 # COMPILE TESTS
 file(GLOB
-  cloxTW_TEST_FILES
+  TEST_FILES
   "${PROJECT_SOURCE_DIR}/treewalker/tests/*.cpp"
+  "${PROJECT_SOURCE_DIR}/bytecode/tests/*.cpp"
+  "${PROJECT_SOURCE_DIR}/utils/tests/*.cpp"
 )
+
 add_executable(
-  cloxTW_runner 
+  test_runner 
   ${test_runner_MAIN} 
-  ${cloxTW_TEST_FILES}
+  ${TEST_FILES}
 )
+
 target_link_libraries(
-  cloxTW_runner 
+  test_runner 
   cloxTWlib 
+  utilslib
   gtest_main 
   gmock_main
 )
 target_include_directories(
-  cloxTW_runner 
+  test_runner 
   PUBLIC 
   ${PROJECT_SOURCE_DIR}/treewalker/src
+  ${PROJECT_SOURCE_DIR}/bytecode/src
   ${PROJECT_SOURCE_DIR}/utils/src
 )
 
