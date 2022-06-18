@@ -65,36 +65,32 @@ TEST(TestScanner, Peek) {
   for (int i=0; i<strlen(input); i++) {
     char next_char = _peek(&scanner);
     scanner_advance(&scanner);
-    ASSERT_EQ(input[i+1], next_char);
+    EXPECT_EQ(input[i], next_char);
   }
 
 }
 
 TEST(TestScanner, Match) {
   char input[] = "abcdefghijklmnop";
-  char expected[] = "bcdefghijklmnop";
   Scanner scanner = scanner_create(input);
 
   for (int i=0; i<strlen(input); i++) {
-      ASSERT_TRUE(_match(&scanner, expected[i]));
+      EXPECT_TRUE(_match(&scanner, input[i+1]));
       scanner_advance(&scanner);
   }
 
 }
 
-// TEST(TestScanner, ScanDoubleChar) {
-//   char input[] = "= == ! != > >= < <=";
-//
-//   TokenType correct_types[] = { 
-//     EQUAL, EQUAL_EQUAL, BANG, BANG_EQUAL, GREATER, 
-//     GREATER_EQUAL, LESS, LESS_EQUAL
-//   };
-//
-//   Scanner scanner = scanner_create(input);
-//   Token* tokens = scanner_scan(&scanner);
-//
-//   for (int i=0; i<scanner.parsed; i++) {
-//     ASSERT_EQ(correct_types[i], tokens[i].type);
-//   }
-// }
-//
+TEST(TestScanner, ScanDoubleChar) {
+  char input[] = "== != >= <=";
+
+  TokenType correct_types[] = {EQUAL_EQUAL, BANG_EQUAL, GREATER_EQUAL, LESS_EQUAL, FILE_EOF};
+
+  Scanner scanner = scanner_create(input);
+  Token* tokens = scanner_scan(&scanner);
+
+  for (int i=0; i<scanner.parsed; i++) {
+    EXPECT_EQ(correct_types[i], tokens[i].type);
+  }
+}
+

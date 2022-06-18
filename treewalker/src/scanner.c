@@ -2,16 +2,20 @@
 #include "string.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "ctype.h"
 
 #include "token.h"
 #include "scanner.h"
 #include "strutils.h"
 #include "assert.h"
+#include "error.h"
 
 void scanner_add_token(Scanner *scanner, TokenType type, void* literal);
-void scanner_classify_token(Scanner* scanner);
 
 bool _isfinished(Scanner *scanner);
+void _scan_string(Scanner *scanner);
+void _scan_number(Scanner *scanner);
+char _peek_next(Scanner *scanner);
 
 Scanner scanner_create(char* source) {
   Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
@@ -99,7 +103,17 @@ void scanner_scan_token(Scanner* scanner) {
       else 
         scanner_add_token(scanner, BANG, NULL);
       break;
+    case '/':
+      if (_match(scanner, '/')) {
+        while(_peek(scanner) != '\n') scanner_advance(scanner);
+      } else {
+        scanner_add_token(scanner, SLASH, NULL);
+      }
+       break;
     
+    case '"':
+      _scan_string(scanner);
+      break;
     case ' ':
     case '\t':
     case '\r':
@@ -109,7 +123,11 @@ void scanner_scan_token(Scanner* scanner) {
     case '\n':
       scanner->line++;
       break;
-
+    default:
+      if (isdigit(c)) {
+        _scan_number(scanner);
+      }
+      break;
   }
 
 }
@@ -120,8 +138,8 @@ void scanner_register_token(Scanner *scanner, Token token) {
 
     scanner->tokens = realloc(scanner->tokens, scanner->capacity * sizeof(Token));
   }
-
-  scanner->tokens[scanner->parsed++] = token;
+  scanner->tokens[scanner->parsed] = token;
+  scanner->parsed++;
 }
 
 void scanner_add_token(Scanner *scanner, TokenType type, void* literal) {
@@ -131,12 +149,52 @@ void scanner_add_token(Scanner *scanner, TokenType type, void* literal) {
 }
 
 char scanner_advance(Scanner *scanner) {
-  if (!_isfinished(scanner)) {
-    scanner->current++;
-    return scanner->source[scanner->current - 1];
+  if (_isfinished(scanner)) return '\0';
+
+  scanner->current++;
+  return scanner->source[scanner->current - 1];
+}
+
+void _scan_number(Scanner *scanner) {
+
+  while (isdigit(_peek(scanner))) 
+    scanner_advance(scanner);
+
+  
+  if (_peek(scanner) == '.') {
+    scanner_advance(scanner);
+    while (isdigit(_peek(scanner))) 
+      scanner_advance(scanner);
   } 
 
-  return '\0';
+  // Handle the instance wherein we find another decimal point
+  if (_peek(scanner) == '.') {
+    panic(scanner->line, scanner->current, "Invalid number, has greater than one decimal point.");
+  }
+
+  char* number = substring(scanner->source, scanner->start, scanner->current);
+  scanner_add_token(scanner, NUMBER, (void*) number);
+
+
+}
+
+void _scan_string(Scanner *scanner) {
+  while (_peek(scanner) != '"' && !_isfinished(scanner)) {
+    if (_peek(scanner) == '\n') scanner->line++;
+    scanner_advance(scanner);
+  }
+
+  // handle when the string doesn't terminate
+  if (_isfinished(scanner)) {
+    panic(scanner->line, scanner->current, "Unterminated string.");
+    return;
+  }
+
+// trim the quotes
+  scanner_add_token(scanner, STRING, substring(scanner->source, scanner->start+1, scanner->current-1)); 
+
+  // consume the last '"' character
+  scanner_advance(scanner);
 }
 
 
@@ -145,17 +203,20 @@ bool _isfinished(Scanner *scanner) {
 }
 
 char _peek(Scanner *scanner) {
-  if (_isfinished(scanner))
-    return '\0';
+  if (_isfinished(scanner)) return '\0';
   
-  return scanner->source[scanner->current + 1];
+  return scanner->source[scanner->current];
+}
+
+char _peek_next(Scanner *scanner) {
+  if (_isfinished(scanner)) return '\0';
+  
+  return scanner->source[scanner->current+1];
 }
 
 bool _match(Scanner *scanner, char expected) {
-  printf("peek: %c\n", _peek(scanner));
-  // printf("got: %c, expected: %c\n", _peek(scanner), expected);
   if (_peek(scanner) == expected) {
-    scanner->current++;
+    scanner->current ++;
     return true;
   }
   return false;

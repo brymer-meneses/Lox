@@ -6,7 +6,9 @@
 #include "stdbool.h"
 
 typedef struct Scanner {
+  // points to the next character
   size_t current;
+  // points to the start of a prospective token
   size_t start;
   size_t line;
   char *source;

@@ -13,7 +13,7 @@ void run(char source[]) {
   Token* tokens = scanner_scan(&scanner);
 
   for (int i=0; i<scanner.parsed; i++) {
-    printf("%s\n", token_to_string(tokens[i].type));
+    token_print(tokens[i]);
   }
 
 }

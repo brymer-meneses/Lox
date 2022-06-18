@@ -10,10 +10,40 @@ Token token_create(TokenType type, char* lexeme, void *literal) {
   return token;
 }
 
-void token_print(Token *token) {
-  printf("Token\n");
-  printf("\t%s", token_to_string(token->type));
-  printf("\t%zu", token->line);
+void token_print(Token token) {
+  // do not print FILE_EOF token
+  if (token.type == FILE_EOF) return;
+
+  printf("Token: [ ");
+  printf("type: %s, ", token_to_string(token.type));
+  switch (token.type) {
+     case STRING:
+        printf("literal: %s ", token_get_literal(token).string);
+        break;
+     case NUMBER:
+        printf("literal: %f ", token_get_literal(token).number);
+        break;
+     default:
+        break;
+  }
+  printf("line: %lu ", token.line);
+  printf("]\n");
+}
+
+TokenLiteral token_get_literal(Token token) {
+  TokenLiteral literal;
+  switch (token.type) {
+    case STRING:
+       literal.string = (char *)token.literal;
+       break;
+    case NUMBER:
+       literal.number = strtod((char *) token.literal, NULL);
+       break;
+    default:
+       break;
+  }
+  return literal;
+
 }
 
 
@@ -38,26 +68,26 @@ char *token_to_string(TokenType type) {
     case GREATER_EQUAL:   return "GREATER_EQUAL";
     case LESS:            return "LESS";         
     case LESS_EQUAL:      return "LESS_EQUAL";   
-    case IDENTIFIER:      return "Identifier";
-    case STRING:          return "String";
-    case NUMBER:          return "Number"; 
-    case AND:             return "and";
-    case CLASS:           return "class";
-    case ELSE:            return "else";
-    case FALSE:           return "false";
-    case FUN:             return "fun";
-    case FOR:             return "for";
-    case IF:              return "if";
-    case NIL:             return "nil";
-    case OR:              return "or";
-    case PRINT:           return "print";
-    case RETURN:          return "return";
-    case SUPER:           return "super";
-    case THIS:            return "this";
-    case TRUE:            return "true";
-    case VAR:             return "var";
-    case WHILE:           return "while";
-    case FILE_EOF:        return "eof";
+    case IDENTIFIER:      return "IDENTIFIER";
+    case STRING:          return "STRING";
+    case NUMBER:          return "NUMBER"; 
+    case AND:             return "AND";
+    case CLASS:           return "CLASS";
+    case ELSE:            return "ELSE";
+    case FALSE:           return "FALSE";
+    case FUN:             return "FUN";
+    case FOR:             return "FOR";
+    case IF:              return "IF";
+    case NIL:             return "NIL";
+    case OR:              return "OR";
+    case PRINT:           return "PRINT";
+    case RETURN:          return "RETURN";
+    case SUPER:           return "SUPER";
+    case THIS:            return "THIS";
+    case TRUE:            return "TRUE";
+    case VAR:             return "VAR";
+    case WHILE:           return "WHILE";
+    case FILE_EOF:        return "EOF";
   }
   
 

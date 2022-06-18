@@ -33,7 +33,16 @@ typedef struct Token {
   char *lexeme;
 } Token;
 
+typedef union TokenLiteral {
+  char* string;
+  char character;
+  double number;
+  void* null;
+} TokenLiteral;
 
+
+TokenLiteral token_get_literal(Token);
+void token_print(Token token);
 Token token_create(TokenType type, char* lexeme, void *literal);
 char *token_to_string(TokenType type);
 
