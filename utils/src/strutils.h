@@ -3,6 +3,6 @@
 
 #include "stdlib.h"
 
-char *substring(char* string, size_t begin, size_t end);
+char *substring(const char* string, const size_t begin, const size_t end);
 
 #endif

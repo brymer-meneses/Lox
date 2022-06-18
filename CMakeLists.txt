@@ -29,6 +29,7 @@ endif()
 file(GLOB cloxTW_SOURCES "${PROJECT_SOURCE_DIR}/treewalker/src/*.c")
 list(REMOVE_ITEM cloxTW_SOURCES ${cloxTW_MAIN}) # avoid 'main.c' from being added twice
 add_library(cloxTWlib STATIC ${cloxTW_SOURCES})
+target_include_directories(cloxTWlib PUBLIC ${PROJECT_SOURCE_DIR}/utils/src)
 
 # utils 
 file(GLOB util_SOURCES "${PROJECT_SOURCE_DIR}/utils/src/*.c")
@@ -37,7 +38,6 @@ add_library(utilslib STATIC ${util_SOURCES})
 # LINK EXECUTABLES
 add_executable(cloxTW ${cloxTW_MAIN})
 target_link_libraries(cloxTW cloxTWlib utilslib)
-target_include_directories(cloxTW PUBLIC "${PROJECT_SOURCE_DIR}/utils/src/")
 
 # COMPILE TESTS
 file(GLOB

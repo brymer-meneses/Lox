@@ -1,24 +1,18 @@
 #include "stdlib.h"
 #include "stdio.h"
+#include "string.h"
 
-char *substring(char* source, char* buffer, size_t begin, size_t end) {
-  size_t length = end - begin + 1;
+char* substring(const char* source, const size_t begin, const size_t end) {
+  const size_t length = (end - begin + 1) ; // take into account that ending char '\0'
 
-  if (end < begin) return NULL;
-  if (begin >= length) return NULL;
+  char* allocated_str = (char*) malloc(length * sizeof(char));
 
-  char *substring = (char*) calloc(length, sizeof(char));
-  if (!substring) {
-    fprintf(stderr, "Memory allocation failed");
-  }
-
-
-  int i = 0;
-  while (i < length) {
-    substring[i] = source[begin+i];
+  size_t i = 0;
+  while (i < length && source[i] != '\0') {
+    allocated_str[i] = source[i + begin];
     i++;
   }
-  substring[length] = '\0';
-
-  return substring;
+  allocated_str[length] = '\0';
+  return allocated_str;
 }
+

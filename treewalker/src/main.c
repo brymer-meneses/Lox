@@ -1,18 +1,20 @@
-#include "scanner.h"
 #include "stdio.h"
 #include "stdbool.h"
 #include "string.h"
 
 #include "strutils.h"
-
+#include "scanner.h"
 #include "declarations.h"
+#include "token.h"
 
 
 void run(char source[]) {
   Scanner scanner = scanner_create(source);
-  scanner_scan_tokens(&scanner);
+  Token* tokens = scanner_scan(&scanner);
 
-  printf("%s", source);
+  for (int i=0; i<scanner.parsed; i++) {
+    printf("%s\n", token_to_string(tokens[i].type));
+  }
 
 }
 
@@ -24,6 +26,7 @@ void run_prompt() {
 
   while(true) {
     char line[MAX_INPUT_LIMIT];
+    printf("> ");
     fgets(line, sizeof(line) , stdin);
     run(line);
 
@@ -33,14 +36,6 @@ void run_prompt() {
 }
 
 int main(int argc, char *argv[]) {
-
-  // char str[] = "one two three";
-  // char *result = substring(str, 0, 2);
-  // char *result = substring(str, 0, 2);
-  // 
-  //
-  // // ASSERT_EQ(hi, substring(str, 0, 3));
-  // printf("%s", result);
 
   if (argc == 2) {
     run_file(argv[0]);

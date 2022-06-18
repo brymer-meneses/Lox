@@ -19,25 +19,25 @@ void token_print(Token *token) {
 
 char *token_to_string(TokenType type) {
   switch (type) {
-    case LEFT_PAREN:      return "(";
-    case RIGHT_PAREN:     return ")";
-    case LEFT_BRACE:      return "{";
-    case RIGHT_BRACE:     return "}";
-    case COMMA:           return ",";
-    case DOT:             return ".";
-    case MINUS:           return "-";
-    case PLUS:            return "+";
-    case SEMICOLON:       return ";";
-    case SLASH:           return "/";
-    case STAR:            return "*";
-    case BANG:            return "!";
-    case BANG_EQUAL:      return "!=";
-    case EQUAL:           return "=";
-    case EQUAL_EQUAL:     return "==";
-    case GREATER:         return ">";
-    case GREATER_EQUAL:   return ">=";
-    case LESS:            return "<";
-    case LESS_EQUAL:      return ">=";
+    case LEFT_PAREN:      return "LEFT_PAREN";
+    case RIGHT_PAREN:     return "RIGHT_PAREN";
+    case LEFT_BRACE:      return "LEFT_BRACE"; 
+    case RIGHT_BRACE:     return "RIGHT_BRACE";
+    case COMMA:           return "COMMA"; 
+    case DOT:             return "DOT";          
+    case MINUS:           return "MINUS";        
+    case PLUS:            return "PLUS";        
+    case SEMICOLON:       return "SEMICOLON";
+    case SLASH:           return "SLASH";
+    case STAR:            return "STAR";         
+    case BANG:            return "BANG";         
+    case BANG_EQUAL:      return "BANG_EQUAL";   
+    case EQUAL:           return "EQUAL";        
+    case EQUAL_EQUAL:     return "EQUAL_EQUAL"; 
+    case GREATER:         return "GREATER";      
+    case GREATER_EQUAL:   return "GREATER_EQUAL";
+    case LESS:            return "LESS";         
+    case LESS_EQUAL:      return "LESS_EQUAL";   
     case IDENTIFIER:      return "Identifier";
     case STRING:          return "String";
     case NUMBER:          return "Number"; 

@@ -1,9 +1,10 @@
 #include "gtest/gtest.h"
-#include <string.h>
 
 extern "C" {
   #include "scanner.h"
   #include "token.h"
+  #include "stdio.h"
+  #include "string.h"
 }
 
 
@@ -29,7 +30,7 @@ TEST(TestScanner, TestRegisterToken) {
   ASSERT_EQ(token_b.literal, scanner.tokens[1].literal);
 }
 
-TEST(TestScanner, TestAdvance) {
+TEST(TestScanner, Advance) {
   char input[14] = "var test = 10";
   Scanner scanner = scanner_create(input);
 
@@ -37,3 +38,63 @@ TEST(TestScanner, TestAdvance) {
     ASSERT_EQ(input[i], scanner_advance(&scanner));
   }
 }
+
+TEST(TestScanner, ScanSingleChar) {
+  char input[12] = "{}()+-*,.;";
+  TokenType correct_types[] = { 
+    LEFT_BRACE, RIGHT_BRACE, LEFT_PAREN, RIGHT_PAREN, PLUS,
+    MINUS, STAR, COMMA, DOT, SEMICOLON, FILE_EOF
+  };
+
+  Scanner scanner = scanner_create(input);
+  Token* tokens = scanner_scan(&scanner);
+
+  for (int i=0; i<scanner.parsed; i++) {
+    ASSERT_EQ(correct_types[i], tokens[i].type);
+  }
+
+  for (int i=0; i<strlen(input); i++) {
+    ASSERT_EQ(input[i], *tokens[i].lexeme);
+  }
+}
+
+TEST(TestScanner, Peek) {
+  char input[] = "The quick brown fox jumped over the lazy cat.";
+  Scanner scanner = scanner_create(input);
+
+  for (int i=0; i<strlen(input); i++) {
+    char next_char = _peek(&scanner);
+    scanner_advance(&scanner);
+    ASSERT_EQ(input[i+1], next_char);
+  }
+
+}
+
+TEST(TestScanner, Match) {
+  char input[] = "abcdefghijklmnop";
+  char expected[] = "bcdefghijklmnop";
+  Scanner scanner = scanner_create(input);
+
+  for (int i=0; i<strlen(input); i++) {
+      ASSERT_TRUE(_match(&scanner, expected[i]));
+      scanner_advance(&scanner);
+  }
+
+}
+
+// TEST(TestScanner, ScanDoubleChar) {
+//   char input[] = "= == ! != > >= < <=";
+//
+//   TokenType correct_types[] = { 
+//     EQUAL, EQUAL_EQUAL, BANG, BANG_EQUAL, GREATER, 
+//     GREATER_EQUAL, LESS, LESS_EQUAL
+//   };
+//
+//   Scanner scanner = scanner_create(input);
+//   Token* tokens = scanner_scan(&scanner);
+//
+//   for (int i=0; i<scanner.parsed; i++) {
+//     ASSERT_EQ(correct_types[i], tokens[i].type);
+//   }
+// }
+//
