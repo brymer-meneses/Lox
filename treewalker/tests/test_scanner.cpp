@@ -35,7 +35,7 @@ TEST(TestScanner, Advance) {
   Scanner scanner = scanner_create(input);
 
   for (int i=0; i<strlen(input); i++) {
-    ASSERT_EQ(input[i], scanner_advance(&scanner));
+    ASSERT_EQ(input[i], advance(&scanner));
   }
 }
 
@@ -63,8 +63,8 @@ TEST(TestScanner, Peek) {
   Scanner scanner = scanner_create(input);
 
   for (int i=0; i<strlen(input); i++) {
-    char next_char = _peek(&scanner);
-    scanner_advance(&scanner);
+    char next_char = peek(&scanner);
+    advance(&scanner);
     EXPECT_EQ(input[i], next_char);
   }
 
@@ -75,8 +75,8 @@ TEST(TestScanner, Match) {
   Scanner scanner = scanner_create(input);
 
   for (int i=0; i<strlen(input); i++) {
-      EXPECT_TRUE(_match(&scanner, input[i+1]));
-      scanner_advance(&scanner);
+      EXPECT_TRUE(match(&scanner, input[i+1]));
+      advance(&scanner);
   }
 
 }

@@ -21,12 +21,12 @@ typedef struct Scanner {
 
 Scanner scanner_create(char *source);
 
-char scanner_advance(Scanner *scanner);
+char advance(Scanner *scanner);
 Token* scanner_scan(Scanner *scanner);
 void scanner_scan_token(Scanner *scanner);
 void scanner_register_token(Scanner *scanner, Token token);
 
-char _peek(Scanner *scanner);
-bool _match(Scanner *scanner, char expected);
+char peek(Scanner *scanner);
+bool match(Scanner *scanner, char expected);
 
 #endif
