@@ -22,7 +22,7 @@ char peek_next(Scanner  *scanner);
 
 TokenType get_keyword(const char* scanner);
 
-Scanner scanner_create(char* source) {
+Scanner scan_init(char* source) {
   Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
 
   Scanner scanner = {
