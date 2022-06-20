@@ -4,9 +4,10 @@ project(Lox)
 
 # NOTE: TW and BC are abbreviations for treewalker and bytecode respectively.
 
+# Allow IDEs to get context from this build script
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(cloxTW_MAIN "${PROJECT_SOURCE_DIR}/treewalker/src/main.c")
-set(test_runner_MAIN "${PROJECT_SOURCE_DIR}/utils/src/runner.cpp")
+set(loxTW_MAIN "${PROJECT_SOURCE_DIR}/lox/src/main.cpp")
+set(test_runner_MAIN "${PROJECT_SOURCE_DIR}/tests/test_runner.cpp")
 
 # HANDLE DEPENDENCIES
 include(FetchContent)
@@ -25,26 +26,21 @@ endif()
 
 # COMPILE LIBRARIES
 
-# clox treewalker
-file(GLOB cloxTW_SOURCES "${PROJECT_SOURCE_DIR}/treewalker/src/*.c")
-list(REMOVE_ITEM cloxTW_SOURCES ${cloxTW_MAIN}) # avoid 'main.c' from being added twice
-add_library(cloxTWlib STATIC ${cloxTW_SOURCES})
-target_include_directories(cloxTWlib PUBLIC ${PROJECT_SOURCE_DIR}/utils/src)
+# lox treewalker
+file(GLOB loxTW_SOURCES "${PROJECT_SOURCE_DIR}/lox/src/*.cpp")
+list(REMOVE_ITEM loxTW_SOURCES ${loxTW_MAIN}) # avoid 'main.c' from being added twice
 
-# utils 
-file(GLOB util_SOURCES "${PROJECT_SOURCE_DIR}/utils/src/*.c")
-add_library(utilslib STATIC ${util_SOURCES})
+add_library(loxTWlib STATIC ${loxTW_SOURCES})
 
 # LINK EXECUTABLES
-add_executable(cloxTW ${cloxTW_MAIN})
-target_link_libraries(cloxTW cloxTWlib utilslib)
+add_executable(loxTW ${loxTW_MAIN})
+target_link_libraries(loxTW loxTWlib)
 
 # COMPILE TESTS
 file(GLOB
   TEST_FILES
-  "${PROJECT_SOURCE_DIR}/treewalker/tests/*.cpp"
-  "${PROJECT_SOURCE_DIR}/bytecode/tests/*.cpp"
-  "${PROJECT_SOURCE_DIR}/utils/tests/*.cpp"
+  "${PROJECT_SOURCE_DIR}/lox/tests/*.cpp"
+  "${PROJECT_SOURCE_DIR}/loxVM/tests/*.cpp"
 )
 
 add_executable(
@@ -55,16 +51,14 @@ add_executable(
 
 target_link_libraries(
   test_runner 
-  cloxTWlib 
-  utilslib
+  loxTWlib
   gtest_main 
   gmock_main
 )
 target_include_directories(
   test_runner 
   PUBLIC 
-  ${PROJECT_SOURCE_DIR}/treewalker/src
-  ${PROJECT_SOURCE_DIR}/bytecode/src
-  ${PROJECT_SOURCE_DIR}/utils/src
+  ${PROJECT_SOURCE_DIR}/lox/src
+  ${PROJECT_SOURCE_DIR}/loxVM/src
 )
 

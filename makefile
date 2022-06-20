@@ -7,8 +7,8 @@ compile: setup
 setup:
 	cmake -S . -B build
 
-treewalker: setup compile
-	"./build/cloxTW"
+lox: setup compile
+	"./build/loxTW"
 
 clean:
 	rm -rf "external"
