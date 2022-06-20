@@ -10,12 +10,17 @@
 #include "assert.h"
 #include "error.h"
 
-void add_token(Scanner *s, TokenType type, void* literal);
 
-bool is_finished(Scanner *s);
-void scan_string(Scanner *s);
-void scan_number(Scanner *s);
-char peek_next(Scanner  *s);
+void add_token(Scanner *scanner, TokenType type, void* literal);
+
+void scan_string(Scanner *scanner);
+void scan_number(Scanner *scanner);
+void scan_identifier(Scanner *scanner);
+
+bool is_finished(Scanner *scanner);
+char peek_next(Scanner  *scanner);
+
+TokenType get_keyword(const char* scanner);
 
 Scanner scanner_create(char* source) {
   Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
@@ -126,6 +131,8 @@ void scanner_scan_token(Scanner* scanner) {
     default:
       if (isdigit(c)) {
         scan_number(scanner);
+      } else if (isalpha(c)) {
+        scan_identifier(scanner);
       }
       break;
   }
@@ -172,7 +179,7 @@ void scan_number(Scanner *scanner) {
     panic(scanner->line, scanner->current, "Invalid number, has greater than one decimal point.");
   }
 
-  char* number = substring(scanner->source, scanner->start, scanner->current);
+  char* number = substring(scanner->source, scanner->start, scanner->current-1);
   add_token(scanner, NUMBER, (void*) number);
 
 
@@ -190,11 +197,26 @@ void scan_string(Scanner *scanner) {
     return;
   }
 
-  // trim the quotes
-  add_token(scanner, STRING, substring(scanner->source, scanner->start+1, scanner->current-1)); 
-
   // consume the last '"' character
   advance(scanner);
+
+  // NOTE:
+  // the variable 'current' points to the next character, this is why we subtract by 2.
+  //
+  // Example: "abcd"\n
+  // `current` points to the newline character, this is why we need to subtract by two.
+  add_token(scanner, STRING, substring(scanner->source, scanner->start+1, scanner->current-2)); 
+
+}
+
+void scan_identifier(Scanner *scanner) {
+  while (isalnum(peek(scanner)))
+    advance(scanner);
+
+  char* identifier = substring(scanner->source, scanner->start, scanner->current-1);
+  TokenType type = get_keyword(identifier);
+
+  add_token(scanner, type, NULL);
 }
 
 
@@ -221,3 +243,40 @@ bool match(Scanner *scanner, char expected) {
   }
   return false;
 }
+
+TokenType get_keyword(const char* text) {
+  struct KeywordPair {
+    const char* lexeme;
+    const TokenType type;
+  };
+
+  const struct KeywordPair pairs[] = {
+   {"and", AND},
+   {"class", CLASS},
+   {"else", ELSE},
+   {"false", FALSE},
+   {"for", FOR},
+   {"fun", FUN},
+   {"if", IF},
+   {"nil", NIL},
+   {"or", OR},
+   {"print", PRINT},
+   {"return", RETURN},
+   {"super", SUPER},
+   {"this", THIS},
+   {"true", TRUE},
+   {"var", VAR},
+   {"while", WHILE},
+  };
+
+  unsigned int length = sizeof(pairs)/sizeof(struct KeywordPair);
+
+  for (int i=0; i<length; i++) {
+    if (strcmp(pairs[i].lexeme, text) == 0) {
+      return pairs[i].type;
+    }
+  }
+  return IDENTIFIER;
+}
+
+

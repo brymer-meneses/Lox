@@ -26,10 +26,14 @@ void run_prompt() {
 
   while(true) {
     char line[MAX_INPUT_LIMIT];
+
     printf("> ");
     fgets(line, sizeof(line) , stdin);
-    run(line);
+    
+    // consume the '\n' character at the end of the string
+    line[strcspn(line, "\n")]  = 0; 
 
+    run(line);
     if (strcmp(line, "\n") == 0)  break; 
   }
 

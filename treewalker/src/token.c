@@ -1,6 +1,7 @@
 #include "stdio.h"
-
+#include "strings.h"
 #include "stdlib.h"
+
 #include "declarations.h"
 #include "token.h"
 
