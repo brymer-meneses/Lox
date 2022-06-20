@@ -19,7 +19,7 @@ typedef struct Scanner {
 
 } Scanner;
 
-Scanner scanner_create(char *source);
+Scanner scan_init(char *source);
 
 char advance(Scanner *scanner);
 Token* scanner_scan(Scanner *scanner);

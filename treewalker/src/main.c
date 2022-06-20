@@ -9,7 +9,7 @@
 
 
 void run(char source[]) {
-  Scanner scanner = scanner_create(source);
+  Scanner scanner = scan_init(source);
   Token* tokens = scanner_scan(&scanner);
 
   for (int i=0; i<scanner.parsed; i++) {
