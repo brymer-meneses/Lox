@@ -5,7 +5,7 @@ project(Lox)
 # NOTE: TW and BC are abbreviations for treewalker and bytecode respectively.
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(cloxTW_MAIN "${PROJECT_SOURCE_DIR}/treewalker/src/main.c")
+set(cloxTW_MAIN "${PROJECT_SOURCE_DIR}/lox/src/main.c")
 set(test_runner_MAIN "${PROJECT_SOURCE_DIR}/utils/src/runner.cpp")
 
 # HANDLE DEPENDENCIES
@@ -26,7 +26,7 @@ endif()
 # COMPILE LIBRARIES
 
 # clox treewalker
-file(GLOB cloxTW_SOURCES "${PROJECT_SOURCE_DIR}/treewalker/src/*.c")
+file(GLOB cloxTW_SOURCES "${PROJECT_SOURCE_DIR}/lox/src/*.c")
 list(REMOVE_ITEM cloxTW_SOURCES ${cloxTW_MAIN}) # avoid 'main.c' from being added twice
 add_library(cloxTWlib STATIC ${cloxTW_SOURCES})
 target_include_directories(cloxTWlib PUBLIC ${PROJECT_SOURCE_DIR}/utils/src)
@@ -42,7 +42,7 @@ target_link_libraries(cloxTW cloxTWlib utilslib)
 # COMPILE TESTS
 file(GLOB
   TEST_FILES
-  "${PROJECT_SOURCE_DIR}/treewalker/tests/*.cpp"
+  "${PROJECT_SOURCE_DIR}/lox/tests/*.cpp"
   "${PROJECT_SOURCE_DIR}/bytecode/tests/*.cpp"
   "${PROJECT_SOURCE_DIR}/utils/tests/*.cpp"
 )
@@ -63,7 +63,7 @@ target_link_libraries(
 target_include_directories(
   test_runner 
   PUBLIC 
-  ${PROJECT_SOURCE_DIR}/treewalker/src
+  ${PROJECT_SOURCE_DIR}/lox/src
   ${PROJECT_SOURCE_DIR}/bytecode/src
   ${PROJECT_SOURCE_DIR}/utils/src
 )

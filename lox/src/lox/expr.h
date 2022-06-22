@@ -7,10 +7,10 @@ struct Visitor;
 struct Expr;
 
 typedef enum ExprType {
-  Binary,
-  Unary,
-  Literal,
-  Grouping,
+  EXPR_BINARY,
+  EXPR_UNARY,
+  EXPR_LITERAL,
+  EXPR_GROUPING,
 } ExprType;
 
 

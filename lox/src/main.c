@@ -3,9 +3,9 @@
 #include "string.h"
 
 #include "strutils.h"
-#include "scanner.h"
-#include "declarations.h"
-#include "token.h"
+#include "lox/scanner.h"
+#include "lox/declarations.h"
+#include "lox/token.h"
 
 
 void run(char source[]) {

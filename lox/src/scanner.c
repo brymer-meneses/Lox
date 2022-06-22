@@ -4,14 +4,15 @@
 #include "stdio.h"
 #include "ctype.h"
 
-#include "token.h"
-#include "scanner.h"
-#include "strutils.h"
+#include "lox/token.h"
+#include "lox/scanner.h"
+#include "lox/error.h"
+
 #include "assert.h"
-#include "error.h"
+#include "strutils.h"
 
 
-void add_token(Scanner *scanner, TokenType type, void* literal);
+void add_token(Scanner *scanner, TokenType type, Literal literal);
 
 void scan_string(Scanner *scanner);
 void scan_number(Scanner *scanner);
@@ -149,9 +150,9 @@ void scanner_register_token(Scanner *scanner, Token token) {
   scanner->parsed++;
 }
 
-void add_token(Scanner *scanner, TokenType type, void* literal) {
+void add_token(Scanner *scanner, TokenType type, Literal literal) {
   char* text = substring(scanner->source, scanner->start, scanner->current);
-  Token token = token_create(type, text, literal);
+  Token token = token_init(type, text, literal);
   scanner_register_token(scanner, token);
 }
 
@@ -180,7 +181,7 @@ void scan_number(Scanner *scanner) {
   }
 
   char* number = substring(scanner->source, scanner->start, scanner->current-1);
-  add_token(scanner, NUMBER, (void*) number);
+  add_token(scanner, NUMBER, (Literal) number);
 
 
 }

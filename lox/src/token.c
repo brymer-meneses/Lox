@@ -2,11 +2,12 @@
 #include "strings.h"
 #include "stdlib.h"
 
-#include "declarations.h"
-#include "token.h"
+#include "lox/declarations.h"
+#include "lox/literal.h"
+#include "lox/token.h"
 
 
-Token token_create(TokenType type, char* lexeme, void *literal) {
+Token token_init(TokenType type, char* lexeme, Literal literal) {
   Token token = {.type = type, .literal = literal, .lexeme = lexeme};
   return token;
 }
@@ -19,32 +20,16 @@ void token_print(Token token) {
   printf("type: %s, ", token_to_string(token.type));
   switch (token.type) {
      case STRING:
-        printf("literal: %s ", token_get_literal(token).string);
+        printf("literal: %s ", literal_parse_string(token.literal));
         break;
      case NUMBER:
-        printf("literal: %f ", token_get_literal(token).number);
+        printf("literal: %f ", literal_parse_double(token.literal));
         break;
      default:
         break;
   }
   printf("line: %lu ", token.line);
   printf("]\n");
-}
-
-TokenLiteral token_get_literal(Token token) {
-  TokenLiteral literal;
-  switch (token.type) {
-    case STRING:
-       literal.string = (char *)token.literal;
-       break;
-    case NUMBER:
-       literal.number = strtod((char *) token.literal, NULL);
-       break;
-    default:
-       break;
-  }
-  return literal;
-
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "stdlib.h"
 #include "declarations.h"
+#include "literal.h"
 
 typedef enum TokenType {
   // Single-character tokens.
@@ -28,22 +29,13 @@ typedef enum TokenType {
 
 typedef struct Token {
   TokenType type;
-  void *literal;
+  Literal literal;
   size_t line;
   char *lexeme;
 } Token;
 
-typedef union TokenLiteral {
-  char* string;
-  char character;
-  double number;
-  void* null;
-} TokenLiteral;
-
-
-TokenLiteral token_get_literal(Token);
 void token_print(Token token);
-Token token_create(TokenType type, char* lexeme, void *literal);
+Token token_init(TokenType type, char* lexeme, Literal literal);
 char *token_to_string(TokenType type);
 
 #endif

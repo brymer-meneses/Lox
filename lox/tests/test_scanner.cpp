@@ -1,10 +1,11 @@
 #include "gtest/gtest.h"
 
 extern "C" {
-  #include "scanner.h"
-  #include "token.h"
   #include "stdio.h"
   #include "string.h"
+
+  #include "lox/scanner.h"
+  #include "lox/token.h"
 }
 
 
@@ -15,8 +16,8 @@ TEST(TestScanner, TestRegisterToken) {
   char lexeme_a[15] = "var";
   char lexeme_b[15] = "10";
 
-  Token token_a = token_create(IDENTIFIER, lexeme_a, NULL);
-  Token token_b = token_create(NUMBER, lexeme_b, (void*) 10);
+  Token token_a = token_init(IDENTIFIER, lexeme_a, NULL);
+  Token token_b = token_init(NUMBER, lexeme_b, "10");
 
   scanner_register_token(&scanner, token_a);
   scanner_register_token(&scanner, token_b);

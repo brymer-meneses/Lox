@@ -1,4 +1,4 @@
-#include "expr.h"
+#include "lox/expr.h"
 
 Expr expr_init(ExprType type,  void* value, Expr *left, Token *op, Expr *right) {
   Expr expr = {
@@ -12,27 +12,27 @@ Expr expr_init(ExprType type,  void* value, Expr *left, Token *op, Expr *right) 
 }
 
 Expr binary(Expr *left, Token *op, Expr *right) {
-  return expr_init(Binary, NULL, left, op, right);
+  return expr_init(EXPR_BINARY, NULL, left, op, right);
 }
 
 Expr grouping(Expr *expr) {
-  return expr_init(Grouping, NULL, expr, NULL, NULL);
+  return expr_init(EXPR_GROUPING, NULL, expr, NULL, NULL);
 };
 
 Expr literal(void* value) {
-  return expr_init(Literal, value, NULL, NULL, NULL);
+  return expr_init(EXPR_LITERAL, value, NULL, NULL, NULL);
 };
 
 Expr unary(Token* op, Expr* right) {
-  return expr_init(Binary, NULL, NULL, NULL, right);
+  return expr_init(EXPR_UNARY, NULL, NULL, NULL, right);
 }
 
 void expr_evaluate(Expr *expr) {
   switch (expr->type) {
-    case Binary:
-    case Unary:
-    case Grouping:
-    case Literal:
+    case EXPR_BINARY:
+    case EXPR_UNARY:
+    case EXPR_GROUPING:
+    case EXPR_LITERAL:
       break;
   }
   return;
