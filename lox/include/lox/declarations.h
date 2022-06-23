@@ -6,4 +6,5 @@
 
 #define INITIAL_TOKEN_ARRAY_SIZE 8
 
+#define TOKEN_NULL token_init(NIL, "null", "null", 0)
 #endif

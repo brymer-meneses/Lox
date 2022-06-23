@@ -37,18 +37,18 @@ LoxType literal_get_type(Literal literal) {
 }
 
 char* literal_to_string(Literal literal) {
-  char output[sizeof(literal)];
+  char* output = malloc(sizeof(literal));
 
   switch (literal_get_type(literal)) {
     case LOX_NUMBER:
       snprintf(output, sizeof(literal), "%lf" , literal_parse_double(literal));
       break;
-    case LOX_STRING:
-      snprintf(output, sizeof(literal), "%s" , literal);
-      break;
     case LOX_BOOLEAN:
       snprintf(output, sizeof(literal), "%d" , literal_parse_bool(literal));
       break;
+    case LOX_STRING:
+      return (char*) literal;
+      break;
   }
-  return "";
+  return output;
 }

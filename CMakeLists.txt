@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Lox)
 
+add_compile_options("-g")
+
 # NOTE: TW and BC are abbreviations for treewalker and bytecode respectively.
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

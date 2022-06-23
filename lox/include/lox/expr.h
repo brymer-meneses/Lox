@@ -15,12 +15,20 @@ typedef enum ExprType {
 
 
 typedef struct Expr {
-  const ExprType type;
-  const struct Expr *left;
-  const struct Expr *right;
-  const Literal value;
-  const Token *op;
+  ExprType type;
+  struct Expr *left;
+  struct Expr *right;
+  Literal value;
+  Token op;
 } Expr;
+
+Expr* expr_init(ExprType type,  Literal value, Expr *left, Token op, Expr *right);
+
+Expr* binary(Expr *left, Token op, Expr *right);
+Expr* grouping(Expr *expr);
+Expr* literal(Literal value);
+Expr* unary(Token op, Expr* right);
+
 
   
 

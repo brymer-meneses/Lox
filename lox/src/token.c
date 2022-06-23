@@ -7,8 +7,8 @@
 #include "lox/token.h"
 
 
-Token token_init(TokenType type, char* lexeme, Literal literal) {
-  Token token = {.type = type, .literal = literal, .lexeme = lexeme};
+Token token_init(TokenType type, char* lexeme, Literal literal, unsigned int line) {
+  Token token = {.type = type, .literal = literal, .lexeme = lexeme, .line = line};
   return token;
 }
 

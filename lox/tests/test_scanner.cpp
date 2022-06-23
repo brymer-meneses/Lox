@@ -16,8 +16,8 @@ TEST(TestScanner, TestRegisterToken) {
   char lexeme_a[15] = "var";
   char lexeme_b[15] = "10";
 
-  Token token_a = token_init(IDENTIFIER, lexeme_a, NULL);
-  Token token_b = token_init(NUMBER, lexeme_b, "10");
+  Token token_a = token_init(IDENTIFIER, lexeme_a, NULL, 1);
+  Token token_b = token_init(NUMBER, lexeme_b, "10", 1);
 
   scanner_register_token(&scanner, token_a);
   scanner_register_token(&scanner, token_b);

@@ -152,7 +152,7 @@ void scanner_register_token(Scanner *scanner, Token token) {
 
 void add_token(Scanner *scanner, TokenType type, Literal literal) {
   char* text = substring(scanner->source, scanner->start, scanner->current);
-  Token token = token_init(type, text, literal);
+  Token token = token_init(type, text, literal, scanner->line);
   scanner_register_token(scanner, token);
 }
 

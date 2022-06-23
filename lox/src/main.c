@@ -1,3 +1,4 @@
+#include "lox/astprinter.h"
 #include "stdio.h"
 #include "stdbool.h"
 #include "string.h"
@@ -5,6 +6,7 @@
 #include "lox/scanner.h"
 #include "lox/declarations.h"
 #include "lox/token.h"
+#include "lox/expr.h"
 
 
 void run(char source[]) {
@@ -40,12 +42,20 @@ void run_prompt() {
 
 int main(int argc, char *argv[]) {
 
-  if (argc == 2) {
-    run_file(argv[0]);
-  } else if (argc == 1) {
-    run_prompt();
-  } else {
-    printf("Usage clox <filename>");
-  }
+  // if (argc == 2) {
+  //   run_file(argv[0]);
+  // } else if (argc == 1) {
+  //   run_prompt();
+  // } else {
+  //   printf("Usage clox <filename>");
+  // }
+  //
 
+  Expr* expression = binary(
+      unary(
+        token_init(MINUS, "-", "Null", 1),
+        literal("123")),
+      token_init(STAR, "*", "Null", 1),
+      grouping(literal("45.67")));
+  printf("%s\n", expr_to_string(expression));
 }

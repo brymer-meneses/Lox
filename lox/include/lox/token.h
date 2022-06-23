@@ -35,7 +35,7 @@ typedef struct Token {
 } Token;
 
 void token_print(Token token);
-Token token_init(TokenType type, char* lexeme, Literal literal);
+Token token_init(TokenType type, char* lexeme, Literal literal, unsigned int line);
 char *token_to_string(TokenType type);
 
 #endif

@@ -3,6 +3,6 @@
 
 #include "expr.h"
 
-char* ast_to_string(const Expr *expr);
+char* expr_to_string(const Expr *expr);
 
 #endif
