@@ -18,7 +18,7 @@ typedef struct Expr {
   const ExprType type;
   const struct Expr *left;
   const struct Expr *right;
-  const void *value;
+  const Literal value;
   const Token *op;
 } Expr;
 

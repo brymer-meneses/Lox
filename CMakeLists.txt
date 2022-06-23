@@ -29,15 +29,14 @@ endif()
 file(GLOB cloxTW_SOURCES "${PROJECT_SOURCE_DIR}/lox/src/*.c")
 list(REMOVE_ITEM cloxTW_SOURCES ${cloxTW_MAIN}) # avoid 'main.c' from being added twice
 add_library(cloxTWlib STATIC ${cloxTW_SOURCES})
-target_include_directories(cloxTWlib PUBLIC ${PROJECT_SOURCE_DIR}/utils/src)
-
-# utils 
-file(GLOB util_SOURCES "${PROJECT_SOURCE_DIR}/utils/src/*.c")
-add_library(utilslib STATIC ${util_SOURCES})
+target_include_directories(cloxTWlib PUBLIC 
+  ${PROJECT_SOURCE_DIR}/utils/include/
+  ${PROJECT_SOURCE_DIR}/lox/include/
+  )
 
 # LINK EXECUTABLES
 add_executable(cloxTW ${cloxTW_MAIN})
-target_link_libraries(cloxTW cloxTWlib utilslib)
+target_link_libraries(cloxTW cloxTWlib)
 
 # COMPILE TESTS
 file(GLOB
@@ -56,15 +55,13 @@ add_executable(
 target_link_libraries(
   test_runner 
   cloxTWlib 
-  utilslib
   gtest_main 
   gmock_main
 )
 target_include_directories(
   test_runner 
   PUBLIC 
-  ${PROJECT_SOURCE_DIR}/lox/src
-  ${PROJECT_SOURCE_DIR}/bytecode/src
-  ${PROJECT_SOURCE_DIR}/utils/src
+  ${PROJECT_SOURCE_DIR}/lox/include/
+  ${PROJECT_SOURCE_DIR}/bytecode/include/
 )
 

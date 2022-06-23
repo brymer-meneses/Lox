@@ -1,13 +1,15 @@
 
 .PHONY: treewalker bytecode
 
+all: compile setup test
+
 compile: setup
 	$(MAKE) -s -C "build" 
 
 setup:
 	cmake -S . -B build
 
-treewalker: setup compile
+lox: setup compile
 	"./build/cloxTW"
 
 clean:

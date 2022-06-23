@@ -9,11 +9,18 @@ extern "C" {
 
 
 TEST(TestLiteral, ParseLiteralToDouble) {
-  const double expected_result = 123;
-  const double parsed_result = literal_parse_double("123");
+  EXPECT_EQ(1234, literal_parse_double("1234"));
+  EXPECT_EQ(3.1415, literal_parse_double("3.1415"));
+}
 
-  EXPECT_EQ(expected_result, parsed_result);
+TEST(TestLiteral, ParseLiteralToBool) {
+  EXPECT_EQ(true, literal_parse_bool("true"));
+  EXPECT_EQ(false, literal_parse_bool("false"));
+}
 
-
+TEST(TestLiteral, GetType) {
+  EXPECT_EQ(LOX_BOOLEAN, literal_get_type("true"));
+  EXPECT_EQ(LOX_STRING, literal_get_type("hi there"));
+  EXPECT_EQ(LOX_NUMBER, literal_get_type("3.1415"));
 }
 

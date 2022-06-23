@@ -2,17 +2,15 @@
 #define LITERAL_H
 
 #include "stdbool.h"
+#include "types.h"
 
 typedef const char* Literal;
 
-typedef enum {
-  LITERAL_STRING,
-  LITERAL_NUMBER,
-  LITERAL_BOOLEAN,
-} LiteralType;
 
 double literal_parse_double(Literal literal);
-char* literal_parse_string(Literal literal);
 bool literal_parse_bool(Literal literal);
+
+char* literal_to_string(Literal literal);
+LoxType literal_get_type(Literal literal);
 
 #endif // !LITERAL_H

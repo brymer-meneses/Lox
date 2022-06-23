@@ -3,13 +3,12 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "ctype.h"
+#include "assert.h"
 
 #include "lox/token.h"
 #include "lox/scanner.h"
 #include "lox/error.h"
-
-#include "assert.h"
-#include "strutils.h"
+#include "lox/utils.h"
 
 
 void add_token(Scanner *scanner, TokenType type, Literal literal);
@@ -23,7 +22,7 @@ char peek_next(Scanner  *scanner);
 
 TokenType get_keyword(const char* scanner);
 
-Scanner scan_init(char* source) {
+Scanner scanner_init(char* source) {
   Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
 
   Scanner scanner = {
@@ -111,7 +110,8 @@ void scanner_scan_token(Scanner* scanner) {
       break;
     case '/':
       if (match(scanner, '/')) {
-        while(peek(scanner) != '\n') advance(scanner);
+        while(peek(scanner) != '\n')
+          advance(scanner);
       } else {
         add_token(scanner, SLASH, NULL);
       }
@@ -238,6 +238,7 @@ char peek_next(Scanner *scanner) {
 }
 
 bool match(Scanner *scanner, char expected) {
+  // printf("Got: %c, Expected: %c \n", peek(scanner), expected);
   if (peek(scanner) == expected) {
     scanner->current ++;
     return true;

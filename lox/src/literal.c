@@ -1,33 +1,53 @@
-#include "lox/literal.h"
-#include "lox/token.h"
-
 #include "stdlib.h"
 #include "stdio.h"
+#include "string.h"
+#include "assert.h"
+
+#include "lox/literal.h"
+#include "lox/token.h"
+#include "lox/utils.h"
 
 double literal_parse_double(Literal literal) {
-  return strtod(literal_parse_string(literal), NULL);
-}
-
-char* literal_parse_string(Literal literal) {
-  return (char*) literal;
+  return strtod(literal, NULL);
 }
 
 bool literal_parse_bool(Literal literal) {
-  return (bool) literal;
+  bool istrue = strcmp(literal, "true") == 0;
+  bool isfalse = strcmp(literal, "false") == 0;
+
+  assert(istrue || isfalse);
+
+  if (istrue) {
+    return true; 
+  }; 
+
+  return false; 
 }
 
-char* literal_to_string(LiteralType type,Literal literal) {
+LoxType literal_get_type(Literal literal) {
+  bool isnum = is_real_number(literal);
+  bool isbool = is_boolean(literal);
+
+  if (isnum) {
+    return LOX_NUMBER;
+  } else if (isbool) {
+    return LOX_BOOLEAN;
+  } 
+  return LOX_STRING;
+}
+
+char* literal_to_string(Literal literal) {
   char output[sizeof(literal)];
 
-  switch (type) {
-    case LITERAL_NUMBER:
+  switch (literal_get_type(literal)) {
+    case LOX_NUMBER:
       snprintf(output, sizeof(literal), "%lf" , literal_parse_double(literal));
       break;
-    case LITERAL_STRING:
-      snprintf(output, sizeof(literal), "%s" , literal_parse_string(literal));
+    case LOX_STRING:
+      snprintf(output, sizeof(literal), "%s" , literal);
       break;
-    case LITERAL_BOOLEAN:
-      snprintf(output, sizeof(literal), "%s" , literal_parse_string(literal));
+    case LOX_BOOLEAN:
+      snprintf(output, sizeof(literal), "%d" , literal_parse_bool(literal));
       break;
   }
   return "";

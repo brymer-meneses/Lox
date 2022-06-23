@@ -4,6 +4,8 @@
 
 #include "lox/expr.h"
 #include "lox/astprinter.h"
+#include "lox/types.h"
+#include "lox/literal.h"
 
 void parenthesize(const char* name, const Expr* *exprs);
 
@@ -15,6 +17,7 @@ char* ast_to_string(const Expr *expr) {
       if (expr->value == NULL) {
         return "Null";
       } else {
+        return literal_to_string(expr->value);
       }
     break;
     case EXPR_UNARY:
@@ -24,7 +27,7 @@ char* ast_to_string(const Expr *expr) {
 
 void parenthesize(const char* name, const Expr* *exprs) {
 
-  char* result = "";
+  char result[2048] = "";
 
   strcat(result, "(");
   strcat(result, name);

@@ -11,7 +11,7 @@ extern "C" {
 
 TEST(TestScanner, TestRegisterToken) {
   char input[15] = "var test = 10";
-  Scanner scanner = scan_init(input);
+  Scanner scanner = scanner_init(input);
 
   char lexeme_a[15] = "var";
   char lexeme_b[15] = "10";
@@ -33,7 +33,7 @@ TEST(TestScanner, TestRegisterToken) {
 
 TEST(TestScanner, Advance) {
   char input[14] = "var test = 10";
-  Scanner scanner = scan_init(input);
+  Scanner scanner = scanner_init(input);
 
   for (int i=0; i<strlen(input); i++) {
     ASSERT_EQ(input[i], advance(&scanner));
@@ -47,7 +47,7 @@ TEST(TestScanner, ScanSingleChar) {
     MINUS, STAR, COMMA, DOT, SEMICOLON, FILE_EOF
   };
 
-  Scanner scanner = scan_init(input);
+  Scanner scanner = scanner_init(input);
   Token* tokens = scanner_scan(&scanner);
 
   for (int i=0; i<scanner.parsed; i++) {
@@ -61,7 +61,7 @@ TEST(TestScanner, ScanSingleChar) {
 
 TEST(TestScanner, Peek) {
   char input[] = "The quick brown fox jumped over the lazy cat.";
-  Scanner scanner = scan_init(input);
+  Scanner scanner = scanner_init(input);
 
   for (int i=0; i<strlen(input); i++) {
     char next_char = peek(&scanner);
@@ -73,11 +73,10 @@ TEST(TestScanner, Peek) {
 
 TEST(TestScanner, Match) {
   char input[] = "abcdefghijklmnop";
-  Scanner scanner = scan_init(input);
+  Scanner scanner = scanner_init(input);
 
   for (int i=0; i<strlen(input); i++) {
-      EXPECT_TRUE(match(&scanner, input[i+1]));
-      advance(&scanner);
+      EXPECT_TRUE(match(&scanner, input[i]));
   }
 
 }
@@ -87,7 +86,7 @@ TEST(TestScanner, ScanDoubleChar) {
 
   TokenType correct_types[] = {EQUAL_EQUAL, BANG_EQUAL, GREATER_EQUAL, LESS_EQUAL, FILE_EOF};
 
-  Scanner scanner = scan_init(input);
+  Scanner scanner = scanner_init(input);
   Token* tokens = scanner_scan(&scanner);
 
   for (int i=0; i<scanner.parsed; i++) {

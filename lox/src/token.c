@@ -20,7 +20,7 @@ void token_print(Token token) {
   printf("type: %s, ", token_to_string(token.type));
   switch (token.type) {
      case STRING:
-        printf("literal: %s ", literal_parse_string(token.literal));
+        printf("literal: %s ", token.literal);
         break;
      case NUMBER:
         printf("literal: %f ", literal_parse_double(token.literal));

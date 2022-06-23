@@ -2,14 +2,13 @@
 #include "stdbool.h"
 #include "string.h"
 
-#include "strutils.h"
 #include "lox/scanner.h"
 #include "lox/declarations.h"
 #include "lox/token.h"
 
 
 void run(char source[]) {
-  Scanner scanner = scan_init(source);
+  Scanner scanner = scanner_init(source);
   Token* tokens = scanner_scan(&scanner);
 
   for (int i=0; i<scanner.parsed; i++) {
@@ -31,7 +30,7 @@ void run_prompt() {
     fgets(line, sizeof(line) , stdin);
     
     // consume the '\n' character at the end of the string
-    line[strcspn(line, "\n")]  = 0; 
+    // line[strcspn(line, "\n")]  = 0; 
 
     run(line);
     if (strcmp(line, "\n") == 0)  break; 
