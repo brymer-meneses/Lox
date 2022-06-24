@@ -8,8 +8,8 @@ Token parser_peek(Parser* p);
 bool parser_check(Parser* p, TokenType type);
 Token parser_previous(Parser* p);
 
-Expr* parse_expression(Parser* p);
-Expr* parse_equality(Parser* p);
+Expr* expression(Parser* p);
+Expr* equality(Parser* p);
 
 Parser parser_init(const Token *tokens) {
   Parser parser = {
@@ -58,10 +58,10 @@ Token parser_peek(Parser* p) {
 }
 
 
-Expr* parse_expression(Parser* p) {
-  return parse_equality(p);
+Expr* expression(Parser* p) {
+  return equality(p);
 }  
 
-Expr* parse_equality(Parser* p) {
+Expr* equality(Parser* p) {
 
 }
