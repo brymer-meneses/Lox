@@ -31,12 +31,12 @@ TEST(TestScanner, TestRegisterToken) {
   ASSERT_EQ(token_b.literal, scanner.tokens[1].literal);
 }
 
-TEST(TestScanner, Advance) {
+TEST(TestScanner, scanner_advance) {
   char input[14] = "var test = 10";
   Scanner scanner = scanner_init(input);
 
   for (int i=0; i<strlen(input); i++) {
-    ASSERT_EQ(input[i], advance(&scanner));
+    ASSERT_EQ(input[i], scanner_advance(&scanner));
   }
 }
 
@@ -59,24 +59,24 @@ TEST(TestScanner, ScanSingleChar) {
   }
 }
 
-TEST(TestScanner, Peek) {
+TEST(TestScanner, scanner_peek) {
   char input[] = "The quick brown fox jumped over the lazy cat.";
   Scanner scanner = scanner_init(input);
 
   for (int i=0; i<strlen(input); i++) {
-    char next_char = peek(&scanner);
-    advance(&scanner);
+    char next_char = scanner_peek(&scanner);
+    scanner_advance(&scanner);
     EXPECT_EQ(input[i], next_char);
   }
 
 }
 
-TEST(TestScanner, Match) {
+TEST(TestScanner, scanner_match) {
   char input[] = "abcdefghijklmnop";
   Scanner scanner = scanner_init(input);
 
   for (int i=0; i<strlen(input); i++) {
-      EXPECT_TRUE(match(&scanner, input[i]));
+      EXPECT_TRUE(scanner_match(&scanner, input[i]));
   }
 
 }

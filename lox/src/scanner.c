@@ -11,16 +11,16 @@
 #include "lox/utils.h"
 
 
-void add_token(Scanner *scanner, TokenType type, Literal literal);
+void add_token(Scanner *s, TokenType type, Literal literal);
 
-void scan_string(Scanner *scanner);
-void scan_number(Scanner *scanner);
-void scan_identifier(Scanner *scanner);
+void scan_string(Scanner *s);
+void scan_number(Scanner *s);
+void scan_identifier(Scanner *s);
 
-bool is_finished(Scanner *scanner);
-char peek_next(Scanner  *scanner);
+bool scanner_isfinished(Scanner *s);
+char scanner_peek_next(Scanner  *s);
 
-TokenType get_keyword(const char* scanner);
+TokenType get_keyword(const Literal);
 
 Scanner scanner_init(char* source) {
   Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
@@ -38,87 +38,87 @@ Scanner scanner_init(char* source) {
   return scanner;
 }
 
-Token* scanner_scan(Scanner* scanner) {
-  while (!is_finished(scanner)) {
-    scanner->start = scanner->current;
-    scanner_scan_token(scanner);
+Token* scanner_scan(Scanner* s) {
+  while (!scanner_isfinished(s)) {
+    s->start = s->current;
+    scanner_scan_token(s);
   }
-  add_token(scanner, FILE_EOF, NULL);
-  return scanner->tokens;
+  add_token(s, FILE_EOF, NULL);
+  return s->tokens;
 }
 
-void scanner_scan_token(Scanner* scanner) {
-  char c = advance(scanner);
+void scanner_scan_token(Scanner* s) {
+  char c = scanner_advance(s);
   switch (c) {
     case '{':
-      add_token(scanner, LEFT_BRACE, NULL);
+      add_token(s, LEFT_BRACE, NULL);
       break;
     case '}': 
-      add_token(scanner, RIGHT_BRACE, NULL);
+      add_token(s, RIGHT_BRACE, NULL);
       break;
     case '(':
-      add_token(scanner, LEFT_PAREN, NULL);
+      add_token(s, LEFT_PAREN, NULL);
       break;
     case ')':
-      add_token(scanner, RIGHT_PAREN, NULL);
+      add_token(s, RIGHT_PAREN, NULL);
       break;
     case ',':
-      add_token(scanner, COMMA, NULL);
+      add_token(s, COMMA, NULL);
       break;
     case '.':
-      add_token(scanner, DOT, NULL);
+      add_token(s, DOT, NULL);
       break;
     case '*':
-      add_token(scanner, STAR, NULL);
+      add_token(s, STAR, NULL);
       break;
     case '+':
-      add_token(scanner, PLUS, NULL);
+      add_token(s, PLUS, NULL);
       break;
     case '-':
-      add_token(scanner, MINUS, NULL);
+      add_token(s, MINUS, NULL);
       break;
     case ';':
-      add_token(scanner, SEMICOLON, NULL);
+      add_token(s, SEMICOLON, NULL);
       break;
 
     case '>':
-      if (match(scanner, '=')) 
-        add_token(scanner, GREATER_EQUAL, NULL);
+      if (scanner_match(s, '=')) 
+        add_token(s, GREATER_EQUAL, NULL);
       else
-        add_token(scanner, GREATER, NULL);
+        add_token(s, GREATER, NULL);
       break;
 
     case '<':
-      if (match(scanner, '=')) 
-        add_token(scanner, LESS_EQUAL, NULL);
+      if (scanner_match(s, '=')) 
+        add_token(s, LESS_EQUAL, NULL);
       else
-        add_token(scanner, LESS, NULL);
+        add_token(s, LESS, NULL);
       break;
 
     case '=':
-      if (match(scanner, '=')) 
-        add_token(scanner, EQUAL_EQUAL, NULL);
+      if (scanner_match(s, '=')) 
+        add_token(s, EQUAL_EQUAL, NULL);
       else 
-        add_token(scanner, EQUAL, NULL);
+        add_token(s, EQUAL, NULL);
       break;
 
     case '!':
-      if (match(scanner, '='))
-        add_token(scanner, BANG_EQUAL, NULL);
+      if (scanner_match(s, '='))
+        add_token(s, BANG_EQUAL, NULL);
       else 
-        add_token(scanner, BANG, NULL);
+        add_token(s, BANG, NULL);
       break;
     case '/':
-      if (match(scanner, '/')) {
-        while(peek(scanner) != '\n')
-          advance(scanner);
+      if (scanner_match(s, '/')) {
+        while(scanner_peek(s) != '\n')
+          scanner_advance(s);
       } else {
-        add_token(scanner, SLASH, NULL);
+        add_token(s, SLASH, NULL);
       }
        break;
     
     case '"':
-      scan_string(scanner);
+      scan_string(s);
       break;
     case ' ':
     case '\t':
@@ -127,120 +127,120 @@ void scanner_scan_token(Scanner* scanner) {
       break;
 
     case '\n':
-      scanner->line++;
+      s->line++;
       break;
     default:
       if (isdigit(c)) {
-        scan_number(scanner);
+        scan_number(s);
       } else if (isalpha(c)) {
-        scan_identifier(scanner);
+        scan_identifier(s);
       }
       break;
   }
 
 }
 
-void scanner_register_token(Scanner *scanner, Token token) {
-  if (scanner->parsed == scanner->capacity) {
-    scanner->capacity = 2 * scanner->capacity;
+void scanner_register_token(Scanner *s, Token token) {
+  if (s->parsed == s->capacity) {
+    s->capacity = 2 * s->capacity;
 
-    scanner->tokens = realloc(scanner->tokens, scanner->capacity * sizeof(Token));
+    s->tokens = realloc(s->tokens, s->capacity * sizeof(Token));
   }
-  scanner->tokens[scanner->parsed] = token;
-  scanner->parsed++;
+  s->tokens[s->parsed] = token;
+  s->parsed++;
 }
 
-void add_token(Scanner *scanner, TokenType type, Literal literal) {
-  char* text = substring(scanner->source, scanner->start, scanner->current);
-  Token token = token_init(type, text, literal, scanner->line);
-  scanner_register_token(scanner, token);
+void add_token(Scanner *s, TokenType type, Literal literal) {
+  char* text = substring(s->source, s->start, s->current);
+  Token token = token_init(type, text, literal, s->line);
+  scanner_register_token(s, token);
 }
 
-char advance(Scanner *scanner) {
-  if (is_finished(scanner)) return '\0';
+char scanner_advance(Scanner *s) {
+  if (scanner_isfinished(s)) return '\0';
 
-  scanner->current++;
-  return scanner->source[scanner->current - 1];
+  s->current++;
+  return s->source[s->current - 1];
 }
 
-void scan_number(Scanner *scanner) {
+void scan_number(Scanner *s) {
 
-  while (isdigit(peek(scanner))) 
-    advance(scanner);
+  while (isdigit(scanner_peek(s))) 
+    scanner_advance(s);
 
   
-  if (peek(scanner) == '.') {
-    advance(scanner);
-    while (isdigit(peek(scanner))) 
-      advance(scanner);
+  if (scanner_peek(s) == '.') {
+    scanner_advance(s);
+    while (isdigit(scanner_peek(s))) 
+      scanner_advance(s);
   } 
 
   // Handle the instance wherein we find another decimal point
-  if (peek(scanner) == '.') {
-    panic(scanner->line, scanner->current, "Invalid number, has greater than one decimal point.");
+  if (scanner_peek(s) == '.') {
+    panic(s->line, s->current, "Invalid number, has greater than one decimal point.");
   }
 
-  char* number = substring(scanner->source, scanner->start, scanner->current-1);
-  add_token(scanner, NUMBER, (Literal) number);
+  char* number = substring(s->source, s->start, s->current-1);
+  add_token(s, NUMBER, (Literal) number);
 
 
 }
 
-void scan_string(Scanner *scanner) {
-  while (peek(scanner) != '"' && !is_finished(scanner)) {
-    if (peek(scanner) == '\n') scanner->line++;
-    advance(scanner);
+void scan_string(Scanner *s) {
+  while (scanner_peek(s) != '"' && !scanner_isfinished(s)) {
+    if (scanner_peek(s) == '\n') s->line++;
+    scanner_advance(s);
   }
 
   // handle when the string doesn't terminate
-  if (is_finished(scanner)) {
-    panic(scanner->line, scanner->current, "Unterminated string.");
+  if (scanner_isfinished(s)) {
+    panic(s->line, s->current, "Unterminated string.");
     return;
   }
 
   // consume the last '"' character
-  advance(scanner);
+  scanner_advance(s);
 
   // NOTE:
   // the variable 'current' points to the next character, this is why we subtract by 2.
   //
   // Example: "abcd"\n
   // `current` points to the newline character, this is why we need to subtract by two.
-  add_token(scanner, STRING, substring(scanner->source, scanner->start+1, scanner->current-2)); 
+  add_token(s, STRING, substring(s->source, s->start+1, s->current-2)); 
 
 }
 
-void scan_identifier(Scanner *scanner) {
-  while (isalnum(peek(scanner)))
-    advance(scanner);
+void scan_identifier(Scanner *s) {
+  while (isalnum(scanner_peek(s)))
+    scanner_advance(s);
 
-  char* identifier = substring(scanner->source, scanner->start, scanner->current-1);
+  char* identifier = substring(s->source, s->start, s->current-1);
   TokenType type = get_keyword(identifier);
 
-  add_token(scanner, type, NULL);
+  add_token(s, type, NULL);
 }
 
 
-bool is_finished(Scanner *scanner) {
-  return scanner->current >= strlen(scanner->source);
+bool scanner_isfinished(Scanner *s) {
+  return s->current >= strlen(s->source);
 }
 
-char peek(Scanner *scanner) {
-  if (is_finished(scanner)) return '\0';
+char scanner_peek(Scanner *s) {
+  if (scanner_isfinished(s)) return '\0';
   
-  return scanner->source[scanner->current];
+  return s->source[s->current];
 }
 
-char peek_next(Scanner *scanner) {
-  if (is_finished(scanner)) return '\0';
+char scanner_peek_next(Scanner *s) {
+  if (scanner_isfinished(s)) return '\0';
   
-  return scanner->source[scanner->current+1];
+  return s->source[s->current+1];
 }
 
-bool match(Scanner *scanner, char expected) {
-  // printf("Got: %c, Expected: %c \n", peek(scanner), expected);
-  if (peek(scanner) == expected) {
-    scanner->current ++;
+bool scanner_match(Scanner *s, char expected) {
+  // printf("Got: %c, Expected: %c \n", scanner_peek(scanner), expected);
+  if (scanner_peek(s) == expected) {
+    s->current ++;
     return true;
   }
   return false;

@@ -31,9 +31,6 @@ void run_prompt() {
     printf("> ");
     fgets(line, sizeof(line) , stdin);
     
-    // consume the '\n' character at the end of the string
-    // line[strcspn(line, "\n")]  = 0; 
-
     run(line);
     if (strcmp(line, "\n") == 0)  break; 
   }
@@ -42,6 +39,7 @@ void run_prompt() {
 
 int main(int argc, char *argv[]) {
 
+
   // if (argc == 2) {
   //   run_file(argv[0]);
   // } else if (argc == 1) {
@@ -49,13 +47,4 @@ int main(int argc, char *argv[]) {
   // } else {
   //   printf("Usage clox <filename>");
   // }
-  //
-
-  Expr* expression = binary(
-      unary(
-        token_init(MINUS, "-", "Null", 1),
-        literal("123")),
-      token_init(STAR, "*", "Null", 1),
-      grouping(literal("45.67")));
-  printf("%s\n", expr_to_string(expression));
 }
