@@ -59,3 +59,27 @@ bool is_real_number(const char *string) {
   }
   return true;
 }
+
+// Credits to: https://www.youtube.com/watch?v=CzAgM5bez-g
+char* read_file(const char* filename) {
+  FILE* file;
+  file = fopen(filename, "r");
+  if (file == NULL) return NULL;
+
+  fseek(file, 0, SEEK_END);
+  const int length = ftell(file);
+
+  fseek(file, 0, SEEK_SET);
+
+  char* string = malloc(sizeof(char) * (length + 1)); // accomodate for the null terminator
+
+  char c;
+  int i =0;
+  while ( (c = fgetc(file))  != EOF) {
+    string[i] = c;
+    i++;
+  }
+
+  string[length] = '\0';
+  return string;
+}
