@@ -179,7 +179,7 @@ void scan_number(Scanner *s) {
 
   // Handle the instance wherein we find another decimal point
   if (scanner_peek(s) == '.') {
-    panic(s->line, s->current, "Invalid number, has greater than one decimal point.");
+    report(s->line, s->current, "Invalid number, has greater than one decimal point.");
   }
 
   add_token(s, NUMBER);
@@ -195,7 +195,7 @@ void scan_string(Scanner *s) {
 
   // handle when the string doesn't terminate
   if (scanner_isfinished(s)) {
-    panic(s->line, s->current, "Unterminated string.");
+    report(s->line, s->current, "Unterminated string.");
     return;
   }
   // consume the last '"' character

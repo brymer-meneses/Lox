@@ -10,6 +10,7 @@
 #include "lox/expr.h"
 #include "lox/utils.h"
 #include "lox/error.h"
+#include "lox/state.h"
 
 
 void run(char source[]) {
@@ -35,7 +36,7 @@ void run_file(const char* filename) {
 
 void run_prompt() {
 
-  while(true) {
+  while(true && !LOX_HAD_ERROR) {
     char line[MAX_INPUT_LIMIT];
 
     printf("> ");
