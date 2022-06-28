@@ -50,7 +50,7 @@ bool parser_check(Parser* p, TokenType type) {
 }
 
 bool parser_isfinished(Parser* p) {
-  return parser_peek(p).type == FILE_EOF;
+  return parser_peek(p).type == SOURCE_END;
 }
 
 Token parser_peek(Parser* p) {

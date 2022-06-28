@@ -5,7 +5,7 @@
 #include "lox/expr.h"
 #include "lox/astprinter.h"
 #include "lox/types.h"
-#include "lox/literal.h"
+#include "lox/token.h"
 
 char* parenthesize(const char* name, const Expr* left, const Expr* right);
 
@@ -18,7 +18,7 @@ char* expr_to_string(const Expr *expr) {
     case EXPR_GROUPING:
       return parenthesize("group", expr->left, NULL);
     case EXPR_LITERAL:
-      return literal_to_string(expr->value);
+      return (char*) expr->value;
    }
 };
 

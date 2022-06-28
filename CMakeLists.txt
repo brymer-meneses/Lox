@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Lox)
 
-add_compile_options("-g")
+add_compile_options("-g" "-Wall")
 
 # NOTE: TW and BC are abbreviations for treewalker and bytecode respectively.
 

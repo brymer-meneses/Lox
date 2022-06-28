@@ -1,39 +1,32 @@
 #include "stdio.h"
-#include "strings.h"
+#include "string.h"
+#include "stdlib.h"
+#include "assert.h"
 #include "stdlib.h"
 
 #include "lox/declarations.h"
-#include "lox/literal.h"
 #include "lox/token.h"
+#include "lox/utils.h"
 
-
-Token token_init(TokenType type, char* lexeme, Literal literal, unsigned int line) {
-  Token token = {.type = type, .literal = literal, .lexeme = lexeme, .line = line};
+Token token_init(TokenType type, const char* lexeme, unsigned int line) {
+  Token token = {.type = type, .lexeme = lexeme, .line = line};
   return token;
 }
 
+
 void token_print(Token token) {
-  // do not print FILE_EOF token
-  if (token.type == FILE_EOF) return;
+  // do not print SOURCE_END token
+  if (token.type == SOURCE_END) return;
 
   printf("Token: [ ");
-  printf("type: %s, ", token_to_string(token.type));
-  switch (token.type) {
-     case STRING:
-        printf("literal: %s ", token.literal);
-        break;
-     case NUMBER:
-        printf("literal: %f ", literal_parse_double(token.literal));
-        break;
-     default:
-        break;
-  }
+  printf("type: %s, ", tokentype_to_string(token.type));
+  printf("literal: %s, ", token_to_string(token));
   printf("line: %lu ", token.line);
   printf("]\n");
 }
 
 
-char *token_to_string(TokenType type) {
+char *tokentype_to_string(TokenType type) {
   switch (type) {
     case LEFT_PAREN:      return "LEFT_PAREN";
     case RIGHT_PAREN:     return "RIGHT_PAREN";
@@ -73,9 +66,50 @@ char *token_to_string(TokenType type) {
     case TRUE:            return "TRUE";
     case VAR:             return "VAR";
     case WHILE:           return "WHILE";
-    case FILE_EOF:        return "EOF";
+    case SOURCE_END:        return "EOF";
   }
   
 
 }
 
+double token_parse_double(Token token) {
+  return strtod(token.lexeme, NULL);
+}
+
+bool token_parse_bool(Token token) {
+  bool istrue = strcmp(token.lexeme, "true") == 0;
+  bool isfalse = strcmp(token.lexeme, "false") == 0;
+
+  assert(istrue || isfalse);
+
+  if (istrue) {
+    return true; 
+  }; 
+
+  return false; 
+}
+
+char* token_parse_string(Token token) {
+  return substring(token.lexeme, 1, strlen(token.lexeme) - 2); // trim the quotation marks
+}
+
+
+char* token_to_string(Token token) {
+  char* output = malloc(sizeof(token.lexeme));
+
+  switch (token.type) {
+    case NUMBER:
+      snprintf(output, sizeof(token.lexeme), "%lf" , token_parse_double(token));
+      break;
+    case TRUE:
+    case FALSE:
+      snprintf(output, sizeof(token.lexeme), "%d" , token_parse_bool(token));
+      break;
+    case STRING:
+      return token_parse_string(token); 
+    default:
+      return (char*) token.lexeme;
+      break;
+  }
+  return output;
+}

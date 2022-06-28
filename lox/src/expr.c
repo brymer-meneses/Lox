@@ -1,7 +1,7 @@
 #include "lox/expr.h"
 #include "stdio.h"
 
-Expr* expr_init(ExprType type,  Literal value, Expr *left, Token op, Expr *right) {
+Expr* expr_init(ExprType type,  const char* value, Expr *left, Token op, Expr *right) {
   Expr* expr = malloc(1 * sizeof(Expr));
   expr->type = type;
   expr->left = left;
@@ -19,7 +19,7 @@ Expr* grouping(Expr *expr) {
   return expr_init(EXPR_GROUPING, NULL, expr, TOKEN_NULL, NULL);
 };
 
-Expr* literal(Literal value) {
+Expr* literal(const char* value) {
   return expr_init(EXPR_LITERAL, value, NULL, TOKEN_NULL, NULL);
 };
 

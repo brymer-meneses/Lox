@@ -8,7 +8,6 @@ extern "C" {
   #include "lox/token.h"
 }
 
-
 TEST(TestScanner, TestRegisterToken) {
   char input[15] = "var test = 10";
   Scanner scanner = scanner_init(input);
@@ -16,19 +15,17 @@ TEST(TestScanner, TestRegisterToken) {
   char lexeme_a[15] = "var";
   char lexeme_b[15] = "10";
 
-  Token token_a = token_init(IDENTIFIER, lexeme_a, NULL, 1);
-  Token token_b = token_init(NUMBER, lexeme_b, "10", 1);
+  Token token_a = token_init(IDENTIFIER, lexeme_a, 1);
+  Token token_b = token_init(NUMBER, lexeme_b, 1);
 
   scanner_register_token(&scanner, token_a);
   scanner_register_token(&scanner, token_b);
 
   ASSERT_EQ(token_a.lexeme, scanner.tokens[0].lexeme);
   ASSERT_EQ(token_a.type, scanner.tokens[0].type);
-  ASSERT_EQ(token_a.literal, scanner.tokens[0].literal);
 
   ASSERT_EQ(token_b.lexeme, scanner.tokens[1].lexeme);
   ASSERT_EQ(token_b.type, scanner.tokens[1].type);
-  ASSERT_EQ(token_b.literal, scanner.tokens[1].literal);
 }
 
 TEST(TestScanner, scanner_advance) {
@@ -44,7 +41,7 @@ TEST(TestScanner, ScanSingleChar) {
   char input[12] = "{}()+-*,.;";
   TokenType correct_types[] = { 
     LEFT_BRACE, RIGHT_BRACE, LEFT_PAREN, RIGHT_PAREN, PLUS,
-    MINUS, STAR, COMMA, DOT, SEMICOLON, FILE_EOF
+    MINUS, STAR, COMMA, DOT, SEMICOLON, SOURCE_END
   };
 
   Scanner scanner = scanner_init(input);
@@ -84,7 +81,7 @@ TEST(TestScanner, scanner_match) {
 TEST(TestScanner, ScanDoubleChar) {
   char input[] = "== != >= <=";
 
-  TokenType correct_types[] = {EQUAL_EQUAL, BANG_EQUAL, GREATER_EQUAL, LESS_EQUAL, FILE_EOF};
+  TokenType correct_types[] = {EQUAL_EQUAL, BANG_EQUAL, GREATER_EQUAL, LESS_EQUAL, SOURCE_END};
 
   Scanner scanner = scanner_init(input);
   Token* tokens = scanner_scan(&scanner);

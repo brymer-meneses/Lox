@@ -7,7 +7,7 @@ void report(int line, int column, char* message) {
 
 void panic(int line, int column, char* message) {
   report(line, column, message);
-  exit(64);
+  exit(1);
 }
 
 

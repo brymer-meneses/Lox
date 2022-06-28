@@ -18,15 +18,15 @@ typedef struct Expr {
   ExprType type;
   struct Expr *left;
   struct Expr *right;
-  Literal value;
+  const char* value;
   Token op;
 } Expr;
 
-Expr* expr_init(ExprType type,  Literal value, Expr *left, Token op, Expr *right);
+Expr* expr_init(ExprType type,  const char* value, Expr *left, Token op, Expr *right);
 
 Expr* binary(Expr *left, Token op, Expr *right);
 Expr* grouping(Expr *expr);
-Expr* literal(Literal value);
+Expr* literal(const char* value);
 Expr* unary(Token op, Expr* right);
 
 

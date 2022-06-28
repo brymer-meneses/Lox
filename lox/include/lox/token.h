@@ -2,8 +2,8 @@
 #define TOKEN_H
 
 #include "stdlib.h"
+#include "stdbool.h"
 #include "declarations.h"
-#include "literal.h"
 
 typedef enum TokenType {
   // Single-character tokens.
@@ -23,19 +23,23 @@ typedef enum TokenType {
   AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
   PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
 
-  FILE_EOF
+  SOURCE_END
 } TokenType;
 
 
 typedef struct Token {
   TokenType type;
-  Literal literal;
   size_t line;
-  char *lexeme;
+  const char *lexeme;
 } Token;
 
 void token_print(Token token);
-Token token_init(TokenType type, char* lexeme, Literal literal, unsigned int line);
-char *token_to_string(TokenType type);
+Token token_init(TokenType type, const char* lexeme, unsigned int line);
+char *tokentype_to_string(TokenType type);
+
+double token_parse_double(Token token);
+bool   token_parse_bool  (Token token);
+char*  token_parse_string(Token token);
+char*  token_to_string(Token token);
 
 #endif

@@ -11,7 +11,7 @@
 #include "lox/utils.h"
 
 
-void add_token(Scanner *s, TokenType type, Literal literal);
+void add_token(Scanner *s, TokenType type);
 
 void scan_string(Scanner *s);
 void scan_number(Scanner *s);
@@ -20,7 +20,7 @@ void scan_identifier(Scanner *s);
 bool scanner_isfinished(Scanner *s);
 char scanner_peek_next(Scanner  *s);
 
-TokenType get_keyword(const Literal);
+TokenType get_keyword(const char* lexeme);
 
 Scanner scanner_init(char* source) {
   Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
@@ -43,7 +43,7 @@ Token* scanner_scan(Scanner* s) {
     s->start = s->current;
     scanner_scan_token(s);
   }
-  add_token(s, FILE_EOF, NULL);
+  add_token(s, SOURCE_END);
   return s->tokens;
 }
 
@@ -51,69 +51,69 @@ void scanner_scan_token(Scanner* s) {
   char c = scanner_advance(s);
   switch (c) {
     case '{':
-      add_token(s, LEFT_BRACE, NULL);
+      add_token(s, LEFT_BRACE);
       break;
     case '}': 
-      add_token(s, RIGHT_BRACE, NULL);
+      add_token(s, RIGHT_BRACE);
       break;
     case '(':
-      add_token(s, LEFT_PAREN, NULL);
+      add_token(s, LEFT_PAREN);
       break;
     case ')':
-      add_token(s, RIGHT_PAREN, NULL);
+      add_token(s, RIGHT_PAREN);
       break;
     case ',':
-      add_token(s, COMMA, NULL);
+      add_token(s, COMMA);
       break;
     case '.':
-      add_token(s, DOT, NULL);
+      add_token(s, DOT);
       break;
     case '*':
-      add_token(s, STAR, NULL);
+      add_token(s, STAR);
       break;
     case '+':
-      add_token(s, PLUS, NULL);
+      add_token(s, PLUS);
       break;
     case '-':
-      add_token(s, MINUS, NULL);
+      add_token(s, MINUS);
       break;
     case ';':
-      add_token(s, SEMICOLON, NULL);
+      add_token(s, SEMICOLON);
       break;
 
     case '>':
       if (scanner_match(s, '=')) 
-        add_token(s, GREATER_EQUAL, NULL);
+        add_token(s, GREATER_EQUAL);
       else
-        add_token(s, GREATER, NULL);
+        add_token(s, GREATER);
       break;
 
     case '<':
       if (scanner_match(s, '=')) 
-        add_token(s, LESS_EQUAL, NULL);
+        add_token(s, LESS_EQUAL);
       else
-        add_token(s, LESS, NULL);
+        add_token(s, LESS);
       break;
 
     case '=':
       if (scanner_match(s, '=')) 
-        add_token(s, EQUAL_EQUAL, NULL);
+        add_token(s, EQUAL_EQUAL);
       else 
-        add_token(s, EQUAL, NULL);
+        add_token(s, EQUAL);
       break;
 
     case '!':
       if (scanner_match(s, '='))
-        add_token(s, BANG_EQUAL, NULL);
+        add_token(s, BANG_EQUAL);
       else 
-        add_token(s, BANG, NULL);
+        add_token(s, BANG);
       break;
     case '/':
       if (scanner_match(s, '/')) {
         while(scanner_peek(s) != '\n')
           scanner_advance(s);
       } else {
-        add_token(s, SLASH, NULL);
+        add_token(s, SLASH);
       }
        break;
     
@@ -134,6 +134,8 @@ void scanner_scan_token(Scanner* s) {
         scan_number(s);
       } else if (isalpha(c)) {
         scan_identifier(s);
+      } else {
+        report(s->line, s->current -1,  "ERROR: Unexpected character");
       }
       break;
   }
@@ -150,9 +152,9 @@ void scanner_register_token(Scanner *s, Token token) {
   s->parsed++;
 }
 
-void add_token(Scanner *s, TokenType type, Literal literal) {
-  char* text = substring(s->source, s->start, s->current);
-  Token token = token_init(type, text, literal, s->line);
+void add_token(Scanner *s, TokenType type) {
+  char* text = substring(s->source, s->start, s->current-1); // current points to the next "char" so we subtract by 1
+  Token token = token_init(type, text, s->line);
   scanner_register_token(s, token);
 }
 
@@ -180,8 +182,7 @@ void scan_number(Scanner *s) {
     panic(s->line, s->current, "Invalid number, has greater than one decimal point.");
   }
 
-  char* number = substring(s->source, s->start, s->current-1);
-  add_token(s, NUMBER, (Literal) number);
+  add_token(s, NUMBER);
 
 
 }
@@ -197,17 +198,10 @@ void scan_string(Scanner *s) {
     panic(s->line, s->current, "Unterminated string.");
     return;
   }
-
   // consume the last '"' character
   scanner_advance(s);
 
-  // NOTE:
-  // the variable 'current' points to the next character, this is why we subtract by 2.
-  //
-  // Example: "abcd"\n
-  // `current` points to the newline character, this is why we need to subtract by two.
-  add_token(s, STRING, substring(s->source, s->start+1, s->current-2)); 
-
+  add_token(s, STRING); 
 }
 
 void scan_identifier(Scanner *s) {
@@ -217,7 +211,7 @@ void scan_identifier(Scanner *s) {
   char* identifier = substring(s->source, s->start, s->current-1);
   TokenType type = get_keyword(identifier);
 
-  add_token(s, type, NULL);
+  add_token(s, type);
 }
 
 
