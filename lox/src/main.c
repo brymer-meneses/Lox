@@ -41,6 +41,7 @@ void run_prompt() {
 
     printf("> ");
     fgets(line, sizeof(line) , stdin);
+    // printf("%s", line);
     
     run(line);
     if (strcmp(line, "\n") == 0)  break; 
@@ -49,7 +50,6 @@ void run_prompt() {
 }
 
 int main(int argc, char *argv[]) {
-
 
   if (argc == 2) {
     run_file(argv[0]);

@@ -1,9 +1,10 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+#include "assert.h"
+#include "ctype.h"
 
 #include "lox/utils.h"
-#include "ctype.h"
 
 char* substring(const char* source, const size_t begin, const size_t end) {
   const size_t length = (end - begin + 1) ; // take into account that ending char '\0'
@@ -18,6 +19,7 @@ char* substring(const char* source, const size_t begin, const size_t end) {
   allocated_str[length] = '\0';
   return allocated_str;
 }
+
 
 bool is_boolean(const char* string) {
 
@@ -37,18 +39,20 @@ bool is_real_number(const char *string) {
     char c = string[i];
     switch (c) {
       case '.':
-        if (has_decimal_point) 
+        if (has_decimal_point) {
           return false;
-        else 
+        } else {
           has_decimal_point = true;
           continue;
+        }
         break;
       case '-':
-        if (has_negative_sign || i != 0) 
+        if (has_negative_sign || i != 0) {
           return false;
-        else
-          has_negative_sign = true;
-          continue;
+        } else {
+          has_negative_sign = true; 
+            continue;
+        }
         break;
       default:
         if (!isdigit(c))
@@ -81,5 +85,11 @@ char* read_file(const char* filename) {
   }
 
   string[length] = '\0';
+  return string;
+}
+
+char* char_to_string(const char chr) {
+  char* string = malloc(2*sizeof(char));
+  sprintf(string, "%c", chr);
   return string;
 }

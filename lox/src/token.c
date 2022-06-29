@@ -9,8 +9,7 @@
 #include "lox/utils.h"
 
 Token token_init(TokenType type, const char* lexeme, unsigned int line) {
-  Token token = {.type = type, .lexeme = lexeme, .line = line};
-  return token;
+  return (Token) {.type = type, .lexeme = lexeme, .line = line};
 }
 
 

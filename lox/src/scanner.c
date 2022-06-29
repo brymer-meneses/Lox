@@ -23,7 +23,6 @@ char scanner_peek_next(Scanner  *s);
 TokenType get_keyword(const char* lexeme);
 
 Scanner scanner_init(char* source) {
-  Token *tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token));
 
   Scanner scanner = {
     .current =0, 
@@ -32,7 +31,8 @@ Scanner scanner_init(char* source) {
     .source=source,
     .capacity = INITIAL_TOKEN_ARRAY_SIZE,
     .parsed = 0,
-    .tokens = tokens,
+    .last_line = 0,
+    .tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token)),
   };
 
   return scanner;
@@ -126,8 +126,9 @@ void scanner_scan_token(Scanner* s) {
       // ignore whitespaces
       break;
 
-    case '\n':
+    case '\n': 
       s->line++;
+      s->last_line = s->current - 1;
       break;
     default:
       if (isdigit(c)) {
@@ -135,7 +136,7 @@ void scanner_scan_token(Scanner* s) {
       } else if (isalpha(c)) {
         scan_identifier(s);
       } else {
-        report(s->line, s->current -1,  "ERROR: Unexpected character");
+        report(LOX_SYNTAX_ERROR, errorcontext_scanner_init(s, char_to_string(c)), "Unexpected character.\n");
       }
       break;
   }
@@ -177,11 +178,6 @@ void scan_number(Scanner *s) {
       scanner_advance(s);
   } 
 
-  // Handle the instance wherein we find another decimal point
-  if (scanner_peek(s) == '.') {
-    report(s->line, s->current, "Invalid number, has greater than one decimal point.");
-  }
-
   add_token(s, NUMBER);
 
 
@@ -195,7 +191,7 @@ void scan_string(Scanner *s) {
 
   // handle when the string doesn't terminate
   if (scanner_isfinished(s)) {
-    report(s->line, s->current, "Unterminated string.");
+    report(LOX_SYNTAX_ERROR, errorcontext_scanner_init(s, "\""), "Unterminated string");
     return;
   }
   // consume the last '"' character
@@ -240,6 +236,12 @@ bool scanner_match(Scanner *s, char expected) {
   return false;
 }
 
+char* scanner_get_current_line(const Scanner* s) {
+  char* source = strdup(s->source);
+  char* line = strsep(&source, "\n");
+  return line;
+}
+
 TokenType get_keyword(const char* text) {
   struct KeywordPair {
     const char* lexeme;
@@ -274,5 +276,4 @@ TokenType get_keyword(const char* text) {
   }
   return IDENTIFIER;
 }
-
 

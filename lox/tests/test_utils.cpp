@@ -33,3 +33,10 @@ TEST(TestUtils, IsRealNumber) {
   EXPECT_FALSE(is_real_number("hello there"));
   EXPECT_FALSE(is_real_number("-1.234 this is a test!"));
 }
+
+TEST(TestUtils, CharToString) {
+  EXPECT_TRUE(strcmp("a", char_to_string('a'))==0);
+  EXPECT_TRUE(strcmp("b", char_to_string('b'))==0);
+
+
+}

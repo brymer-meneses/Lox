@@ -8,7 +8,7 @@ extern "C" {
   #include "lox/token.h"
 }
 
-TEST(TestScanner, TestRegisterToken) {
+TEST(TestScanner, RegisterToken) {
   char input[15] = "var test = 10";
   Scanner scanner = scanner_init(input);
 
@@ -28,7 +28,7 @@ TEST(TestScanner, TestRegisterToken) {
   ASSERT_EQ(token_b.type, scanner.tokens[1].type);
 }
 
-TEST(TestScanner, scanner_advance) {
+TEST(TestScanner, Advance) {
   char input[14] = "var test = 10";
   Scanner scanner = scanner_init(input);
 
@@ -56,7 +56,7 @@ TEST(TestScanner, ScanSingleChar) {
   }
 }
 
-TEST(TestScanner, scanner_peek) {
+TEST(TestScanner, Peek) {
   char input[] = "The quick brown fox jumped over the lazy cat.";
   Scanner scanner = scanner_init(input);
 
@@ -68,7 +68,7 @@ TEST(TestScanner, scanner_peek) {
 
 }
 
-TEST(TestScanner, scanner_match) {
+TEST(TestScanner, Match) {
   char input[] = "abcdefghijklmnop";
   Scanner scanner = scanner_init(input);
 
@@ -89,5 +89,13 @@ TEST(TestScanner, ScanDoubleChar) {
   for (int i=0; i<scanner.parsed; i++) {
     EXPECT_EQ(correct_types[i], tokens[i].type);
   }
+}
+
+TEST(TestScanner, CurrentLine) {
+  char input[] = "The\nquick\nbrown\nfox.";
+  Scanner s = scanner_init(input);
+  char* line = scanner_get_current_line(&s);
+  
+  EXPECT_TRUE(strcmp("The", line) == 0) << scanner_get_current_line(&s);
 }
 
