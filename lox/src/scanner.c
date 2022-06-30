@@ -136,7 +136,7 @@ void scanner_scan_token(Scanner* s) {
       } else if (isalpha(c)) {
         scan_identifier(s);
       } else {
-        report(LOX_SYNTAX_ERROR, errorcontext_scanner_init(s, char_to_string(c)), "Unexpected character.\n");
+        raise_unexpected_character_error(s, c);
       }
       break;
   }
@@ -191,7 +191,7 @@ void scan_string(Scanner *s) {
 
   // handle when the string doesn't terminate
   if (scanner_isfinished(s)) {
-    report(LOX_SYNTAX_ERROR, errorcontext_scanner_init(s, "\""), "Unterminated string");
+    raise_unterminated_string_error(s, substring(s->source, s->start, s->current-1));
     return;
   }
   // consume the last '"' character

@@ -8,80 +8,57 @@
 #include "lox/scanner.h"
 #include "lox/parser.h"
 
-ErrorContext errorcontext_scanner_init(const Scanner* s, const char* lexeme) {
+#define COLOR(COLOR, STRING) COLOR STRING ANSI_COLOR_RESET
+#define SET_COLOR(COLOR) printf(COLOR)
 
-  // pointer to lexeme relative to the line
-  const int start =  (s->current - 1) - s->last_line;
-  return (ErrorContext) {
-    .column = s->current,
-    .source_line = scanner_get_current_line(s),
-    .line = s->line,
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
-    // pointer to lexeme relative to the line
-    .lexeme_start = start,
-    .lexeme_end = start + strlen(lexeme),
-    .lexeme = lexeme,
-  };
-}
 
-void highlight_range(const char* line, const size_t start, const size_t end) {
-  printf("\n%s\n", line);
+static void point_error_root(const size_t line_number, const char* source, const size_t begin, const size_t end) {
 
-  char highlight[strlen(line)];
+  char source_context[128];
+  char formatted_source[strlen(source) + strlen(source_context)];
 
-  for (int i=0; i<strlen(line); i++) {
-    if (i<start) {
-      highlight[i] = ' ';
-      continue;
+  sprintf(source_context, "    %lu | ", line_number);
+  sprintf(formatted_source, "%s%s", source_context, source);
+
+  const size_t offsetted_begin = begin + strlen(source_context);
+  const size_t offsetted_end = end + strlen(source_context);
+
+  char* pointer_str = strdup(formatted_source);
+  for (size_t i=0; i<strlen(pointer_str); i++) {
+
+    if (i>=offsetted_begin && i<= offsetted_end) {
+      pointer_str[i] = '^';
+    } else {
+      pointer_str[i] = ' ';
     }
-
-    if (i >= start && i < end)
-      highlight[i] = '^';
-    else
-      highlight[i] = ' ';
-
-  }
-  highlight[strlen(line)] = '\0';
-  printf("%s\n", highlight);
-}
-
-/**
-  * Prints the character ^ underneath the first instance of the substring "lexeme" of the variable "line."
-  * This is used to direct the attention of the user to the lexeme that has an error.
-  */
-void highlight_lexeme(const char* line, const char* lexeme) {
-  char* result = strstr(line, lexeme);
-
-  // calculate the index of the first instance of "lexeme" in "line"
-  const int start = result - line; 
-  const int end = strlen(lexeme);
-
-  highlight_range(line, start, end);
-}
-
-void report(LoxErrorType type, ErrorContext context, char* message) {
-
-  char source[strlen(message) + 128];
-  char offset[16];
-  sprintf(offset, "%lu | ", context.line);
-  sprintf(source, "%s%s\n", offset, context.source_line);
-
-  const char offset_length = strlen(offset);
-
-  highlight_range(source, offset_length + context.lexeme_start, offset_length + context.lexeme_end);
-
-  switch (type) {
-    case LOX_RUNTIME_ERROR:
-      sprintf(source, "Runtime Error: %s\n", message);
-      break;
-    case LOX_SYNTAX_ERROR:
-      sprintf(source, "Syntax Error: %s\n", message);
-      break;
-    case LOX_INTERPRETER_ERROR:
-      sprintf(source, "Interpreter Error: %s\n", message);
-      break;
   }
 
-  fprintf(stderr, "%s", source);
-  return;
+  SET_COLOR(ANSI_COLOR_RESET);
+  printf("%s\n", formatted_source);
+  SET_COLOR(ANSI_COLOR_CYAN);
+  printf("%s\n", pointer_str);
+}
+
+
+void raise_unterminated_string_error(Scanner* s, const char* lexeme) {
+  const int current_pos_rel_line = s->start - s->last_line;
+
+  point_error_root(s->line, scanner_get_current_line(s), current_pos_rel_line, current_pos_rel_line + strlen(lexeme));
+
+  printf( COLOR(ANSI_COLOR_RED, "  ERROR: ") "Unterminated string, did you forget to place \"?\n");
+}
+
+void raise_unexpected_character_error(Scanner* s, const char chr) {
+  const int current_pos_rel_line = s->current - 1 - s->last_line;
+  point_error_root(s->line, scanner_get_current_line(s), current_pos_rel_line, current_pos_rel_line);
+
+  printf( COLOR(ANSI_COLOR_RED, "  ERROR: ") "Unexpected character: %c\n", chr);
 }
