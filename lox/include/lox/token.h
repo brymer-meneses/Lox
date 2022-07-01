@@ -1,6 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include "lox/filelocation.h"
 #include "stdlib.h"
 #include "stdbool.h"
 #include "declarations.h"
@@ -31,11 +32,13 @@ typedef struct Token {
   TokenType type;
   size_t line;
   const char *lexeme;
+  FileLoc fileloc;
 } Token;
 
-void token_print(Token token);
-Token token_init(TokenType type, const char* lexeme, unsigned int line);
-char *tokentype_to_string(TokenType type);
+
+void  token_print(Token token);
+Token token_init(TokenType type, const char* lexeme, const FileLoc fileloc);
+char* tokentype_to_string(TokenType type);
 
 double token_parse_double(Token token);
 bool   token_parse_bool  (Token token);

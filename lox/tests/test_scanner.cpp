@@ -5,6 +5,7 @@ extern "C" {
   #include "string.h"
 
   #include "lox/scanner.h"
+  #include "lox/filelocation.h"
   #include "lox/token.h"
 }
 
@@ -15,8 +16,9 @@ TEST(TestScanner, RegisterToken) {
   char lexeme_a[15] = "var";
   char lexeme_b[15] = "10";
 
-  Token token_a = token_init(IDENTIFIER, lexeme_a, 1);
-  Token token_b = token_init(NUMBER, lexeme_b, 1);
+  const FileLoc fl = fileloc_init(1, 1, 1);
+  Token token_a = token_init(IDENTIFIER, lexeme_a, fl);
+  Token token_b = token_init(NUMBER, lexeme_b, fl);
 
   scanner_register_token(&scanner, token_a);
   scanner_register_token(&scanner, token_b);

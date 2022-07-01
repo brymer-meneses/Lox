@@ -6,6 +6,7 @@
 
 #include "lox/utils.h"
 #include "lox/scanner.h"
+#include "lox/filelocation.h"
 
 char* substring(const char* source, const size_t begin, const size_t end) {
   const size_t length = (end - begin + 1) ; // take into account that ending char '\0'
@@ -117,3 +118,12 @@ char** str_split(const char* str, const char* delim) {
 
   return str_arr;
 }
+
+FileLoc fileloc_init(const size_t line, const size_t start, const size_t end) {
+  return (FileLoc) {
+    .line = line,
+    .start = start,
+    .end = end,
+  };
+}
+

@@ -1,3 +1,4 @@
+#include "lox/filelocation.h"
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
@@ -8,8 +9,8 @@
 #include "lox/token.h"
 #include "lox/utils.h"
 
-Token token_init(TokenType type, const char* lexeme, unsigned int line) {
-  return (Token) {.type = type, .lexeme = lexeme, .line = line};
+Token token_init(TokenType type, const char* lexeme, const FileLoc fileloc) {
+  return (Token) {.type = type, .lexeme = lexeme, .fileloc = fileloc};
 }
 
 

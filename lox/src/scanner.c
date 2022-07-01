@@ -1,3 +1,4 @@
+#include "lox/filelocation.h"
 #include "stdbool.h"
 #include "string.h"
 #include "stdlib.h"
@@ -21,6 +22,8 @@ bool scanner_isfinished(Scanner *s);
 char scanner_peek_next(Scanner  *s);
 
 TokenType get_keyword(const char* lexeme);
+
+FileLoc compute_relative_position(const Scanner* s);
 
 Scanner scanner_init(const char* source) {
 
@@ -155,7 +158,7 @@ void scanner_register_token(Scanner *s, Token token) {
 
 void add_token(Scanner *s, TokenType type) {
   char* text = substring(s->source, s->start, s->current-1); // current points to the next "char" so we subtract by 1
-  Token token = token_init(type, text, s->line);
+  Token token = token_init(type, text, compute_relative_position(s));
   scanner_register_token(s, token);
 }
 
@@ -274,5 +277,13 @@ TokenType get_keyword(const char* text) {
     }
   }
   return IDENTIFIER;
+}
+
+FileLoc compute_relative_position(const Scanner* s) {
+  return (FileLoc) {
+    .line  = s->line,
+    .start = s->start - s->last_line,
+    .end   = s->current - 1 - s->last_line,
+  };
 }
 

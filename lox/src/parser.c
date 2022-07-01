@@ -11,6 +11,12 @@ Token parser_previous(Parser* p);
 
 Expr* parse_equality(Parser* p);
 Expr* parse_expression(Parser* p);
+Expr* parse_primary(Parser* p);
+Expr* parse_comparison(Parser* p);
+Expr* parse_term(Parser* p);
+Expr* parse_factor(Parser* p);
+Expr* parse_unary(Parser* p);
+Expr* parse_primary(Parser* p);
 
 Parser parser_init(const Token *tokens) {
   return (Parser) {
@@ -65,37 +71,38 @@ Token parser_peek(Parser* p) {
   return p->tokens[p->current];
 }
 
-Expr* parse_primary(Parser* p) {
-  if (parser_match(p, 1, FALSE)) return literal("false");
-  if (parser_match(p, 1, TRUE)) return literal("true");
-  if (parser_match(p, 1, NIL)) return literal("null");
+/* 
+ * NOTES 
+ * expression     → equality ;
+ * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+ * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+ * term           → factor ( ( "-" | "+" ) factor )* ;
+ * factor         → unary ( ( "/" | "*" ) unary )* ;
+ * unary          → ( "!" | "-" ) unary | primary ;
+ * primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+ */
 
-  if (parser_match(p, 2, NUMBER, STRING)) {
-    return literal(parser_previous(p).lexeme);
+Expr* parse_expression(Parser* p) {
+  return parse_equality(p);
+}  
+
+Expr* parse_equality(Parser* p) {
+  Expr* expr = parse_comparison(p);
+
+  while (parser_match(p, 2, BANG_EQUAL, EQUAL_EQUAL)) {
+    Token operator = parser_previous(p);
+    Expr* right = parse_comparison(p);
+    expr = binary(expr, operator, right);
   }
 
-  if (parser_match(p, 1, LEFT_PAREN)) {
-    Expr* expr = parse_expression(p);
-    return grouping(expr);
-  }
+  return expr;
 }
 
-Expr* parse_unary(Parser* p) {
-  if (parser_match(p, 2, BANG, MINUS)) {
+Expr* parse_comparison(Parser* p) {
+  Expr* expr = parse_term(p);
+  while (parser_match(p, 4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
     Token operator = parser_previous(p);
-    Expr* right = parse_unary(p);
-    return unary(operator, right);
-  }
-
-  return parse_primary(p);
-}
-
-Expr* parse_factor(Parser* p) {
-  Expr* expr = parse_unary(p);
-
-  while (parser_match(p, 2, SLASH, STAR)) {
-    Token operator = parser_previous(p);
-    Expr* right = parse_unary(p);
+    Expr* right = parse_term(p);
     expr = binary(expr, operator, right);
   }
   return expr;
@@ -113,29 +120,39 @@ Expr* parse_term(Parser* p) {
   return expr;
 }
 
-Expr* parse_comparison(Parser* p) {
-  Expr* expr = parse_term(p);
-  while (parser_match(p, 4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+Expr* parse_factor(Parser* p) {
+  Expr* expr = parse_unary(p);
+
+  while (parser_match(p, 2, SLASH, STAR)) {
     Token operator = parser_previous(p);
-    Expr* right = parse_term(p);
+    Expr* right = parse_unary(p);
     expr = binary(expr, operator, right);
   }
   return expr;
 }
 
-Expr* parse_expression(Parser* p) {
-  return parse_equality(p);
-}  
-
-Expr* parse_equality(Parser* p) {
-  Expr* expr = parse_comparison(p);
-
-  while (parser_match(p, 2, BANG_EQUAL, EQUAL_EQUAL)) {
+Expr* parse_unary(Parser* p) {
+  if (parser_match(p, 2, BANG, MINUS)) {
     Token operator = parser_previous(p);
-    Expr* right = parse_comparison(p);
-    expr = binary(expr, operator, right);
+    Expr* right = parse_unary(p);
+    return unary(operator, right);
   }
 
-  return expr;
+  return parse_primary(p);
+}
+
+Expr* parse_primary(Parser* p) {
+  if (parser_match(p, 1, FALSE)) return literal("false");
+  if (parser_match(p, 1, TRUE)) return literal("true");
+  if (parser_match(p, 1, NIL)) return literal("null");
+
+  if (parser_match(p, 2, NUMBER, STRING)) {
+    return literal(parser_previous(p).lexeme);
+  }
+
+  if (parser_match(p, 1, LEFT_PAREN)) {
+    Expr* expr = parse_expression(p);
+    return grouping(expr);
+  }
 }
 
