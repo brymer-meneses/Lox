@@ -1,3 +1,4 @@
+#include "lox/scanner.h"
 #include "gtest/gtest.h"
 
 extern "C" {
@@ -37,6 +38,19 @@ TEST(TestUtils, IsRealNumber) {
 TEST(TestUtils, CharToString) {
   EXPECT_TRUE(strcmp("a", char_to_string('a'))==0);
   EXPECT_TRUE(strcmp("b", char_to_string('b'))==0);
+}
 
+TEST(TestUtils, StringSplit) {
+  const char* source = "The quick brown fox jumped over the lazy cat.";
+  const char* str_arr[] = {"The", "quick", "brown", "fox", "jumped", "over",
+    "the", "lazy", "cat." };
+
+  char** result = str_split(source, " ");
+
+  for (int i = 0; i< 8; i++) {
+    EXPECT_TRUE(strcmp(str_arr[i], result[i]) == 0);
+  }
+
+  free(result);
 
 }

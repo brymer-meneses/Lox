@@ -1,16 +1,16 @@
-#include "lox/parser.h"
-#include "lox/expr.h"
-#include "lox/token.h"
 #include "stdbool.h"
 #include "stdarg.h"
+
+#include "lox/parser.h"
+#include "lox/expr.h"
 
 bool  parser_isfinished(Parser* p);
 Token parser_peek(Parser* p);
 bool  parser_check(Parser* p, TokenType type);
 Token parser_previous(Parser* p);
 
-Expr* expression(Parser* p);
-Expr* equality(Parser* p);
+Expr* parse_equality(Parser* p);
+Expr* parse_expression(Parser* p);
 
 Parser parser_init(const Token *tokens) {
   return (Parser) {
@@ -65,11 +65,77 @@ Token parser_peek(Parser* p) {
   return p->tokens[p->current];
 }
 
+Expr* parse_primary(Parser* p) {
+  if (parser_match(p, 1, FALSE)) return literal("false");
+  if (parser_match(p, 1, TRUE)) return literal("true");
+  if (parser_match(p, 1, NIL)) return literal("null");
 
-Expr* expression(Parser* p) {
-  return equality(p);
+  if (parser_match(p, 2, NUMBER, STRING)) {
+    return literal(parser_previous(p).lexeme);
+  }
+
+  if (parser_match(p, 1, LEFT_PAREN)) {
+    Expr* expr = parse_expression(p);
+    return grouping(expr);
+  }
+}
+
+Expr* parse_unary(Parser* p) {
+  if (parser_match(p, 2, BANG, MINUS)) {
+    Token operator = parser_previous(p);
+    Expr* right = parse_unary(p);
+    return unary(operator, right);
+  }
+
+  return parse_primary(p);
+}
+
+Expr* parse_factor(Parser* p) {
+  Expr* expr = parse_unary(p);
+
+  while (parser_match(p, 2, SLASH, STAR)) {
+    Token operator = parser_previous(p);
+    Expr* right = parse_unary(p);
+    expr = binary(expr, operator, right);
+  }
+  return expr;
+}
+
+Expr* parse_term(Parser* p) {
+  Expr* expr = parse_factor(p);
+
+  while (parser_match(p, 2, MINUS, PLUS)) {
+    Token operator = parser_previous(p);
+    Expr* right = parse_factor(p);
+    expr = binary(expr, operator, right);
+  }
+
+  return expr;
+}
+
+Expr* parse_comparison(Parser* p) {
+  Expr* expr = parse_term(p);
+  while (parser_match(p, 4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+    Token operator = parser_previous(p);
+    Expr* right = parse_term(p);
+    expr = binary(expr, operator, right);
+  }
+  return expr;
+}
+
+Expr* parse_expression(Parser* p) {
+  return parse_equality(p);
 }  
 
-Expr* equality(Parser* p) {
+Expr* parse_equality(Parser* p) {
+  Expr* expr = parse_comparison(p);
 
+  while (parser_match(p, 2, BANG_EQUAL, EQUAL_EQUAL)) {
+    Token operator = parser_previous(p);
+    Expr* right = parse_comparison(p);
+    expr = binary(expr, operator, right);
+  }
+
+  return expr;
 }
+

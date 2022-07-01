@@ -21,7 +21,7 @@ typedef struct Scanner {
   size_t last_line;
 } Scanner;
 
-Scanner scanner_init(char *source);
+Scanner scanner_init(const char *source);
 
 char scanner_advance(Scanner *s);
 Token* scanner_scan(Scanner *s);

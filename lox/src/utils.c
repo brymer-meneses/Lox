@@ -5,6 +5,7 @@
 #include "ctype.h"
 
 #include "lox/utils.h"
+#include "lox/scanner.h"
 
 char* substring(const char* source, const size_t begin, const size_t end) {
   const size_t length = (end - begin + 1) ; // take into account that ending char '\0'
@@ -92,4 +93,27 @@ char* char_to_string(const char chr) {
   char* string = malloc(2*sizeof(char));
   sprintf(string, "%c", chr);
   return string;
+}
+
+char** str_split(const char* str, const char* delim) {
+  size_t i = 0;
+  size_t str_arr_size = 8;
+  char** str_arr = malloc(str_arr_size * sizeof(char*));
+  char* str_copy = strdup(str);
+
+  char* substr = strtok(str_copy, delim);
+  while ( substr != NULL ) {
+    str_arr[i] = malloc(sizeof(char) * strlen(substr));
+    str_arr[i] = substr;
+    i++;
+
+    if (i >= str_arr_size) {
+      str_arr_size *= 2;
+      str_arr = realloc(str_arr, str_arr_size * sizeof(char*));
+    }
+    substr = strtok(NULL, delim);
+  }
+
+
+  return str_arr;
 }

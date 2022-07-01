@@ -22,7 +22,7 @@ char scanner_peek_next(Scanner  *s);
 
 TokenType get_keyword(const char* lexeme);
 
-Scanner scanner_init(char* source) {
+Scanner scanner_init(const char* source) {
 
   Scanner scanner = {
     .current =0, 
@@ -237,9 +237,8 @@ bool scanner_match(Scanner *s, char expected) {
 }
 
 char* scanner_get_current_line(const Scanner* s) {
-  char* source = strdup(s->source);
-  char* line = strsep(&source, "\n");
-  return line;
+  char** arr = str_split(s->source, "\n");
+  return arr[0];
 }
 
 TokenType get_keyword(const char* text) {

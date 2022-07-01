@@ -1,14 +1,15 @@
+#include "lox/utils.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "stdarg.h"
 #include "string.h"
 
+#include "termcolor.h"
+
 #include "lox/state.h"
 #include "lox/error.h"
 #include "lox/scanner.h"
 #include "lox/parser.h"
-
-#include "termcolor.h"
 
 #define COLOR(COLOR, STRING) COLOR STRING ANSI_CODE_RESET
 
@@ -37,10 +38,10 @@ static void point_error_root(const size_t line_number, const char* source, const
   for (size_t i=0; i<strlen(source); i++) {
     if (i>=begin && i<= end) {
       pointer_str[i] = '^';
-    } 
+    }
   }
 
-  printf( COLOR(ANSI_CODE_CYAN, "%s"), source_context); 
+  printf( COLOR(ANSI_CODE_CYAN, "%s"), source_context);
   printf("%s\n", source);
 
   printf("%s", pointer_str_offset);
@@ -54,8 +55,7 @@ static void point_error_root(const size_t line_number, const char* source, const
 void raise_unterminated_string_error(Scanner* s, const char* lexeme) {
   const int current_pos_rel_line = s->start - s->last_line;
 
-  point_error_root(s->line, scanner_get_current_line(s), current_pos_rel_line, current_pos_rel_line + strlen(lexeme));
-
+  point_error_root(s->line-1, scanner_get_current_line(s), current_pos_rel_line, current_pos_rel_line + strlen(lexeme));
   printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Unterminated string, did you forget to place \"?\n");
   LOX_HAD_ERROR = true;
 }
