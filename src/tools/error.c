@@ -54,7 +54,7 @@ static void point_error_root(const char* source, FileLoc fl) {
 }
 
 
-void raise_unterminated_string_error(const char* lexeme) {
+void raise_unterminated_string_error() {
 
   char* line = get_current_line();
 

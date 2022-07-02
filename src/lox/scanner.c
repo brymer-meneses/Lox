@@ -198,7 +198,7 @@ static void scan_string() {
 
   // handle when the string doesn't terminate
   if (isfinished()) {
-    raise_unterminated_string_error(substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1));
+    raise_unterminated_string_error();
     return;
   }
   // consume the last '"' character
