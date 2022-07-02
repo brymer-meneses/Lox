@@ -1,3 +1,4 @@
+#include "lox/token.h"
 #include "stdbool.h"
 #include "stdio.h"
 
@@ -19,10 +20,10 @@ char* loxobject_to_string(LoxObject obj) {
       sprintf(output, "%s" , obj.data.string);
       break;
     case NIL:
-      return "NULL";
+      return "NIL";
       break;
     default:
-      return (char*) ""; // leave for now
+      return tokentype_to_string(obj.type);
       break;
   }
   return output;

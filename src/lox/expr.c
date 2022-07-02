@@ -29,13 +29,3 @@ Expr* unary(Token op, Expr* right) {
   return expr_init(EXPR_UNARY, LOX_OBJECT_NULL, NULL, op, right);
 }
 
-void expr_evaluate(Expr *expr) {
-  switch (expr->type) {
-    case EXPR_BINARY:
-    case EXPR_UNARY:
-    case EXPR_GROUPING:
-    case EXPR_LITERAL:
-      break;
-  }
-  return;
-}

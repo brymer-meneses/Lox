@@ -11,12 +11,18 @@
 #include "lox/expr.h"
 #include "lox/parser.h"
 #include "lox/lox.h"
+#include "lox/interpreter.h"
 
 Lox lox;
 
 FileLoc FILE_LOC_NULL;
 LoxObject LOX_OBJECT_NULL = {.type = NIL};
 Token TOKEN_NULL = {.type = NIL, 0, "NIL", .literal=(LoxObject){.type = NIL}, .fileloc={0, 0, 0}};
+
+void lox_init() {
+  lox.had_runtime_error = false;
+  lox.had_error = false;
+}
 
 void run(char source[]) {
   lox.had_error = false;
@@ -25,8 +31,8 @@ void run(char source[]) {
 
   parser_init(tokens);
   Expr* expression = parser_parse();
+  interpret(expression);
 
-  printf("%s\n", expr_to_string(expression));
 }
 
 void run_file(const char* filename) {
@@ -42,7 +48,7 @@ void run_file(const char* filename) {
 
 void run_prompt() {
 
-  while(true && !lox.had_error) {
+  while(true && !lox.had_error && !lox.had_runtime_error) {
     char line[MAX_INPUT_LIMIT];
 
     printf("> ");

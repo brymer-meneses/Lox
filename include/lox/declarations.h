@@ -9,7 +9,6 @@
 #include "stdbool.h"
 #include "stdlib.h"
 
-
 typedef enum TokenType {
   // Single-character tokens.
   LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
@@ -71,6 +70,36 @@ typedef struct Scanner {
   size_t last_line;
 } Scanner;
 
+typedef enum ExprType {
+  EXPR_BINARY,
+  EXPR_UNARY,
+  EXPR_LITERAL,
+  EXPR_GROUPING,
+} ExprType;
+
+
+typedef struct Expr {
+  ExprType type;
+  struct Expr *left;
+  struct Expr *right;
+  LoxObject value;
+  Token op;
+} Expr;
+
+
+typedef struct Parser {
+  const Token* tokens;
+  const char* source;
+  unsigned int current;
+} Parser;
+
+typedef struct Lox {
+  Scanner scanner;
+  Parser parser;
+
+  bool had_error;
+  bool had_runtime_error;
+} Lox;
 
 extern FileLoc FILE_LOC_NULL;
 extern Token TOKEN_NULL;

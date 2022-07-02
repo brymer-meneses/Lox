@@ -3,6 +3,7 @@
 #include "string.h"
 #include "assert.h"
 #include "ctype.h"
+#include "stdarg.h"
 
 #include "tools/utils.h"
 #include "lox/scanner.h"
@@ -120,6 +121,35 @@ char** str_split(const char* str, const char* delim) {
   return str_arr;
 }
 
+char* str_concat(const char* str1, const char* str2) {
+  const size_t length = (strlen(str1) + strlen(str2)) * sizeof(char) + 1;
+  char* sum_str = malloc(length);
+
+  snprintf(sum_str, length, "%s%s", str1, str2);
+
+  return sum_str;
+}
+
+// TODO:
+// char* str_format(const size_t num, const char* str, ...) {
+//   va_list formatters;
+//   va_start(formatters, str);
+//
+//   size_t initial_size = 256;
+//   size_t str_size = 0;
+//
+//   char* buffer = malloc(initial_size * sizeof(initial_size));
+//
+//   for (size_t i=0; i <num; i++) {
+//     str_size += strlen(va_arg(formatters, char*));
+//   }
+//
+//
+//
+//   va_end(formatters);
+//   return buffer;
+// }
+
 FileLoc fileloc_init(const size_t line, const size_t start, const size_t end) {
   return (FileLoc) {
     .line = line,
@@ -137,7 +167,7 @@ FileLoc compute_relative_position() {
   };
 }
 
-char* get_current_line() {
+char* get_source_line(const size_t line_num) {
   char** arr = str_split(lox.scanner.source, "\n");
-  return arr[0];
+  return arr[line_num-1];
 }

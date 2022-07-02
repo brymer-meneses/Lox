@@ -1,10 +1,8 @@
 #ifndef LOX_INTERPRETER_H
 #define LOX_INTERPRETER_H
 
-typedef struct {
+#include "declarations.h"
 
-  
-} Interpreter;
- 
+void interpret(Expr* expression);
 
 #endif

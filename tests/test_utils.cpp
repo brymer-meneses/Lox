@@ -52,5 +52,19 @@ TEST(TestUtils, StringSplit) {
   }
 
   free(result);
-
 }
+
+TEST(TestUtils, StringConcat) {
+  const char* hello_world = "hello world";
+  char* result = str_concat("hello ", "world");
+
+  EXPECT_TRUE(strcmp(hello_world,  result) == 0);
+}
+
+// TEST(TestUtils, StringFormat) {
+//   const char* source = "hello world";
+//   const char* world = "world";
+//   const char* result = str_format("hello %s", world);
+//
+//   EXPECT_TRUE(strcmp(source, result) == 0) << result;
+// }

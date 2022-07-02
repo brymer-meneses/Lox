@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "stdarg.h"
 #include "string.h"
+#include "assert.h"
 
 #include "tools/termcolor.h"
 #include "tools/utils.h"
@@ -27,6 +28,7 @@ static char* init_empty_string(const int size) {
 
 
 static void point_error_root(const char* source, FileLoc fl) {
+  assert(source != NULL);
 
   char source_context[64];
   sprintf(source_context, "    %lu| ", fl.line);
@@ -56,7 +58,9 @@ static void point_error_root(const char* source, FileLoc fl) {
 
 void raise_unterminated_string_error() {
 
-  char* line = get_current_line();
+  FileLoc fl = compute_relative_position();
+
+  char* line = get_source_line(fl.line);
 
   point_error_root(line, compute_relative_position());
 
@@ -66,9 +70,11 @@ void raise_unterminated_string_error() {
 
 void raise_unexpected_character_error(const char chr) {
 
-  char* line = get_current_line();
+  FileLoc fl = compute_relative_position();
 
-  point_error_root(line, compute_relative_position());
+  char* line = get_source_line(fl.line);
+
+  point_error_root(line, fl);
 
   printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Unexpected character: %c\n", chr);
   lox.had_error = true;
@@ -77,11 +83,23 @@ void raise_unexpected_character_error(const char chr) {
 
 void raise_expected_token_error(const char* lexeme, FileLoc fl) {
 
-  char* line = get_current_line();
+  char* line = get_source_line(fl.line);
 
   point_error_root(line, fl);
   printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Expected matching %s of this character.", lexeme);
 
   lox.had_error = true;
+  free(line);
+}
+
+void raise_invalid_binary_operation_error(Token op, TokenType t1, TokenType t2) {
+
+  FileLoc fl = op.fileloc;
+  char* line = get_source_line(fl.line);
+
+  point_error_root(line, fl);
+  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "The operation %s is invalid between %s and %s\n", op.lexeme, tokentype_to_string(t1), tokentype_to_string(t2));
+
+  lox.had_runtime_error = true;
   free(line);
 }

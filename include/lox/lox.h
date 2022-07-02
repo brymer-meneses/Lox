@@ -4,17 +4,9 @@
 void run(char source[]);
 void run_file(const char* filename);
 void run_prompt();
+void lox_init();
 
-#include "lox/scanner.h"
-#include "lox/parser.h"
-#include "lox/interpreter.h"
-
-typedef struct Lox {
-  Scanner scanner;
-  Parser parser;
-
-  bool had_error;
-} Lox;
+#include "declarations.h"
 
 extern Lox lox; 
 
