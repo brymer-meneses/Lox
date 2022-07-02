@@ -20,11 +20,8 @@ char* loxobject_to_string(LoxObject obj) {
     case STRING:
       sprintf(output, "%s" , obj.data.string);
       break;
-    case NIL:
-      return "NIL";
-      break;
     default:
-      return tokentype_to_string(obj.type);
+      sprintf(output, "%s" , tokentype_to_string(obj.type));
       break;
   }
   return output;
@@ -59,4 +56,9 @@ LoxObject encode_double(double value) {
   return obj;
 }
 
+LoxObject encode_null() {
+  LoxObject obj;
+  obj.type = NIL;
+  return obj;
+}
 

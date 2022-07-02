@@ -16,31 +16,35 @@ static LoxObject expr_evaluate(Expr *expr);
 static bool is_equal(LoxObject obj1, LoxObject obj2);
 
 void interpret(Expr* expression) {
-  if (expression == NULL) return;
-
-  LoxObject value = expr_evaluate(expression);
-  if (value.type == NIL) {
-    lox.had_runtime_error = true;
+  if (expression == NULL) {
+    printf("NIL\n");
     return;
   }
+
+  LoxObject value = expr_evaluate(expression);
   printf("%s\n", loxobject_to_string(value));
 }
 
 static bool is_equal(LoxObject obj1, LoxObject obj2) {
-  TokenType obj1_type = obj1.type;
-  TokenType obj2_type = obj2.type;
 
-  if (obj1_type != obj2_type) return false;
-
-  switch (obj1_type) {
+  switch (obj1.type) {
     case NUMBER:
-      return obj1.data.number == obj1.data.number;
+      return obj1.data.number == obj2.data.number;
     case STRING:
       return strcmp(obj1.data.string, obj2.data.string) == 0;
+    case TRUE:
+    case FALSE:
+      return obj1.data.boolean == obj2.data.boolean;
     default:
       return false;
   }
+}
 
+
+static void check_same_types(TokenType expected, Token op, TokenType t1, TokenType t2) {
+    if (t1 != expected || t2 != expected) {
+      raise_invalid_binary_operation_error(op, t1, t2);
+    }
 }
 
 static LoxObject expr_evaluate(Expr *expr) {
@@ -50,17 +54,19 @@ static LoxObject expr_evaluate(Expr *expr) {
       LoxObject left = expr_evaluate(expr->left);
       LoxObject right = expr_evaluate(expr->right);
 
-      if (left.type != right.type) {
-        raise_invalid_binary_operation_error(expr->op, left.type, right.type);
-      }
-
       switch (expr->op.type) {
         case MINUS:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_double(left.data.number - right.data.number);
+          break;
         case SLASH:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_double(left.data.number / right.data.number);
+          break;
         case STAR:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_double(left.data.number * right.data.number);
+          break;
         case PLUS: {
           if (left.type == NUMBER && right.type == NUMBER) {
             return encode_double(left.data.number + right.data.number);
@@ -69,41 +75,55 @@ static LoxObject expr_evaluate(Expr *expr) {
           if (left.type == STRING && right.type == STRING) {
             return encode_string(str_concat(left.data.string, right.data.string));
           }
-          break;
-        }
+          raise_invalid_binary_operation_error(expr->op, left.type, right.type);
+        } break;
         case GREATER:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_bool(left.data.number > right.data.number);
+          break;
         case GREATER_EQUAL:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_bool(left.data.number >= right.data.number);
+          break;
         case LESS:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_bool(left.data.number < right.data.number);
+          break;
         case LESS_EQUAL:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_bool(left.data.number <= right.data.number);
+          break;
         case BANG_EQUAL:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_bool(!is_equal(left, right));
+          break;
         case EQUAL_EQUAL:
+          check_same_types(NUMBER, expr->op, left.type, right.type);
           return encode_bool(is_equal(left, right));
+          break;
         default:
           return LOX_OBJECT_NULL;
+          break;
       }
-    };
-    break;
+    }; break;
     case EXPR_UNARY: {
       LoxObject right = expr_evaluate(expr->right);
 
       switch (expr->op.type) {
         case MINUS:
            return encode_double(-right.data.number);
+           break;
         case BANG:
            return encode_bool(!right.data.boolean);
+           break;
         default:
            return LOX_OBJECT_NULL;
+           break;
       }
-
-    };
-    break;
+    }; break;
     case EXPR_GROUPING:
       return expr_evaluate(expr->left);
+      break;
     case EXPR_LITERAL:
       return expr->value;
       break;

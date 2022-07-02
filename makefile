@@ -18,3 +18,6 @@ clean:
 
 test: compile
 	"./build/test_runner"
+
+debug: compile
+	gdb --tui ./build/clox

@@ -29,6 +29,7 @@ static char* init_empty_string(const int size) {
 
 static void point_error_root(const char* source, FileLoc fl) {
   assert(source != NULL);
+  assert(fl.line != 0);
 
   char source_context[64];
   sprintf(source_context, "    %lu| ", fl.line);
@@ -54,7 +55,6 @@ static void point_error_root(const char* source, FileLoc fl) {
   free(pointer_str);
   free(pointer_str_offset);
 }
-
 
 void raise_unterminated_string_error() {
 
@@ -86,9 +86,9 @@ void raise_expected_token_error(const char* lexeme, FileLoc fl) {
   char* line = get_source_line(fl.line);
 
   point_error_root(line, fl);
-  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Expected matching %s of this character.", lexeme);
+  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Expected matching %s of this character.\n", lexeme);
 
-  lox.had_error = true;
+  lox.had_runtime_error = true;
   free(line);
 }
 

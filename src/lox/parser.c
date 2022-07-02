@@ -1,19 +1,23 @@
-#include "lox/object.h"
+#include "lox/declarations.h"
 #include "stdbool.h"
 #include "stdarg.h"
 #include "stdio.h"
+#include "assert.h"
 
-#include "lox/filelocation.h"
+
 #include "tools/error.h"
+#include "lox/filelocation.h"
+#include "lox/object.h"
 #include "lox/parser.h"
 #include "lox/expr.h"
 #include "lox/token.h"
 #include "lox/lox.h"
 
 static bool  isfinished();
-static Token peek();
 static bool  check(TokenType type);
+static Token peek();
 static Token previous();
+static void  expect(FileLoc fl, TokenType type, const char* expected_literal);
 
 static Expr* parse_equality();
 static Expr* parse_expression();
@@ -51,6 +55,7 @@ static Token advance() {
 }
 
 static Token previous() {
+  assert(lox.parser.current >= 0);
   return lox.parser.tokens[lox.parser.current - 1];
 }
 
@@ -110,6 +115,28 @@ static void synchronize() {
     advance();
   }
 
+}
+
+static void expect(FileLoc fl, TokenType type, const char* expected_lexeme) {
+    if (check(type)) {
+      advance();
+      return;
+    }
+
+   raise_expected_token_error(expected_lexeme, fl);
+}
+
+static FileLoc find_last_occurence(TokenType type) {
+
+  size_t i = lox.parser.current;
+  while (i >= 0) {
+    if (lox.parser.tokens[i].type == type) {
+      return lox.parser.tokens[i].fileloc;
+    }
+    i--;
+  }
+
+  return FILE_LOC_NULL;
 }
 
 /* 
@@ -187,23 +214,18 @@ static Expr* parse_primary() {
   if (match(1, TRUE)) return literal(encode_bool(true));
   if (match(1, NIL)) return literal(LOX_OBJECT_NULL);
 
-  if (match(1, NUMBER)) 
-    return literal(previous().literal);
-  if (match(1, STRING)) 
+  if (match(2, NUMBER, STRING)) 
     return literal(previous().literal);
 
   if (match(1, LEFT_PAREN)) {
     Expr* expr = parse_expression();
+    expect(find_last_occurence(LEFT_PAREN), RIGHT_PAREN, ")");
 
-    if (!check(RIGHT_PAREN)) {
-      const Token p = previous();
-
-      FileLoc fl = fileloc_init(p.fileloc.line, p.fileloc.start, p.fileloc.end);
-
-      raise_expected_token_error(")", fl);
+    if (expr) {
+      return grouping(expr);
     }
-    return grouping(expr);
   }
+
 
   return NULL;
 }
