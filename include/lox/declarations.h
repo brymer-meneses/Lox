@@ -75,4 +75,5 @@ typedef struct Scanner {
 extern FileLoc FILE_LOC_NULL;
 extern Token TOKEN_NULL;
 extern LoxObject LOX_OBJECT_NULL;
+
 #endif

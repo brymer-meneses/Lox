@@ -15,8 +15,8 @@
 Lox lox;
 
 FileLoc FILE_LOC_NULL;
-Token TOKEN_NULL;
-LoxObject LOX_OBJECT_NULL;
+LoxObject LOX_OBJECT_NULL = {.type = NIL};
+Token TOKEN_NULL = {.type = NIL, 0, "NIL", .literal=(LoxObject){.type = NIL}, .fileloc={0, 0, 0}};
 
 void run(char source[]) {
   lox.had_error = false;
