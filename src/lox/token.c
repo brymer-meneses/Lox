@@ -1,13 +1,13 @@
-#include "lox/filelocation.h"
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
 #include "assert.h"
 #include "stdlib.h"
 
+#include "lox/filelocation.h"
 #include "lox/declarations.h"
 #include "lox/token.h"
-#include "lox/utils.h"
+#include "tools/utils.h"
 
 Token token_init(TokenType type, const char* lexeme, const FileLoc fileloc) {
   return (Token) {.type = type, .lexeme = lexeme, .fileloc = fileloc};

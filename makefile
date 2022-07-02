@@ -10,7 +10,7 @@ setup:
 	cmake -S . -B build
 
 lox: setup compile
-	"./build/cloxTW"
+	"./build/clox"
 
 clean:
 	rm -rf "external"

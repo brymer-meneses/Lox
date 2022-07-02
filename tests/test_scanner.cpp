@@ -8,7 +8,8 @@ extern "C" {
   #include "lox/filelocation.h"
   #include "lox/token.h"
   #include "lox/lox.h"
-  #include "lox/utils.h"
+
+  #include "tools/utils.h"
 }
 
 

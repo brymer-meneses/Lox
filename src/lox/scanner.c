@@ -1,4 +1,3 @@
-#include "lox/filelocation.h"
 #include "stdbool.h"
 #include "string.h"
 #include "stdlib.h"
@@ -6,10 +5,12 @@
 #include "ctype.h"
 #include "assert.h"
 
+#include "tools/error.h"
+#include "tools/utils.h"
+
+#include "lox/filelocation.h"
 #include "lox/token.h"
 #include "lox/scanner.h"
-#include "lox/error.h"
-#include "lox/utils.h"
 #include "lox/lox.h"
 
 static TokenType get_keyword(const char* text);

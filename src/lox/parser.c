@@ -1,13 +1,12 @@
-#include "lox/error.h"
-#include "lox/filelocation.h"
 #include "stdbool.h"
 #include "stdarg.h"
 #include "stdio.h"
 
+#include "lox/filelocation.h"
+#include "tools/error.h"
 #include "lox/parser.h"
 #include "lox/expr.h"
 #include "lox/token.h"
-#include "lox/state.h"
 #include "lox/lox.h"
 
 static bool  isfinished();
@@ -35,7 +34,7 @@ Expr* parser_parse() {
 
   Expr* expr = parse_expression();
 
-  if (LOX_HAD_ERROR) {
+  if (lox.had_error) {
     return NULL;
   }
 

@@ -4,7 +4,7 @@ extern "C" {
   #include "lox/token.h"
   #include "lox/declarations.h"
   #include "lox/filelocation.h"
-  #include "lox/utils.h"
+  #include "tools/utils.h"
   #include "string.h"
 }
 

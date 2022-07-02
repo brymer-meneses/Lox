@@ -3,13 +3,12 @@
 #include "stdarg.h"
 #include "string.h"
 
-#include "termcolor.h"
+#include "tools/termcolor.h"
+#include "tools/utils.h"
+#include "tools/error.h"
 
 #include "lox/filelocation.h"
-#include "lox/utils.h"
 #include "lox/token.h"
-#include "lox/state.h"
-#include "lox/error.h"
 #include "lox/scanner.h"
 #include "lox/parser.h"
 #include "lox/lox.h"
@@ -62,7 +61,7 @@ void raise_unterminated_string_error(const char* lexeme) {
   point_error_root(line, compute_relative_position());
 
   printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Unterminated string, did you forget to place \"?\n");
-  LOX_HAD_ERROR = true;
+  lox.had_error = true;
 }
 
 void raise_unexpected_character_error(const char chr) {
@@ -72,7 +71,7 @@ void raise_unexpected_character_error(const char chr) {
   point_error_root(line, compute_relative_position());
 
   printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Unexpected character: %c\n", chr);
-  LOX_HAD_ERROR = true;
+  lox.had_error = true;
   free(line);
 }
 
@@ -83,6 +82,6 @@ void raise_expected_token_error(const char* lexeme, FileLoc fl) {
   point_error_root(line, fl);
   printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Expected matching %s of this character.", lexeme);
 
-  LOX_HAD_ERROR = true;
+  lox.had_error = true;
   free(line);
 }

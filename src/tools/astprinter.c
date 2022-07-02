@@ -3,9 +3,10 @@
 #include "string.h"
 
 #include "lox/expr.h"
-#include "lox/astprinter.h"
 #include "lox/types.h"
 #include "lox/token.h"
+
+#include "tools/astprinter.h"
 
 char* parenthesize(const char* name, const Expr* left, const Expr* right);
 

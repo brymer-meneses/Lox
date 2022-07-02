@@ -4,7 +4,7 @@
 extern "C" {
   #include "string.h"
   #include "stdio.h"
-  #include "lox/utils.h"
+  #include "tools/utils.h"
 }
 
 TEST(TestUtils, Substring) {

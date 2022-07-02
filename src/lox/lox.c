@@ -1,20 +1,21 @@
 #include "stdio.h"
 #include "string.h"
 
-#include "lox/astprinter.h"
+#include "tools/astprinter.h"
+#include "tools/utils.h"
+#include "tools/error.h"
+
 #include "lox/scanner.h"
 #include "lox/declarations.h"
 #include "lox/token.h"
 #include "lox/expr.h"
-#include "lox/utils.h"
-#include "lox/error.h"
-#include "lox/state.h"
 #include "lox/parser.h"
 #include "lox/lox.h"
 
 Lox lox;
 
 void run(char source[]) {
+  lox.had_error = false;
   scanner_init(source);
   Token* tokens = scanner_scan();
 
@@ -37,7 +38,7 @@ void run_file(const char* filename) {
 
 void run_prompt() {
 
-  while(true && !LOX_HAD_ERROR) {
+  while(true && !lox.had_error) {
     char line[MAX_INPUT_LIMIT];
 
     printf("> ");

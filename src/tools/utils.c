@@ -4,7 +4,7 @@
 #include "assert.h"
 #include "ctype.h"
 
-#include "lox/utils.h"
+#include "tools/utils.h"
 #include "lox/scanner.h"
 #include "lox/filelocation.h"
 #include "lox/lox.h"

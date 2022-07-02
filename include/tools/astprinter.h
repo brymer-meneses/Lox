@@ -1,7 +1,7 @@
 #ifndef ASTPRINTER_H
 #define ASTPRINTER_H
 
-#include "expr.h"
+#include "lox/expr.h"
 
 char* expr_to_string(const Expr *expr);
 

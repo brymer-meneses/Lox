@@ -7,6 +7,7 @@ void run_prompt();
 
 #include "lox/scanner.h"
 #include "lox/parser.h"
+#include "lox/interpreter.h"
 
 typedef struct Lox {
   Scanner scanner;
