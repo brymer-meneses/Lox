@@ -12,8 +12,6 @@ extern "C" {
   #include "tools/utils.h"
 }
 
-
-
 TEST(TestScanner, ScanSingleChar) {
   char input[12] = "{}()+-*,.;";
   TokenType correct_types[] = { 
@@ -46,13 +44,3 @@ TEST(TestScanner, ScanDoubleChar) {
     EXPECT_EQ(correct_types[i], tokens[i].type);
   }
 }
-
-TEST(TestScanner, CurrentLine) {
-  char input[] = "The\nquick\nbrown\nfox.";
-
-  scanner_init(input);
-  char* line = get_current_line();
-  
-  EXPECT_TRUE(strcmp("The", line) == 0);
-}
-
