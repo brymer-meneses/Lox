@@ -10,6 +10,7 @@
 
 #include "string.h"
 #include "stdio.h"
+#include "assert.h"
 
 static LoxObject expr_evaluate(Expr *expr);
 static bool is_equal(LoxObject obj1, LoxObject obj2);
@@ -43,6 +44,7 @@ static bool is_equal(LoxObject obj1, LoxObject obj2) {
 }
 
 static LoxObject expr_evaluate(Expr *expr) {
+  assert(expr != NULL);
   switch (expr->type) {
     case EXPR_BINARY: {
       LoxObject left = expr_evaluate(expr->left);
@@ -84,9 +86,8 @@ static LoxObject expr_evaluate(Expr *expr) {
         default:
           return LOX_OBJECT_NULL;
       }
-
-
-    }
+    };
+    break;
     case EXPR_UNARY: {
       LoxObject right = expr_evaluate(expr->right);
 
@@ -100,8 +101,9 @@ static LoxObject expr_evaluate(Expr *expr) {
       }
 
     };
+    break;
     case EXPR_GROUPING:
-      return expr_evaluate(expr);
+      return expr_evaluate(expr->left);
     case EXPR_LITERAL:
       return expr->value;
       break;
