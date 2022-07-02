@@ -281,7 +281,7 @@ TokenType get_keyword(const char* text) {
 
 FileLoc compute_relative_position(const Scanner* s) {
   return (FileLoc) {
-    .line  = s->line,
+    .line  = s->line - 1,
     .start = s->start - s->last_line,
     .end   = s->current - 1 - s->last_line,
   };

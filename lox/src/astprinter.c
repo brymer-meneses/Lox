@@ -10,6 +10,8 @@
 char* parenthesize(const char* name, const Expr* left, const Expr* right);
 
 char* expr_to_string(const Expr *expr) {
+  if (expr == NULL) return "";
+
   switch (expr->type) {
     case EXPR_UNARY:
       return parenthesize(expr->op.lexeme, NULL, expr->right);

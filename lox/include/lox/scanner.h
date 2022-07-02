@@ -32,4 +32,6 @@ char* scanner_get_current_line(const Scanner* s);
 char scanner_peek(Scanner *s);
 bool scanner_match(Scanner *s, char expected);
 
+FileLoc compute_relative_position(const Scanner* s);
+
 #endif

@@ -11,16 +11,17 @@
 #include "lox/utils.h"
 #include "lox/error.h"
 #include "lox/state.h"
+#include "lox/parser.h"
 
 
 void run(char source[]) {
   Scanner scanner = scanner_init(source);
   Token* tokens = scanner_scan(&scanner);
 
-  for (int i=0; i<scanner.parsed; i++) {
-    token_print(tokens[i]);
-  }
+  Parser parser = parser_init(tokens, source);
+  Expr* expression = parser_parse(&parser);
 
+  printf("%s\n", expr_to_string(expression));
 }
 
 void run_file(const char* filename) {

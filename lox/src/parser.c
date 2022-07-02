@@ -1,8 +1,12 @@
+#include "lox/error.h"
 #include "stdbool.h"
 #include "stdarg.h"
+#include "stdio.h"
 
 #include "lox/parser.h"
 #include "lox/expr.h"
+#include "lox/token.h"
+#include "lox/state.h"
 
 bool  parser_isfinished(Parser* p);
 Token parser_peek(Parser* p);
@@ -18,11 +22,23 @@ Expr* parse_factor(Parser* p);
 Expr* parse_unary(Parser* p);
 Expr* parse_primary(Parser* p);
 
-Parser parser_init(const Token *tokens) {
+Parser parser_init(const Token *tokens, const char* source) {
   return (Parser) {
     .tokens = tokens,
     .current = 0,
+    .source = source,
   };
+}
+
+Expr* parser_parse(Parser* p) {
+
+  Expr* expr = parse_expression(p);
+
+  if (LOX_HAD_ERROR) {
+    return NULL;
+  }
+
+  return expr;
 }
 
 
@@ -44,7 +60,6 @@ bool parser_match(Parser* p, int num_types, ...) {
 
   for (int i=0; i<num_types; i++) {
     TokenType type = va_arg(token_types, TokenType);
-
     if (parser_check(p, type)) {
       parser_advance(p);
       return true;
@@ -69,6 +84,30 @@ bool parser_isfinished(Parser* p) {
 
 Token parser_peek(Parser* p) {
   return p->tokens[p->current];
+}
+
+void parser_synchronize(Parser* p) {
+  parser_advance(p);
+
+  while (!parser_isfinished(p)) {
+    if (parser_previous(p).type == SEMICOLON) return;
+
+    switch (parser_peek(p).type) {
+      case CLASS:
+      case FUN:
+      case VAR:
+      case FOR:
+      case IF:
+      case WHILE:
+      case PRINT:
+      case RETURN:
+        return;
+      default:
+        break;
+    }
+    parser_advance(p);
+  }
+
 }
 
 /* 
@@ -146,13 +185,20 @@ Expr* parse_primary(Parser* p) {
   if (parser_match(p, 1, TRUE)) return literal("true");
   if (parser_match(p, 1, NIL)) return literal("null");
 
-  if (parser_match(p, 2, NUMBER, STRING)) {
+  if (parser_match(p, 1, NUMBER)) 
     return literal(parser_previous(p).lexeme);
-  }
+  if (parser_match(p, 1, STRING)) 
+    return literal(token_parse_string(parser_previous(p)));
 
   if (parser_match(p, 1, LEFT_PAREN)) {
     Expr* expr = parse_expression(p);
+
+    if (!parser_check(p, RIGHT_PAREN)) {
+      raise_expected_token_error(p, parser_peek(p));
+    }
     return grouping(expr);
   }
+
+  return NULL;
 }
 
