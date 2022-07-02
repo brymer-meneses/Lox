@@ -1,3 +1,4 @@
+#include "lox/object.h"
 #include "stdbool.h"
 #include "string.h"
 #include "stdlib.h"
@@ -11,12 +12,13 @@
 #include "lox/filelocation.h"
 #include "lox/token.h"
 #include "lox/scanner.h"
+#include "lox/declarations.h"
 #include "lox/lox.h"
 
 static TokenType get_keyword(const char* text);
 
 static void register_token(Token token);
-static void add_token(TokenType type);
+static void add_token(TokenType type, LoxObject literal);
 static char peek();
 static bool match(char expected);
 static char advance();
@@ -26,6 +28,7 @@ static void scan_token();
 static void scan_identifier();
 static void scan_string();
 static void scan_number();
+
 
 
 void scanner_init(const char *source) {
@@ -46,7 +49,7 @@ Token* scanner_scan() {
     lox.scanner.start = lox.scanner.current;
     scan_token();
   }
-  add_token(SOURCE_END);
+  add_token(SOURCE_END, LOX_OBJECT_NULL);
   return lox.scanner.tokens;
 }
 
@@ -54,69 +57,69 @@ static void scan_token() {
   char c = advance();
   switch (c) {
     case '{':
-      add_token(LEFT_BRACE);
+      add_token(LEFT_BRACE, LOX_OBJECT_NULL);
       break;
     case '}': 
-      add_token(RIGHT_BRACE);
+      add_token(RIGHT_BRACE, LOX_OBJECT_NULL);
       break;
     case '(':
-      add_token(LEFT_PAREN);
+      add_token(LEFT_PAREN, LOX_OBJECT_NULL);
       break;
     case ')':
-      add_token(RIGHT_PAREN);
+      add_token(RIGHT_PAREN, LOX_OBJECT_NULL);
       break;
     case ',':
-      add_token(COMMA);
+      add_token(COMMA, LOX_OBJECT_NULL);
       break;
     case '.':
-      add_token(DOT);
+      add_token(DOT, LOX_OBJECT_NULL);
       break;
     case '*':
-      add_token(STAR);
+      add_token(STAR, LOX_OBJECT_NULL);
       break;
     case '+':
-      add_token(PLUS);
+      add_token(PLUS, LOX_OBJECT_NULL);
       break;
     case '-':
-      add_token(MINUS);
+      add_token(MINUS, LOX_OBJECT_NULL);
       break;
     case ';':
-      add_token(SEMICOLON);
+      add_token(SEMICOLON, LOX_OBJECT_NULL);
       break;
 
     case '>':
       if (match('=')) 
-        add_token(GREATER_EQUAL);
+        add_token(GREATER_EQUAL, LOX_OBJECT_NULL);
       else
-        add_token(GREATER);
+        add_token(GREATER, LOX_OBJECT_NULL);
       break;
 
     case '<':
       if (match('=')) 
-        add_token(LESS_EQUAL);
+        add_token(LESS_EQUAL, LOX_OBJECT_NULL);
       else
-        add_token(LESS);
+        add_token(LESS, LOX_OBJECT_NULL);
       break;
 
     case '=':
       if (match('=')) 
-        add_token(EQUAL_EQUAL);
+        add_token(EQUAL_EQUAL, LOX_OBJECT_NULL);
       else 
-        add_token(EQUAL);
+        add_token(EQUAL, LOX_OBJECT_NULL);
       break;
 
     case '!':
       if (match('='))
-        add_token(BANG_EQUAL);
+        add_token(BANG_EQUAL, LOX_OBJECT_NULL);
       else 
-        add_token(BANG);
+        add_token(BANG, LOX_OBJECT_NULL);
       break;
     case '/':
       if (match('/')) {
         while(peek() != '\n')
           advance();
       } else {
-        add_token(SLASH);
+        add_token(SLASH, LOX_OBJECT_NULL);
       }
        break;
     
@@ -156,9 +159,9 @@ static void register_token(Token token) {
   lox.scanner.parsed++;
 }
 
-static void add_token(TokenType type) {
+static void add_token(TokenType type, LoxObject literal) {
   char* text = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1); // current points to the next "char" so we subtract by 1
-  Token token = token_init(type, text, compute_relative_position(&lox.scanner));
+  Token token = token_init(type, text, literal, compute_relative_position());
   register_token(token);
 }
 
@@ -169,7 +172,7 @@ static char advance() {
   return lox.scanner.source[lox.scanner.current - 1];
 }
 
-static void scan_number(Scanner *s) {
+static void scan_number() {
 
   while (isdigit(peek())) 
     advance();
@@ -180,9 +183,10 @@ static void scan_number(Scanner *s) {
     while (isdigit(peek())) 
       advance();
   } 
+  const char* num_lexeme = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1);
+  LoxObject literal = encode_double(strtod(num_lexeme, NULL));
 
-  add_token(NUMBER);
-
+  add_token(NUMBER, literal);
 
 }
 
@@ -200,7 +204,9 @@ static void scan_string() {
   // consume the last '"' character
   advance();
 
-  add_token(STRING); 
+ char* text = substring(lox.scanner.source, lox.scanner.start+1, lox.scanner.current-2);
+ LoxObject literal = encode_string(text);
+  add_token(STRING, literal); 
 }
 
 static void scan_identifier(Scanner *s) {
@@ -210,7 +216,7 @@ static void scan_identifier(Scanner *s) {
   char* identifier = substring(s->source, s->start, s->current-1);
   TokenType type = get_keyword(identifier);
 
-  add_token(type);
+  add_token(type, LOX_OBJECT_NULL);
 }
 
 
@@ -224,7 +230,7 @@ static char peek() {
   return lox.scanner.source[lox.scanner.current];
 }
 
-char peek_next() {
+static char peek_next() {
   if (isfinished()) return '\0';
   
   return lox.scanner.source[lox.scanner.current+1];
@@ -267,7 +273,7 @@ TokenType get_keyword(const char* text) {
 
   unsigned int length = sizeof(pairs)/sizeof(struct KeywordPair);
 
-  for (int i=0; i<length; i++) {
+  for (unsigned int i=0; i<length; i++) {
     if (strcmp(pairs[i].lexeme, text) == 0) {
       return pairs[i].type;
     }

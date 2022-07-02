@@ -38,7 +38,7 @@ bool is_real_number(const char *string) {
   bool has_negative_sign = false;
   bool has_decimal_point = false;
 
-  for (int i=0; i<string_length; i++) {
+  for (unsigned int i=0; i<string_length; i++) {
     char c = string[i];
     switch (c) {
       case '.':

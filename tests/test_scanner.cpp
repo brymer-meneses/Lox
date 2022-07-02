@@ -24,11 +24,11 @@ TEST(TestScanner, ScanSingleChar) {
   scanner_init(input);
   Token* tokens = scanner_scan();
 
-  for (int i=0; i<lox.scanner.parsed; i++) {
+  for (unsigned int i=0; i<lox.scanner.parsed; i++) {
     ASSERT_EQ(correct_types[i], tokens[i].type);
   }
 
-  for (int i=0; i<strlen(input); i++) {
+  for (unsigned int i=0; i<strlen(input); i++) {
     ASSERT_EQ(input[i], *tokens[i].lexeme);
   }
 }
@@ -42,7 +42,7 @@ TEST(TestScanner, ScanDoubleChar) {
   scanner_init(input);
   Token* tokens = scanner_scan();
 
-  for (int i=0; i<lox.scanner.parsed; i++) {
+  for (unsigned int i=0; i<lox.scanner.parsed; i++) {
     EXPECT_EQ(correct_types[i], tokens[i].type);
   }
 }

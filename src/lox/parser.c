@@ -1,3 +1,4 @@
+#include "lox/object.h"
 #include "stdbool.h"
 #include "stdarg.h"
 #include "stdio.h"
@@ -22,6 +23,7 @@ static Expr* parse_term();
 static Expr* parse_factor();
 static Expr* parse_unary();
 static Expr* parse_primary();
+
 
 void parser_init(const Token *tokens) {
   lox.parser = (Parser) {
@@ -181,14 +183,14 @@ static Expr* parse_unary() {
 }
 
 static Expr* parse_primary() {
-  if (match(1, FALSE)) return literal("false");
-  if (match(1, TRUE)) return literal("true");
-  if (match(1, NIL)) return literal("null");
+  if (match(1, FALSE)) return literal(encode_bool(false));
+  if (match(1, TRUE)) return literal(encode_bool(true));
+  if (match(1, NIL)) return literal(LOX_OBJECT_NULL);
 
   if (match(1, NUMBER)) 
-    return literal(previous().lexeme);
+    return literal(previous().literal);
   if (match(1, STRING)) 
-    return literal(token_parse_string(previous()));
+    return literal(previous().literal);
 
   if (match(1, LEFT_PAREN)) {
     Expr* expr = parse_expression();

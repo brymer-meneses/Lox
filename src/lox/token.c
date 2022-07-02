@@ -1,3 +1,4 @@
+#include "lox/object.h"
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
@@ -9,8 +10,8 @@
 #include "lox/token.h"
 #include "tools/utils.h"
 
-Token token_init(TokenType type, const char* lexeme, const FileLoc fileloc) {
-  return (Token) {.type = type, .lexeme = lexeme, .fileloc = fileloc};
+Token token_init(TokenType type, char* lexeme, LoxObject literal, FileLoc fileloc) {
+  return (Token) {.type = type, .lexeme = lexeme, .literal= literal, .fileloc = fileloc};
 }
 
 
@@ -93,21 +94,5 @@ char* token_parse_string(Token token) {
 
 
 char* token_to_string(Token token) {
-  char* output = malloc(sizeof(token.lexeme));
-
-  switch (token.type) {
-    case NUMBER:
-      snprintf(output, sizeof(token.lexeme), "%lf" , token_parse_double(token));
-      break;
-    case TRUE:
-    case FALSE:
-      snprintf(output, sizeof(token.lexeme), "%d" , token_parse_bool(token));
-      break;
-    case STRING:
-      return token_parse_string(token); 
-    default:
-      return (char*) token.lexeme;
-      break;
-  }
-  return output;
+  return loxobject_to_string(token.literal);
 }

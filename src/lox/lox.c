@@ -14,6 +14,10 @@
 
 Lox lox;
 
+FileLoc FILE_LOC_NULL;
+Token TOKEN_NULL;
+LoxObject LOX_OBJECT_NULL;
+
 void run(char source[]) {
   lox.had_error = false;
   scanner_init(source);

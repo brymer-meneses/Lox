@@ -2,11 +2,12 @@
 #include "stdarg.h"
 #include "string.h"
 
+#include "tools/astprinter.h"
+
 #include "lox/expr.h"
-#include "lox/types.h"
+#include "lox/object.h"
 #include "lox/token.h"
 
-#include "tools/astprinter.h"
 
 char* parenthesize(const char* name, const Expr* left, const Expr* right);
 
@@ -21,7 +22,7 @@ char* expr_to_string(const Expr *expr) {
     case EXPR_GROUPING:
       return parenthesize("group", expr->left, NULL);
     case EXPR_LITERAL:
-      return (char*) expr->value;
+      return loxobject_to_string(expr->value);
    }
 };
 
