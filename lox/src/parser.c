@@ -7,32 +7,32 @@
 #include "lox/expr.h"
 #include "lox/token.h"
 #include "lox/state.h"
+#include "lox/lox.h"
 
-bool  parser_isfinished(Parser* p);
-Token parser_peek(Parser* p);
-bool  parser_check(Parser* p, TokenType type);
-Token parser_previous(Parser* p);
+static bool  isfinished();
+static Token peek();
+static bool  check(TokenType type);
+static Token previous();
 
-Expr* parse_equality(Parser* p);
-Expr* parse_expression(Parser* p);
-Expr* parse_primary(Parser* p);
-Expr* parse_comparison(Parser* p);
-Expr* parse_term(Parser* p);
-Expr* parse_factor(Parser* p);
-Expr* parse_unary(Parser* p);
-Expr* parse_primary(Parser* p);
+static Expr* parse_equality();
+static Expr* parse_expression();
+static Expr* parse_primary();
+static Expr* parse_comparison();
+static Expr* parse_term();
+static Expr* parse_factor();
+static Expr* parse_unary();
+static Expr* parse_primary();
 
-Parser parser_init(const Token *tokens, const char* source) {
-  return (Parser) {
+void parser_init(const Token *tokens) {
+  lox.parser = (Parser) {
     .tokens = tokens,
     .current = 0,
-    .source = source,
   };
 }
 
-Expr* parser_parse(Parser* p) {
+Expr* parser_parse() {
 
-  Expr* expr = parse_expression(p);
+  Expr* expr = parse_expression();
 
   if (LOX_HAD_ERROR) {
     return NULL;
@@ -42,26 +42,26 @@ Expr* parser_parse(Parser* p) {
 }
 
 
-Token parser_advance(Parser* p) {
-  if (!parser_isfinished(p)) 
-    p->current++;
-  return parser_previous(p);
+Token advance() {
+  if (!isfinished()) 
+    lox.parser.current++;
+  return previous();
 }
 
-Token parser_previous(Parser* p) {
-  return p->tokens[p->current - 1];
+static Token previous() {
+  return lox.parser.tokens[lox.parser.current - 1];
 }
 
 
 // Similar to parser_check but consumes the token
-bool parser_match(Parser* p, int num_types, ...) {
+static bool match(int num_types, ...) {
   va_list token_types;
   va_start(token_types, num_types);
 
   for (int i=0; i<num_types; i++) {
     TokenType type = va_arg(token_types, TokenType);
-    if (parser_check(p, type)) {
-      parser_advance(p);
+    if (check(type)) {
+      advance();
       return true;
     }
   }
@@ -71,28 +71,28 @@ bool parser_match(Parser* p, int num_types, ...) {
 }
 
 // checks if the current token being scanned is of the "expected" type
-bool parser_check(Parser* p, TokenType expected) {
-  if (parser_isfinished(p))
+static bool check(TokenType expected) {
+  if (isfinished())
     return false;
 
-  return parser_peek(p).type == expected;
+  return peek().type == expected;
 }
 
-bool parser_isfinished(Parser* p) {
-  return parser_peek(p).type == SOURCE_END;
+static bool isfinished() {
+  return peek().type == SOURCE_END;
 }
 
-Token parser_peek(Parser* p) {
-  return p->tokens[p->current];
+static Token peek() {
+  return lox.parser.tokens[lox.parser.current];
 }
 
-void parser_synchronize(Parser* p) {
-  parser_advance(p);
+static void synchronize() {
+  advance();
 
-  while (!parser_isfinished(p)) {
-    if (parser_previous(p).type == SEMICOLON) return;
+  while (!isfinished()) {
+    if (previous().type == SEMICOLON) return;
 
-    switch (parser_peek(p).type) {
+    switch (peek().type) {
       case CLASS:
       case FUN:
       case VAR:
@@ -105,7 +105,7 @@ void parser_synchronize(Parser* p) {
       default:
         break;
     }
-    parser_advance(p);
+    advance();
   }
 
 }
@@ -121,80 +121,80 @@ void parser_synchronize(Parser* p) {
  * primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
  */
 
-Expr* parse_expression(Parser* p) {
-  return parse_equality(p);
+static Expr* parse_expression() {
+  return parse_equality();
 }  
 
-Expr* parse_equality(Parser* p) {
-  Expr* expr = parse_comparison(p);
+static Expr* parse_equality() {
+  Expr* expr = parse_comparison();
 
-  while (parser_match(p, 2, BANG_EQUAL, EQUAL_EQUAL)) {
-    Token operator = parser_previous(p);
-    Expr* right = parse_comparison(p);
+  while (match(2, BANG_EQUAL, EQUAL_EQUAL)) {
+    Token operator = previous();
+    Expr* right = parse_comparison();
     expr = binary(expr, operator, right);
   }
 
   return expr;
 }
 
-Expr* parse_comparison(Parser* p) {
-  Expr* expr = parse_term(p);
-  while (parser_match(p, 4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-    Token operator = parser_previous(p);
-    Expr* right = parse_term(p);
+static Expr* parse_comparison() {
+  Expr* expr = parse_term();
+  while (match(4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+    Token operator = previous();
+    Expr* right = parse_term();
     expr = binary(expr, operator, right);
   }
   return expr;
 }
 
-Expr* parse_term(Parser* p) {
-  Expr* expr = parse_factor(p);
+static Expr* parse_term() {
+  Expr* expr = parse_factor();
 
-  while (parser_match(p, 2, MINUS, PLUS)) {
-    Token operator = parser_previous(p);
-    Expr* right = parse_factor(p);
+  while (match(2, MINUS, PLUS)) {
+    Token operator = previous();
+    Expr* right = parse_factor();
     expr = binary(expr, operator, right);
   }
 
   return expr;
 }
 
-Expr* parse_factor(Parser* p) {
-  Expr* expr = parse_unary(p);
+static Expr* parse_factor() {
+  Expr* expr = parse_unary();
 
-  while (parser_match(p, 2, SLASH, STAR)) {
-    Token operator = parser_previous(p);
-    Expr* right = parse_unary(p);
+  while (match(2, SLASH, STAR)) {
+    Token operator = previous();
+    Expr* right = parse_unary();
     expr = binary(expr, operator, right);
   }
   return expr;
 }
 
-Expr* parse_unary(Parser* p) {
-  if (parser_match(p, 2, BANG, MINUS)) {
-    Token operator = parser_previous(p);
-    Expr* right = parse_unary(p);
+static Expr* parse_unary() {
+  if (match(2, BANG, MINUS)) {
+    Token operator = previous();
+    Expr* right = parse_unary();
     return unary(operator, right);
   }
 
-  return parse_primary(p);
+  return parse_primary();
 }
 
-Expr* parse_primary(Parser* p) {
-  if (parser_match(p, 1, FALSE)) return literal("false");
-  if (parser_match(p, 1, TRUE)) return literal("true");
-  if (parser_match(p, 1, NIL)) return literal("null");
+static Expr* parse_primary() {
+  if (match(1, FALSE)) return literal("false");
+  if (match(1, TRUE)) return literal("true");
+  if (match(1, NIL)) return literal("null");
 
-  if (parser_match(p, 1, NUMBER)) 
-    return literal(parser_previous(p).lexeme);
-  if (parser_match(p, 1, STRING)) 
-    return literal(token_parse_string(parser_previous(p)));
+  if (match(1, NUMBER)) 
+    return literal(previous().lexeme);
+  if (match(1, STRING)) 
+    return literal(token_parse_string(previous()));
 
-  if (parser_match(p, 1, LEFT_PAREN)) {
-    Expr* expr = parse_expression(p);
+  if (match(1, LEFT_PAREN)) {
+    Expr* expr = parse_expression();
 
-    if (!parser_check(p, RIGHT_PAREN)) {
-      raise_expected_token_error(p, parser_peek(p));
+    if (!check(RIGHT_PAREN)) {
+      raise_expected_token_error(peek());
     }
     return grouping(expr);
   }

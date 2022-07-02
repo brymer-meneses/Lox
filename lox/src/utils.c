@@ -7,6 +7,7 @@
 #include "lox/utils.h"
 #include "lox/scanner.h"
 #include "lox/filelocation.h"
+#include "lox/lox.h"
 
 char* substring(const char* source, const size_t begin, const size_t end) {
   const size_t length = (end - begin + 1) ; // take into account that ending char '\0'
@@ -127,3 +128,11 @@ FileLoc fileloc_init(const size_t line, const size_t start, const size_t end) {
   };
 }
 
+FileLoc compute_relative_position() {
+  const Scanner s = lox.scanner;
+  return (FileLoc) {
+    .line  = s.line - 1,
+    .start = s.start - s.last_line,
+    .end   = s.current - 1 - s.last_line,
+  };
+}

@@ -10,24 +10,25 @@
 #include "lox/scanner.h"
 #include "lox/error.h"
 #include "lox/utils.h"
+#include "lox/lox.h"
+
+static TokenType get_keyword(const char* text);
+
+static void register_token(Token token);
+static void add_token(TokenType type);
+static char peek();
+static bool match(char expected);
+static char advance();
+static bool isfinished();
+
+static void scan_token();
+static void scan_identifier();
+static void scan_string();
+static void scan_number();
 
 
-void add_token(Scanner *s, TokenType type);
-
-void scan_string(Scanner *s);
-void scan_number(Scanner *s);
-void scan_identifier(Scanner *s);
-
-bool scanner_isfinished(Scanner *s);
-char scanner_peek_next(Scanner  *s);
-
-TokenType get_keyword(const char* lexeme);
-
-FileLoc compute_relative_position(const Scanner* s);
-
-Scanner scanner_init(const char* source) {
-
-  Scanner scanner = {
+void scanner_init(const char *source) {
+  lox.scanner = (Scanner) {
     .current =0, 
     .start =0, 
     .line =1, 
@@ -37,91 +38,89 @@ Scanner scanner_init(const char* source) {
     .last_line = 0,
     .tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token)),
   };
-
-  return scanner;
 }
 
-Token* scanner_scan(Scanner* s) {
-  while (!scanner_isfinished(s)) {
-    s->start = s->current;
-    scanner_scan_token(s);
+Token* scanner_scan() {
+  while (!isfinished()) {
+    lox.scanner.start = lox.scanner.current;
+    scan_token();
   }
-  add_token(s, SOURCE_END);
-  return s->tokens;
+  add_token(SOURCE_END);
+  return lox.scanner.tokens;
 }
 
-void scanner_scan_token(Scanner* s) {
-  char c = scanner_advance(s);
+static void scan_token() {
+  char c = advance();
   switch (c) {
     case '{':
-      add_token(s, LEFT_BRACE);
+      add_token(LEFT_BRACE);
       break;
     case '}': 
-      add_token(s, RIGHT_BRACE);
+      add_token(RIGHT_BRACE);
       break;
     case '(':
-      add_token(s, LEFT_PAREN);
+      add_token(LEFT_PAREN);
       break;
     case ')':
-      add_token(s, RIGHT_PAREN);
+      add_token(RIGHT_PAREN);
       break;
     case ',':
-      add_token(s, COMMA);
+      add_token(COMMA);
       break;
     case '.':
-      add_token(s, DOT);
+      add_token(DOT);
       break;
     case '*':
-      add_token(s, STAR);
+      add_token(STAR);
       break;
     case '+':
-      add_token(s, PLUS);
+      add_token(PLUS);
       break;
     case '-':
-      add_token(s, MINUS);
+      add_token(MINUS);
       break;
     case ';':
-      add_token(s, SEMICOLON);
+      add_token(SEMICOLON);
       break;
 
     case '>':
-      if (scanner_match(s, '=')) 
-        add_token(s, GREATER_EQUAL);
+      if (match('=')) 
+        add_token(GREATER_EQUAL);
       else
-        add_token(s, GREATER);
+        add_token(GREATER);
       break;
 
     case '<':
-      if (scanner_match(s, '=')) 
-        add_token(s, LESS_EQUAL);
+      if (match('=')) 
+        add_token(LESS_EQUAL);
       else
-        add_token(s, LESS);
+        add_token(LESS);
       break;
 
     case '=':
-      if (scanner_match(s, '=')) 
-        add_token(s, EQUAL_EQUAL);
+      if (match('=')) 
+        add_token(EQUAL_EQUAL);
       else 
-        add_token(s, EQUAL);
+        add_token(EQUAL);
       break;
 
     case '!':
-      if (scanner_match(s, '='))
-        add_token(s, BANG_EQUAL);
+      if (match('='))
+        add_token(BANG_EQUAL);
       else 
-        add_token(s, BANG);
+        add_token(BANG);
       break;
     case '/':
-      if (scanner_match(s, '/')) {
-        while(scanner_peek(s) != '\n')
-          scanner_advance(s);
+      if (match('/')) {
+        while(peek() != '\n')
+          advance();
       } else {
-        add_token(s, SLASH);
+        add_token(SLASH);
       }
        break;
     
     case '"':
-      scan_string(s);
+      scan_string();
       break;
     case ' ':
     case '\t':
@@ -130,117 +129,117 @@ void scanner_scan_token(Scanner* s) {
       break;
 
     case '\n': 
-      s->line++;
-      s->last_line = s->current - 1;
+      lox.scanner.line++;
+      lox.scanner.last_line = lox.scanner.current - 1;
       break;
     default:
       if (isdigit(c)) {
-        scan_number(s);
+        scan_number();
       } else if (isalpha(c)) {
-        scan_identifier(s);
+        scan_identifier();
       } else {
-        raise_unexpected_character_error(s, c);
+        // raise_unexpected_character_error(c);
       }
       break;
   }
 
 }
 
-void scanner_register_token(Scanner *s, Token token) {
-  if (s->parsed == s->capacity) {
-    s->capacity = 2 * s->capacity;
+static void register_token(Token token) {
+  if (lox.scanner.parsed == lox.scanner.capacity) {
+    lox.scanner.capacity = 2 * lox.scanner.capacity;
 
-    s->tokens = realloc(s->tokens, s->capacity * sizeof(Token));
+    lox.scanner.tokens = realloc(lox.scanner.tokens, lox.scanner.capacity * sizeof(Token));
   }
-  s->tokens[s->parsed] = token;
-  s->parsed++;
+  lox.scanner.tokens[lox.scanner.parsed] = token;
+  lox.scanner.parsed++;
 }
 
-void add_token(Scanner *s, TokenType type) {
-  char* text = substring(s->source, s->start, s->current-1); // current points to the next "char" so we subtract by 1
-  Token token = token_init(type, text, compute_relative_position(s));
-  scanner_register_token(s, token);
+void add_token(TokenType type) {
+  char* text = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1); // current points to the next "char" so we subtract by 1
+  Token token = token_init(type, text, compute_relative_position(&lox.scanner));
+  register_token(token);
 }
 
-char scanner_advance(Scanner *s) {
-  if (scanner_isfinished(s)) return '\0';
+static char advance() {
+  if (isfinished()) return '\0';
 
-  s->current++;
-  return s->source[s->current - 1];
+  lox.scanner.current++;
+  return lox.scanner.source[lox.scanner.current - 1];
 }
 
-void scan_number(Scanner *s) {
+static void scan_number(Scanner *s) {
 
-  while (isdigit(scanner_peek(s))) 
-    scanner_advance(s);
+  while (isdigit(peek())) 
+    advance();
 
   
-  if (scanner_peek(s) == '.') {
-    scanner_advance(s);
-    while (isdigit(scanner_peek(s))) 
-      scanner_advance(s);
+  if (peek() == '.') {
+    advance();
+    while (isdigit(peek())) 
+      advance();
   } 
 
-  add_token(s, NUMBER);
+  add_token(NUMBER);
 
 
 }
 
-void scan_string(Scanner *s) {
-  while (scanner_peek(s) != '"' && !scanner_isfinished(s)) {
-    if (scanner_peek(s) == '\n') s->line++;
-    scanner_advance(s);
+static void scan_string() {
+  while (peek() != '"' && !isfinished()) {
+    if (peek() == '\n') lox.scanner.line++;
+    advance();
   }
 
   // handle when the string doesn't terminate
-  if (scanner_isfinished(s)) {
-    raise_unterminated_string_error(s, substring(s->source, s->start, s->current-1));
+  if (isfinished()) {
+    raise_unterminated_string_error(substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1));
     return;
   }
   // consume the last '"' character
-  scanner_advance(s);
+  advance();
 
-  add_token(s, STRING); 
+  add_token(STRING); 
 }
 
 void scan_identifier(Scanner *s) {
-  while (isalnum(scanner_peek(s)))
-    scanner_advance(s);
+  while (isalnum(peek()))
+    advance();
 
   char* identifier = substring(s->source, s->start, s->current-1);
   TokenType type = get_keyword(identifier);
 
-  add_token(s, type);
+  add_token(type);
 }
 
 
-bool scanner_isfinished(Scanner *s) {
-  return s->current >= strlen(s->source);
+static bool isfinished() {
+  return lox.scanner.current >= strlen(lox.scanner.source);
 }
 
-char scanner_peek(Scanner *s) {
-  if (scanner_isfinished(s)) return '\0';
+static char peek() {
+  if (isfinished()) return '\0';
   
-  return s->source[s->current];
+  return lox.scanner.source[lox.scanner.current];
 }
 
-char scanner_peek_next(Scanner *s) {
-  if (scanner_isfinished(s)) return '\0';
+char peek_next() {
+  if (isfinished()) return '\0';
   
-  return s->source[s->current+1];
+  return lox.scanner.source[lox.scanner.current+1];
 }
 
-bool scanner_match(Scanner *s, char expected) {
+static bool match(char expected) {
   // printf("Got: %c, Expected: %c \n", scanner_peek(scanner), expected);
-  if (scanner_peek(s) == expected) {
-    s->current ++;
+  if (peek() == expected) {
+    lox.scanner.current++;
     return true;
   }
   return false;
 }
 
-char* scanner_get_current_line(const Scanner* s) {
-  char** arr = str_split(s->source, "\n");
+char* get_current_line() {
+  char** arr = str_split(lox.scanner.source, "\n");
   return arr[0];
 }
 
@@ -279,11 +278,4 @@ TokenType get_keyword(const char* text) {
   return IDENTIFIER;
 }
 
-FileLoc compute_relative_position(const Scanner* s) {
-  return (FileLoc) {
-    .line  = s->line - 1,
-    .start = s->start - s->last_line,
-    .end   = s->current - 1 - s->last_line,
-  };
-}
 

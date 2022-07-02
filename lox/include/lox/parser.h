@@ -10,7 +10,7 @@ typedef struct Parser {
   unsigned int current;
 } Parser;
 
-Parser parser_init(const Token* tokens, const char* source);
-Expr* parser_parse(Parser* p);
+void parser_init(const Token* tokens);
+Expr* parser_parse();
 
 #endif 

@@ -21,17 +21,11 @@ typedef struct Scanner {
   size_t last_line;
 } Scanner;
 
-Scanner scanner_init(const char *source);
+void scanner_init(const char *source);
+Token* scanner_scan();
 
-char scanner_advance(Scanner *s);
-Token* scanner_scan(Scanner *s);
-void scanner_scan_token(Scanner *s);
-void scanner_register_token(Scanner *s, Token token);
-char* scanner_get_current_line(const Scanner* s);
+char* get_current_line();
 
-char scanner_peek(Scanner *s);
-bool scanner_match(Scanner *s, char expected);
-
-FileLoc compute_relative_position(const Scanner* s);
+FileLoc compute_relative_position();
 
 #endif
