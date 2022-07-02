@@ -13,6 +13,7 @@ char* loxobject_to_string(LoxObject obj) {
       break;
     case TRUE:
       sprintf(output, "true");
+      break;
     case FALSE:
       sprintf(output, "false");
       break;
