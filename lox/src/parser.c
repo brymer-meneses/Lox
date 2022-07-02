@@ -1,4 +1,5 @@
 #include "lox/error.h"
+#include "lox/filelocation.h"
 #include "stdbool.h"
 #include "stdarg.h"
 #include "stdio.h"
@@ -194,7 +195,11 @@ static Expr* parse_primary() {
     Expr* expr = parse_expression();
 
     if (!check(RIGHT_PAREN)) {
-      raise_expected_token_error(peek());
+      const Token p = previous();
+
+      FileLoc fl = fileloc_init(p.fileloc.line, p.fileloc.start, p.fileloc.end);
+
+      raise_expected_token_error(")", fl);
     }
     return grouping(expr);
   }

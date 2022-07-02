@@ -24,8 +24,6 @@ typedef struct Scanner {
 void scanner_init(const char *source);
 Token* scanner_scan();
 
-char* get_current_line();
-
 FileLoc compute_relative_position();
 
 #endif

@@ -138,7 +138,7 @@ static void scan_token() {
       } else if (isalpha(c)) {
         scan_identifier();
       } else {
-        // raise_unexpected_character_error(c);
+        raise_unexpected_character_error(c);
       }
       break;
   }
@@ -155,7 +155,7 @@ static void register_token(Token token) {
   lox.scanner.parsed++;
 }
 
-void add_token(TokenType type) {
+static void add_token(TokenType type) {
   char* text = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1); // current points to the next "char" so we subtract by 1
   Token token = token_init(type, text, compute_relative_position(&lox.scanner));
   register_token(token);
@@ -202,7 +202,7 @@ static void scan_string() {
   add_token(STRING); 
 }
 
-void scan_identifier(Scanner *s) {
+static void scan_identifier(Scanner *s) {
   while (isalnum(peek()))
     advance();
 
@@ -238,10 +238,6 @@ static bool match(char expected) {
   return false;
 }
 
-char* get_current_line() {
-  char** arr = str_split(lox.scanner.source, "\n");
-  return arr[0];
-}
 
 TokenType get_keyword(const char* text) {
   struct KeywordPair {

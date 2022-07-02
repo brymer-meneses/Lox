@@ -68,8 +68,6 @@ char *tokentype_to_string(TokenType type) {
     case WHILE:           return "WHILE";
     case SOURCE_END:        return "EOF";
   }
-  
-
 }
 
 double token_parse_double(Token token) {

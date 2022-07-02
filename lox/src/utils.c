@@ -131,8 +131,13 @@ FileLoc fileloc_init(const size_t line, const size_t start, const size_t end) {
 FileLoc compute_relative_position() {
   const Scanner s = lox.scanner;
   return (FileLoc) {
-    .line  = s.line - 1,
+    .line  = s.line,
     .start = s.start - s.last_line,
     .end   = s.current - 1 - s.last_line,
   };
+}
+
+char* get_current_line() {
+  char** arr = str_split(lox.scanner.source, "\n");
+  return arr[0];
 }
