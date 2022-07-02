@@ -44,7 +44,7 @@ Expr* parser_parse() {
 }
 
 
-Token advance() {
+static Token advance() {
   if (!isfinished()) 
     lox.parser.current++;
   return previous();

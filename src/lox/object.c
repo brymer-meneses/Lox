@@ -45,12 +45,14 @@ LoxObject encode_bool(bool value) {
 
 LoxObject encode_string(const char* value) {
   LoxObject obj;
+  obj.type = STRING;
   obj.data.string = (char*) value;
   return obj;
 }
 
 LoxObject encode_double(double value) {
   LoxObject obj;
+  obj.type = NUMBER;
   obj.data.number = value;
   return obj;
 }
