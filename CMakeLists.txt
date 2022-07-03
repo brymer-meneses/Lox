@@ -8,7 +8,7 @@ add_compile_options(-g -Wall -Wextra)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(clox_MAIN "${PROJECT_SOURCE_DIR}/src/main.c")
-set(test_runner_MAIN "${PROJECT_SOURCE_DIR}/src/tools/runner.cpp")
+set(test_runner_MAIN "${PROJECT_SOURCE_DIR}/tests/runner.cpp")
 
 # HANDLE DEPENDENCIES
 include(FetchContent)

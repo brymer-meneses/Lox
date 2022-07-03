@@ -21,7 +21,7 @@ void token_print(Token token) {
 
   printf("Token: [ ");
   printf("type: %s, ", tokentype_to_string(token.type));
-  printf("literal: %s, ", token_to_string(token));
+  printf("literal: %s, ", loxobject_to_string(token.literal));
   printf("line: %lu ", token.line);
   printf("]\n");
 }
@@ -71,28 +71,3 @@ char *tokentype_to_string(TokenType type) {
   }
 }
 
-double token_parse_double(Token token) {
-  return strtod(token.lexeme, NULL);
-}
-
-bool token_parse_bool(Token token) {
-  bool istrue = strcmp(token.lexeme, "true") == 0;
-  bool isfalse = strcmp(token.lexeme, "false") == 0;
-
-  assert(istrue || isfalse);
-
-  if (istrue) {
-    return true; 
-  }; 
-
-  return false; 
-}
-
-char* token_parse_string(Token token) {
-  return substring(token.lexeme, 1, strlen(token.lexeme) - 2); // trim the quotation marks
-}
-
-
-char* token_to_string(Token token) {
-  return loxobject_to_string(token.literal);
-}
