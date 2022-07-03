@@ -6,6 +6,14 @@
 #include "stdlib.h"
 #include "stdbool.h"
 
+typedef struct Token {
+  TokenType type;
+  size_t line;
+  char* lexeme;
+  LoxObject literal;
+  FileLoc fileloc;
+} Token;
+
 
 void  token_print(Token token);
 Token token_init(TokenType type, char* lexeme, LoxObject literal, FileLoc fileloc);

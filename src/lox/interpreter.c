@@ -4,6 +4,7 @@
 #include "lox/lox.h"
 #include "lox/object.h"
 #include "lox/token.h"
+#include "lox/expr.h"
 #include "lox/interpreter.h"
 #include "tools/utils.h"
 #include "tools/error.h"
@@ -51,20 +52,21 @@ static LoxObject expr_evaluate(Expr *expr) {
   assert(expr != NULL);
   switch (expr->type) {
     case EXPR_BINARY: {
-      LoxObject left = expr_evaluate(expr->left);
-      LoxObject right = expr_evaluate(expr->right);
+      LoxObject left = expr_evaluate(expr->data.binary.left);
+      LoxObject right = expr_evaluate(expr->data.binary.right);
+      const Token op = expr->data.binary.operation;
 
-      switch (expr->op.type) {
+      switch (op.type) {
         case MINUS:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_double(left.data.number - right.data.number);
           break;
         case SLASH:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_double(left.data.number / right.data.number);
           break;
         case STAR:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_double(left.data.number * right.data.number);
           break;
         case PLUS: {
@@ -75,30 +77,30 @@ static LoxObject expr_evaluate(Expr *expr) {
           if (left.type == STRING && right.type == STRING) {
             return encode_string(str_concat(left.data.string, right.data.string));
           }
-          raise_invalid_binary_operation_error(expr->op, left.type, right.type);
+          raise_invalid_binary_operation_error(op, left.type, right.type);
         } break;
         case GREATER:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_bool(left.data.number > right.data.number);
           break;
         case GREATER_EQUAL:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_bool(left.data.number >= right.data.number);
           break;
         case LESS:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_bool(left.data.number < right.data.number);
           break;
         case LESS_EQUAL:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_bool(left.data.number <= right.data.number);
           break;
         case BANG_EQUAL:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_bool(!is_equal(left, right));
           break;
         case EQUAL_EQUAL:
-          check_same_types(NUMBER, expr->op, left.type, right.type);
+          check_same_types(NUMBER, op, left.type, right.type);
           return encode_bool(is_equal(left, right));
           break;
         default:
@@ -107,9 +109,9 @@ static LoxObject expr_evaluate(Expr *expr) {
       }
     }; break;
     case EXPR_UNARY: {
-      LoxObject right = expr_evaluate(expr->right);
+      LoxObject right = expr_evaluate(expr->data.unary.right);
 
-      switch (expr->op.type) {
+      switch (expr->data.unary.operation.type) {
         case MINUS:
            return encode_double(-right.data.number);
            break;
@@ -122,10 +124,10 @@ static LoxObject expr_evaluate(Expr *expr) {
       }
     }; break;
     case EXPR_GROUPING:
-      return expr_evaluate(expr->left);
+      return expr_evaluate(expr->data.grouping.expression);
       break;
     case EXPR_LITERAL:
-      return expr->value;
+      return expr->data.literal.value;
       break;
   }
 

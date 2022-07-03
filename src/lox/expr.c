@@ -1,35 +1,47 @@
 #include "stdio.h"
 #include "assert.h"
+#include "stdlib.h"
 
 #include "lox/expr.h"
 #include "lox/declarations.h"
 
-Expr* expr_init(ExprType type,  LoxObject value, Expr *left, Token op, Expr *right) {
+Expr* binary_init(Expr *left, Token op, Expr *right) {
+  assert(left != NULL || right != NULL);
+
   Expr* expr = malloc(1 * sizeof(Expr));
-  expr->type = type;
-  expr->left = left;
-  expr->op = op;
-  expr->right = right;
-  expr->value = value;
+
+  expr->type = EXPR_BINARY;
+  expr->data.binary.left = left;
+  expr->data.binary.right = right;
+  expr->data.binary.operation = op;
   return expr;
 }
 
-Expr* binary(Expr *left, Token op, Expr *right) {
-  assert(left != NULL && right != NULL);
-  return expr_init(EXPR_BINARY, LOX_OBJECT_NULL, left, op, right);
-}
+Expr* grouping_init(Expr *expression) {
+  assert(expression != NULL);
+  Expr* expr = malloc(1 * sizeof(Expr));
 
-Expr* grouping(Expr *expr) {
-  assert(expr != NULL);
-  return expr_init(EXPR_GROUPING, LOX_OBJECT_NULL, expr, TOKEN_NULL, NULL);
+  expr->type = EXPR_GROUPING;
+  expr->data.grouping.expression = expression;
+  return expr;
 };
 
-Expr* literal(LoxObject value) {
-  return expr_init(EXPR_LITERAL, value, NULL, TOKEN_NULL, NULL);
+Expr* literal_init(LoxObject value) {
+  Expr* expr = malloc(1 * sizeof(Expr));
+
+  expr->type = EXPR_LITERAL;
+  expr->data.literal.value = value;
+  return expr;
 };
 
-Expr* unary(Token op, Expr* right) {
+Expr* unary_init(Token op, Expr* right) {
   assert(right != NULL);
-  return expr_init(EXPR_UNARY, LOX_OBJECT_NULL, NULL, op, right);
+
+  Expr* expr = malloc(1 * sizeof(Expr));
+
+  expr->type = EXPR_UNARY;
+  expr->data.unary.operation = op;
+  expr->data.unary.right = right;
+  return expr;
 }
 

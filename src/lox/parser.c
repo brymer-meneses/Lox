@@ -160,7 +160,7 @@ static Expr* parse_equality() {
   while (match(2, BANG_EQUAL, EQUAL_EQUAL)) {
     Token operator = previous();
     Expr* right = parse_comparison();
-    expr = binary(expr, operator, right);
+    expr = binary_init(expr, operator, right);
   }
 
   return expr;
@@ -171,7 +171,7 @@ static Expr* parse_comparison() {
   while (match(4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
     Token operator = previous();
     Expr* right = parse_term();
-    expr = binary(expr, operator, right);
+    expr = binary_init(expr, operator, right);
   }
   return expr;
 }
@@ -182,7 +182,7 @@ static Expr* parse_term() {
   while (match(2, MINUS, PLUS)) {
     Token operator = previous();
     Expr* right = parse_factor();
-    expr = binary(expr, operator, right);
+    expr = binary_init(expr, operator, right);
   }
 
   return expr;
@@ -194,7 +194,7 @@ static Expr* parse_factor() {
   while (match(2, SLASH, STAR)) {
     Token operator = previous();
     Expr* right = parse_unary();
-    expr = binary(expr, operator, right);
+    expr = binary_init(expr, operator, right);
   }
   return expr;
 }
@@ -203,26 +203,26 @@ static Expr* parse_unary() {
   if (match(2, BANG, MINUS)) {
     Token operator = previous();
     Expr* right = parse_unary();
-    return unary(operator, right);
+    return unary_init(operator, right);
   }
 
   return parse_primary();
 }
 
 static Expr* parse_primary() {
-  if (match(1, FALSE)) return literal(encode_bool(false));
-  if (match(1, TRUE)) return literal(encode_bool(true));
-  if (match(1, NIL)) return literal(LOX_OBJECT_NULL);
+  if (match(1, FALSE)) return literal_init(encode_bool(false));
+  if (match(1, TRUE))  return literal_init(encode_bool(true));
+  if (match(1, NIL))   return literal_init(LOX_OBJECT_NULL);
 
   if (match(2, NUMBER, STRING)) 
-    return literal(previous().literal);
+    return literal_init(previous().literal);
 
   if (match(1, LEFT_PAREN)) {
     Expr* expr = parse_expression();
     expect(find_last_occurence(LEFT_PAREN), RIGHT_PAREN, ")");
 
     if (expr) {
-      return grouping(expr);
+      return grouping_init(expr);
     }
   }
 
