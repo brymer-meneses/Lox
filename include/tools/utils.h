@@ -10,7 +10,6 @@ bool is_boolean(const char* string);
 
 char* substring(const char* string, const size_t begin, const size_t end);
 char* read_file(const char* filename);
-char* char_to_string(const char chr);
 
 char** str_split(const char* str, const char* delim);
 

@@ -92,12 +92,6 @@ char* read_file(const char* filename) {
   return string;
 }
 
-char* char_to_string(const char chr) {
-  char* string = malloc(2*sizeof(char));
-  sprintf(string, "%c", chr);
-  return string;
-}
-
 char** str_split(const char* str, const char* delim) {
   size_t i = 0;
   size_t str_arr_size = 8;

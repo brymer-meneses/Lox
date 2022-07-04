@@ -35,11 +35,6 @@ TEST(TestUtils, IsRealNumber) {
   EXPECT_FALSE(is_real_number("-1.234 this is a test!"));
 }
 
-TEST(TestUtils, CharToString) {
-  EXPECT_TRUE(strcmp("a", char_to_string('a'))==0);
-  EXPECT_TRUE(strcmp("b", char_to_string('b'))==0);
-}
-
 TEST(TestUtils, StringSplit) {
   const char* source = "The quick brown fox jumped over the lazy cat.";
   const char* str_arr[] = {"The", "quick", "brown", "fox", "jumped", "over",
