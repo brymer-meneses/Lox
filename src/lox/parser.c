@@ -36,12 +36,13 @@ void parser_init(const Token *tokens) {
   };
 }
 
-Expr* parser_parse() {
+Stmt** parser_parse() {
 
-  Expr* expr = parse_expression();
+  Stmt** statements;
 
-  if (lox.had_error) {
-    return NULL;
+  
+  while (!isfinished()) {
+
   }
 
   return expr;

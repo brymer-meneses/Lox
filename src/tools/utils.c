@@ -130,25 +130,36 @@ char* str_concat(const char* str1, const char* str2) {
   return sum_str;
 }
 
-// TODO:
-// char* str_format(const size_t num, const char* str, ...) {
-//   va_list formatters;
-//   va_start(formatters, str);
-//
-//   size_t initial_size = 256;
-//   size_t str_size = 0;
-//
-//   char* buffer = malloc(initial_size * sizeof(initial_size));
-//
-//   for (size_t i=0; i <num; i++) {
-//     str_size += strlen(va_arg(formatters, char*));
-//   }
-//
-//
-//
-//   va_end(formatters);
-//   return buffer;
-// }
+char* str_format(const size_t num, const char* str, ...) {
+  va_list args;
+  va_start(args, str);
+
+  size_t str_size = 0;
+
+  size_t buffer_capacity = strlen(str) > 256 ? strlen(str) : 256;
+
+  char* buffer = malloc(buffer_capacity * sizeof(char));
+
+  strcat(buffer, str);
+
+  for (size_t i=0; i <num; i++) {
+    
+    char* arg = va_arg(args, char*);
+    const size_t length = strlen(str);
+
+    if (str_size + length >= buffer_capacity)  {
+        buffer_capacity *= 2;
+        buffer = realloc(buffer, buffer_capacity);
+    }
+
+    strcat(buffer, arg);
+    str_size += length;
+  }
+
+  va_end(args);
+  return buffer;
+}
+
 
 FileLoc fileloc_init(const size_t line, const size_t start, const size_t end) {
   return (FileLoc) {
