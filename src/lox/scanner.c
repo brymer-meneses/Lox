@@ -7,6 +7,7 @@
 #include "assert.h"
 
 #include "tools/error.h"
+#include "tools/hashtable.h"
 #include "tools/utils.h"
 
 #include "lox/filelocation.h"
@@ -14,6 +15,7 @@
 #include "lox/scanner.h"
 #include "lox/declarations.h"
 #include "lox/lox.h"
+
 
 static TokenType get_keyword(const char* text);
 
@@ -29,7 +31,7 @@ static void scan_identifier();
 static void scan_string();
 static void scan_number();
 
-
+static HashTable ht;
 
 void scanner_init(const char *source) {
   lox.scanner = (Scanner) {
@@ -42,6 +44,26 @@ void scanner_init(const char *source) {
     .last_line = 0,
     .tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token)),
   };
+  ht = ht_init();
+
+  ht_insert(&ht, "and",   CAST(AND));
+  ht_insert(&ht, "class", CAST(CLASS));
+  ht_insert(&ht, "and",   CAST(AND));
+  ht_insert(&ht, "class", CAST(CLASS));
+  ht_insert(&ht, "else",  CAST(ELSE));
+  ht_insert(&ht, "false", CAST(FALSE));
+  ht_insert(&ht, "for",   CAST(FOR));
+  ht_insert(&ht, "fun",   CAST(FUN));
+  ht_insert(&ht, "if",    CAST(IF));
+  ht_insert(&ht, "nil",   CAST(NIL));
+  ht_insert(&ht, "or",    CAST(OR));
+  ht_insert(&ht, "print", CAST(PRINT));
+  ht_insert(&ht, "return",CAST(RETURN));
+  ht_insert(&ht, "super", CAST(SUPER));
+  ht_insert(&ht, "this",  CAST(THIS));
+  ht_insert(&ht, "true",  CAST(TRUE));
+  ht_insert(&ht, "var",   CAST(VAR));
+  ht_insert(&ht, "while", CAST(WHILE));
 }
 
 Token* scanner_scan() {
@@ -247,38 +269,7 @@ static bool match(char expected) {
 
 
 TokenType get_keyword(const char* text) {
-  struct KeywordPair {
-    const char* lexeme;
-    const TokenType type;
-  };
-
-  const struct KeywordPair pairs[] = {
-   {"and", AND},
-   {"class", CLASS},
-   {"else", ELSE},
-   {"false", FALSE},
-   {"for", FOR},
-   {"fun", FUN},
-   {"if", IF},
-   {"nil", NIL},
-   {"or", OR},
-   {"print", PRINT},
-   {"return", RETURN},
-   {"super", SUPER},
-   {"this", THIS},
-   {"true", TRUE},
-   {"var", VAR},
-   {"while", WHILE},
-  };
-
-  unsigned int length = sizeof(pairs)/sizeof(struct KeywordPair);
-
-  for (unsigned int i=0; i<length; i++) {
-    if (strcmp(pairs[i].lexeme, text) == 0) {
-      return pairs[i].type;
-    }
-  }
-  return IDENTIFIER;
+  return atoi(ht_retrieve(&ht, (char*)text));
 }
 
 

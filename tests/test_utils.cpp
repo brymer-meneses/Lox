@@ -61,6 +61,7 @@ TEST(TestUtils, StringConcat) {
   EXPECT_TRUE(strcmp(hello_world,  result) == 0);
 }
 
+
 // TEST(TestUtils, StringFormat) {
 //   const char* source = "hello world";
 //   const char* world = "world";
