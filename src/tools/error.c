@@ -7,8 +7,8 @@
 #include "tools/termcolor.h"
 #include "tools/utils.h"
 #include "tools/error.h"
+#include "tools/fileloc.h"
 
-#include "lox/filelocation.h"
 #include "lox/token.h"
 #include "lox/scanner.h"
 #include "lox/parser.h"
@@ -27,6 +27,7 @@ static char* init_empty_string(const int size) {
 }
 
 
+// TODO: print for multiple lines
 static void point_error_root(const char* source, FileLoc fl) {
   assert(source != NULL);
   assert(fl.line != 0);
@@ -81,12 +82,12 @@ void raise_unexpected_character_error(const char chr) {
   free(line);
 }
 
-void raise_expected_token_error(const char* lexeme, FileLoc fl) {
+void raise_expected_expression_error(const char* message, FileLoc fl) {
 
   char* line = get_source_line(fl.line);
 
   point_error_root(line, fl);
-  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Expected matching %s of this character.\n", lexeme);
+  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "%s\n", message);
 
   lox.had_runtime_error = true;
   free(line);

@@ -1,7 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#include "lox/filelocation.h"
+#include "tools/fileloc.h"
 #include "lox/object.h"
 #include "stdlib.h"
 #include "stdbool.h"

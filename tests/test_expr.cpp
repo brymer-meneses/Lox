@@ -3,7 +3,7 @@
 extern "C" {
  #include "lox/object.h"
  #include "lox/expr.h"
- #include "lox/filelocation.h"
+ #include "tools/fileloc.h"
  #include "lox/token.h"
  #include "tools/astprinter.h"
 

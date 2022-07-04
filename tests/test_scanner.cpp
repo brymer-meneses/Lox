@@ -5,10 +5,10 @@ extern "C" {
   #include "string.h"
 
   #include "lox/scanner.h"
-  #include "lox/filelocation.h"
   #include "lox/token.h"
   #include "lox/lox.h"
 
+  #include "tools/fileloc.h"
   #include "tools/utils.h"
 }
 

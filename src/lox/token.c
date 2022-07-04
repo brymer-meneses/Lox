@@ -4,10 +4,11 @@
 #include "assert.h"
 #include "stdlib.h"
 
-#include "lox/filelocation.h"
 #include "lox/declarations.h"
 #include "lox/token.h"
+
 #include "tools/utils.h"
+#include "tools/fileloc.h"
 
 Token token_init(TokenType type, char* lexeme, LoxObject literal, FileLoc fileloc) {
   return (Token) {.type = type, .lexeme = lexeme, .literal= literal, .fileloc = fileloc};

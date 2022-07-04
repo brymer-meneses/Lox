@@ -6,8 +6,8 @@
 #include "stdarg.h"
 
 #include "tools/utils.h"
+#include "tools/fileloc.h"
 #include "lox/scanner.h"
-#include "lox/filelocation.h"
 #include "lox/lox.h"
 
 char* substring(const char* source, const size_t begin, const size_t end) {
@@ -154,14 +154,6 @@ char* str_format(const size_t num, const char* str, ...) {
   return buffer;
 }
 
-
-FileLoc fileloc_init(const size_t line, const size_t start, const size_t end) {
-  return (FileLoc) {
-    .line = line,
-    .start = start,
-    .end = end,
-  };
-}
 
 FileLoc compute_relative_position() {
   const Scanner s = lox.scanner;

@@ -1,6 +1,6 @@
+#include "tools/fileloc.h"
 
 #include "lox/declarations.h"
-#include "lox/filelocation.h"
 #include "lox/lox.h"
 #include "lox/object.h"
 #include "lox/token.h"

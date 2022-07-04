@@ -2,8 +2,6 @@
 #define FILE_LOCATION_H
 
 #include "stdlib.h"
-// #include "declarations.h"
-
 
 typedef struct {
    size_t line;
@@ -12,5 +10,6 @@ typedef struct {
 } FileLoc;
 
 FileLoc fileloc_init(const size_t line, const size_t start, const size_t end);
+FileLoc fileloc_range(const unsigned int num_args, ...);
 
 #endif

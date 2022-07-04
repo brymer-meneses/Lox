@@ -8,7 +8,7 @@
 
 #include "stdbool.h"
 #include "stdlib.h"
-#include "filelocation.h"
+#include "tools/fileloc.h"
 #include "token.h"
 
 extern FileLoc FILE_LOC_NULL;

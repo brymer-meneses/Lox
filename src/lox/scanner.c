@@ -1,4 +1,3 @@
-#include "lox/object.h"
 #include "stdbool.h"
 #include "string.h"
 #include "stdlib.h"
@@ -9,8 +8,9 @@
 #include "tools/error.h"
 #include "tools/hashtable.h"
 #include "tools/utils.h"
+#include "tools/fileloc.h"
 
-#include "lox/filelocation.h"
+#include "lox/object.h"
 #include "lox/token.h"
 #include "lox/scanner.h"
 #include "lox/declarations.h"
@@ -268,7 +268,7 @@ static bool match(char expected) {
 }
 
 
-TokenType get_keyword(const char* text) {
+static TokenType get_keyword(const char* text) {
   return atoi(ht_retrieve(&ht, (char*)text));
 }
 

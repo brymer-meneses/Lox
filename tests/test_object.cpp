@@ -3,9 +3,9 @@
 extern "C" {
   #include "lox/token.h"
   #include "lox/declarations.h"
-  #include "lox/filelocation.h"
   #include "lox/object.h"
   #include "tools/utils.h"
+  #include "tools/fileloc.h"
   #include "string.h"
 }
 

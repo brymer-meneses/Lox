@@ -36,6 +36,7 @@ typedef struct Expr {
   } data;
 
   ExprType type;
+  FileLoc fileloc;
 } Expr;
 
 
@@ -43,7 +44,7 @@ Expr* expr_init(ExprType type,  LoxObject value, Expr *left, Token op, Expr *rig
 
 Expr* binary_init(Expr *left, Token op, Expr *right);
 Expr* grouping_init(Expr *expr);
-Expr* literal_init(LoxObject value);
+Expr* literal_init(LoxObject value, FileLoc fl);
 Expr* unary_init(Token op, Expr* right);
 
 #endif

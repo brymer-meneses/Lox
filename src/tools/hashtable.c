@@ -1,7 +1,8 @@
-#include "tools/hashtable.h"
 #include "stdlib.h"
 #include "string.h"
 #include "assert.h"
+
+#include "tools/hashtable.h"
 
 static void ht_item_free(HTItem* item);
 static HTItem ht_item_init(char* key, char* value);

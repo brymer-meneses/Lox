@@ -4,14 +4,14 @@
 #include "stdio.h"
 #include "assert.h"
 
-
 #include "tools/error.h"
-#include "lox/filelocation.h"
+#include "tools/fileloc.h"
 #include "lox/object.h"
 #include "lox/parser.h"
 #include "lox/expr.h"
 #include "lox/token.h"
 #include "lox/lox.h"
+#include "tools/utils.h"
 
 static bool  isfinished();
 static bool  check(TokenType type);
@@ -36,13 +36,12 @@ void parser_init(const Token *tokens) {
   };
 }
 
-Stmt** parser_parse() {
+Expr* parser_parse() {
 
-  Stmt** statements;
+  Expr* expr = parse_expression();
 
-  
-  while (!isfinished()) {
-
+  if (lox.had_error) {
+    return NULL;
   }
 
   return expr;
@@ -118,13 +117,13 @@ static void synchronize() {
 
 }
 
-static void expect(FileLoc fl, TokenType type, const char* expected_lexeme) {
+static void expect(FileLoc fl, TokenType type, const char* message) {
     if (check(type)) {
       advance();
       return;
     }
 
-   raise_expected_token_error(expected_lexeme, fl);
+   raise_expected_expression_error(message, fl);
 }
 
 static FileLoc find_last_occurence(TokenType type) {
@@ -161,6 +160,16 @@ static Expr* parse_equality() {
   while (match(2, BANG_EQUAL, EQUAL_EQUAL)) {
     Token operator = previous();
     Expr* right = parse_comparison();
+
+    if (expr == NULL) {
+      raise_expected_expression_error("Expected expression before this.", operator.fileloc);
+      break;
+    }
+
+    if (right == NULL) {
+      raise_expected_expression_error("Expected expression after this.", operator.fileloc);
+      break;
+    }
     expr = binary_init(expr, operator, right);
   }
 
@@ -172,6 +181,16 @@ static Expr* parse_comparison() {
   while (match(4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
     Token operator = previous();
     Expr* right = parse_term();
+
+    if (expr == NULL) {
+      raise_expected_expression_error("Expected expression before this.", operator.fileloc);
+      break;
+    }
+
+    if (right == NULL) {
+      raise_expected_expression_error("Expected expression after this.", operator.fileloc);
+      break;
+    }
     expr = binary_init(expr, operator, right);
   }
   return expr;
@@ -183,6 +202,14 @@ static Expr* parse_term() {
   while (match(2, MINUS, PLUS)) {
     Token operator = previous();
     Expr* right = parse_factor();
+    if (right == NULL) {
+      raise_expected_expression_error("Expected number after this.", operator.fileloc);
+      break;
+    }
+    if (expr == NULL) {
+      raise_expected_expression_error("Expected number before this.", operator.fileloc);
+      break;
+    }
     expr = binary_init(expr, operator, right);
   }
 
@@ -195,6 +222,14 @@ static Expr* parse_factor() {
   while (match(2, SLASH, STAR)) {
     Token operator = previous();
     Expr* right = parse_unary();
+    if (right == NULL) {
+      raise_expected_expression_error("Expected number after this.", operator.fileloc);
+      break;
+    }
+    if (expr == NULL) {
+      raise_expected_expression_error("Expected number before this.", operator.fileloc);
+      break;
+    }
     expr = binary_init(expr, operator, right);
   }
   return expr;
@@ -211,20 +246,20 @@ static Expr* parse_unary() {
 }
 
 static Expr* parse_primary() {
-  if (match(1, FALSE)) return literal_init(encode_bool(false));
-  if (match(1, TRUE))  return literal_init(encode_bool(true));
-  if (match(1, NIL))   return literal_init(LOX_OBJECT_NULL);
+  if (match(1, FALSE)) return literal_init(encode_bool(false), previous().fileloc);
+  if (match(1, TRUE))  return literal_init(encode_bool(true), previous().fileloc);
+  if (match(1, NIL))   return literal_init(LOX_OBJECT_NULL, previous().fileloc);
 
   if (match(2, NUMBER, STRING)) 
-    return literal_init(previous().literal);
+    return literal_init(previous().literal, previous().fileloc);
 
   if (match(1, LEFT_PAREN)) {
     Expr* expr = parse_expression();
-    expect(find_last_occurence(LEFT_PAREN), RIGHT_PAREN, ")");
+    expect(find_last_occurence(LEFT_PAREN), RIGHT_PAREN, "Expected matching ) of this token.");
 
     if (expr) {
       return grouping_init(expr);
-    }
+    }  
   }
 
 

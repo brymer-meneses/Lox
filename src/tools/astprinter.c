@@ -16,19 +16,15 @@ char* expr_to_string(const Expr *expr) {
 
   switch (expr->type) {
     case EXPR_UNARY:
-      printf("hi unary\n");
       return parenthesize(expr->data.unary.operation.lexeme, NULL, expr->data.unary.right);
       break;
     case EXPR_BINARY:
-      printf("hi binary\n");
       return parenthesize(expr->data.binary.operation.lexeme, expr->data.binary.left, expr->data.binary.right);
       break;
     case EXPR_GROUPING:
-      printf("hi grouping\n");
       return parenthesize("group", expr->data.grouping.expression, NULL);
       break;
     case EXPR_LITERAL:
-      printf("hi literal\n");
       return loxobject_to_string(expr->data.literal.value);
       break;
    }
