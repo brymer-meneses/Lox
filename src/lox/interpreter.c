@@ -7,6 +7,7 @@
 #include "lox/expr.h"
 #include "lox/interpreter.h"
 #include "tools/utils.h"
+#include "lox/stmt.h"
 #include "tools/error.h"
 
 #include "string.h"
@@ -14,16 +15,19 @@
 #include "assert.h"
 
 static LoxObject expr_evaluate(Expr *expr);
+static void stmt_evaluate(Stmt* stmt);
 static bool is_equal(LoxObject obj1, LoxObject obj2);
 
-void interpret(Expr* expression) {
-  if (expression == NULL) {
-    printf("NIL\n");
-    return;
-  }
+void execute(Stmt* stmt) {
+  stmt_evaluate(stmt);
+}
 
-  LoxObject value = expr_evaluate(expression);
-  printf("%s\n", loxobject_to_string(value));
+void interpret(Stmt** statements) {
+
+  const size_t num_stmts = lox.parser.num_stmts;
+  for (size_t i=0; i<num_stmts && !lox.had_runtime_error ;i++) {
+    execute(statements[i]);
+  }
 }
 
 static bool is_equal(LoxObject obj1, LoxObject obj2) {
@@ -132,4 +136,21 @@ static LoxObject expr_evaluate(Expr *expr) {
   }
 
   return LOX_OBJECT_NULL;
+}
+
+static void stmt_evaluate(Stmt* stmt) {
+  assert(stmt != NULL);
+
+  switch (stmt->type) {
+    case STMT_EXPRESSION:
+      expr_evaluate(stmt->data.Expression.expression);
+      break;
+    case STMT_PRINT: {
+      LoxObject value = expr_evaluate(stmt->data.Print.expression);
+      printf("%s\n", loxobject_to_string(value));
+    } break;
+    default:
+      break;
+  }
+
 }

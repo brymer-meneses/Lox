@@ -4,22 +4,19 @@
 #include "lox/object.h"
 #include "stdio.h"
 
-#define CAST(X) (char*) X
-#define INITIAL_CAPACITY 64
+typedef struct { 
+  union {
+    TokenType tokentype;
+    char* string;
+  } value;
+  bool isnull;
+} HTValue;
 
 typedef struct HTItem {
   char* key;
-  char* value;
+  HTValue data;
 } HTItem;
 
-/*
- * For the sake of simplicity, we will just 
- * use the char* type as the value, since 
- * C has no templates, and I don't want to 
- * implement some complicated macro to do so lol.
- *
- * We will do casting to circumvent this issue instead.
- */
 typedef struct HashTable {
   size_t _capacity;
   size_t _num_items;
@@ -27,8 +24,8 @@ typedef struct HashTable {
 } HashTable;
 
 HashTable ht_init();
-char* ht_retrieve(HashTable* ht, char* key);
-void ht_insert(HashTable* ht, char* key, char* value);
+HTValue ht_retrieve(HashTable* ht, const char* key);
+void ht_insert(HashTable* ht, const char* key, HTValue value);
 void ht_free(HashTable* ht);
 
 

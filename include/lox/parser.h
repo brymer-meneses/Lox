@@ -3,16 +3,18 @@
 
 #include "declarations.h"
 #include "expr.h"
+#include "stmt.h"
 
 typedef struct Parser {
   const Token* tokens;
   const char* source;
-  unsigned int current;
+  size_t current;
+  size_t num_stmts;
 } Parser;
 
 
 
 void parser_init(const Token* tokens);
-Expr* parser_parse();
+Stmt** parser_parse();
 
 #endif 

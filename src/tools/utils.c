@@ -4,6 +4,7 @@
 #include "assert.h"
 #include "ctype.h"
 #include "stdarg.h"
+#include "assert.h"
 
 #include "tools/utils.h"
 #include "tools/fileloc.h"
@@ -11,6 +12,9 @@
 #include "lox/lox.h"
 
 char* substring(const char* source, const size_t begin, const size_t end) {
+  assert(source != NULL);
+  assert(end <= strlen(source));
+
   const size_t length = (end - begin + 1) ; // take into account that ending char '\0'
 
   char* allocated_str = (char*) malloc(length * sizeof(char));

@@ -23,11 +23,11 @@ TEST(TestScanner, ScanSingleChar) {
   Token* tokens = scanner_scan();
 
   for (unsigned int i=0; i<lox.scanner.parsed; i++) {
-    ASSERT_EQ(correct_types[i], tokens[i].type);
+    EXPECT_EQ(correct_types[i], tokens[i].type);
   }
 
   for (unsigned int i=0; i<strlen(input); i++) {
-    ASSERT_EQ(input[i], *tokens[i].lexeme);
+    EXPECT_EQ(input[i], *tokens[i].lexeme);
   }
 }
 
@@ -43,4 +43,18 @@ TEST(TestScanner, ScanDoubleChar) {
   for (unsigned int i=0; i<lox.scanner.parsed; i++) {
     EXPECT_EQ(correct_types[i], tokens[i].type);
   }
+}
+
+TEST(TestScanner, ScanKeywords) {
+  char input[] = "print var class return";
+
+  TokenType correct_types[] = {PRINT, VAR, CLASS,  RETURN, SOURCE_END};
+
+  scanner_init(input);
+  Token* tokens = scanner_scan();
+
+  for (unsigned int i=0; i<lox.scanner.parsed; i++) {
+    EXPECT_EQ(correct_types[i], tokens[i].type) << tokentype_to_string(tokens[i].type);
+  }
+
 }

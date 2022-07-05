@@ -6,18 +6,30 @@
 
 #include "tools/error.h"
 #include "tools/fileloc.h"
+#include "tools/utils.h"
+
 #include "lox/object.h"
 #include "lox/parser.h"
 #include "lox/expr.h"
 #include "lox/token.h"
 #include "lox/lox.h"
-#include "tools/utils.h"
+#include "lox/stmt.h"
 
 static bool  isfinished();
 static bool  check(TokenType type);
 static Token peek();
 static Token previous();
 static void  expect(FileLoc fl, TokenType type, const char* expected_literal);
+
+/* 
+ * expression     → equality ;
+ * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+ * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+ * term           → factor ( ( "-" | "+" ) factor )* ;
+ * factor         → unary ( ( "/" | "*" ) unary )* ;
+ * unary          → ( "!" | "-" ) unary | primary ;
+ * primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+ */
 
 static Expr* parse_equality();
 static Expr* parse_expression();
@@ -28,6 +40,15 @@ static Expr* parse_factor();
 static Expr* parse_unary();
 static Expr* parse_primary();
 
+/*
+ * program        → statement* EOF ;
+ * statement      → exprStmt | printStmt ;
+ * exprStmt       → expression ";" ;
+ * printStmt      → "print" expression ";" ;
+ */
+static Stmt* parse_expr_stmt();
+static Stmt* parse_print_stmt();
+static Stmt* parse_stmt();
 
 void parser_init(const Token *tokens) {
   lox.parser = (Parser) {
@@ -36,15 +57,25 @@ void parser_init(const Token *tokens) {
   };
 }
 
-Expr* parser_parse() {
+Stmt** parser_parse() {
 
-  Expr* expr = parse_expression();
+  size_t statements_num = 0;
+  size_t statements_size = 16;
 
-  if (lox.had_error) {
-    return NULL;
+  Stmt** statements = malloc(16 * sizeof(Stmt*));
+
+  while (!isfinished()) {
+    if (statements_num + 1>= statements_size) {
+      statements_size *= 2;
+      statements = realloc(statements, statements_size * sizeof(Stmt*));
+    }
+
+    statements[statements_num] = parse_stmt();
+    statements_num++;
   }
 
-  return expr;
+  lox.parser.num_stmts = statements_num;
+  return statements;
 }
 
 
@@ -138,17 +169,6 @@ static FileLoc find_last_occurence(TokenType type) {
 
   return FILE_LOC_NULL;
 }
-
-/* 
- * NOTES 
- * expression     → equality ;
- * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
- * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
- * term           → factor ( ( "-" | "+" ) factor )* ;
- * factor         → unary ( ( "/" | "*" ) unary )* ;
- * unary          → ( "!" | "-" ) unary | primary ;
- * primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
- */
 
 static Expr* parse_expression() {
   return parse_equality();
@@ -266,3 +286,19 @@ static Expr* parse_primary() {
   return NULL;
 }
 
+static Stmt* parse_stmt() {
+  if (match(1, PRINT)) return parse_print_stmt();
+  return parse_expr_stmt();
+}
+
+static Stmt* parse_expr_stmt() {
+  Expr* expr = parse_expression();
+  expect(expr->fileloc, SEMICOLON, "Expected ';' after value.");
+  return stmt_expr_init(expr);
+}
+
+static Stmt* parse_print_stmt() {
+  Expr* value = parse_expression();
+  expect(value->fileloc, SEMICOLON, "Expected ';' after value.");
+  return stmt_print_init(value);
+}

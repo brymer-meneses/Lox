@@ -2,6 +2,7 @@
 #define STMT_H
 
 #include "declarations.h"
+#include "lox/expr.h"
 
 typedef enum StmtType {
   STMT_BLOCK,
@@ -14,45 +15,59 @@ typedef enum StmtType {
   STMT_WHILE,
 } StmtType;
 
-typedef struct {
+typedef struct Stmt {
   union {
     struct {
-
-    } block_stmt;
-
-    struct {
-
-    } class_stmt;
+      struct Stmt* statements;
+    } Block;
 
     struct {
-
-    } expression_stmt;
-
-    struct {
-
-    } function_stmmt;
+      
+    } Class;
 
     struct {
-
-    } if_stmt;
-
-    struct {
-
-    } print_stmt; 
+      Expr* expression;
+    } Expression;
 
     struct {
-
-    } return_stmt;
-
-    struct {
-
-    } var_stmt;
+      Token name;
+      Token* params;
+      struct Stmt* body;
+    } Function;
 
     struct {
+      Expr* condition;
+      struct Stmt* then_branch;
+      struct Stmt* else_branch;
+    } If;
 
-    } while_stmt;
+    struct {
+      Expr* expression;
+    } Print; 
+
+    struct {
+      Token keyword;
+      Expr* value;
+    } Return;
+
+    struct {
+      Token* name;
+      Expr* initializer;
+    } Var;
+
+    struct {
+      Expr* condition;
+      struct Stmt* body;
+    } While;
   } data;
   StmtType type;
 } Stmt;
+
+Stmt* stmt_expr_init(Expr* expression);
+Stmt* stmt_while_init(Expr* condition, Stmt* body);
+Stmt* stmt_return_init(Expr* keyword, Expr* value);
+Stmt* stmt_print_init(Expr* expression);
+Stmt* stmt_block_init(Expr* statements);
+Stmt* stmt_function_init(Token name, Token* params, Stmt* body);
 
 #endif // !STMT_H

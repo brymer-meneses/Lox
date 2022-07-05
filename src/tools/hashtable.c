@@ -3,85 +3,61 @@
 #include "assert.h"
 
 #include "tools/hashtable.h"
+#define INITIAL_TABLE_CAPACITY 64
+#define REALLOC_FACTOR 0.5
 
-static void ht_item_free(HTItem* item);
-static HTItem ht_item_init(char* key, char* value);
-static unsigned long hash(unsigned char *str);
+static unsigned long hash(const char *str);
 
 HashTable ht_init() {
-  return (HashTable) { 
-    ._capacity = INITIAL_CAPACITY,
+
+  HashTable table = {
+    ._capacity = INITIAL_TABLE_CAPACITY,
     ._num_items = 0,
-    .items = calloc(INITIAL_CAPACITY, sizeof(HTItem)),
+    .items = malloc(INITIAL_TABLE_CAPACITY * sizeof(HTItem)),
   };
+
+  return table;
 }
 
-char* ht_retrieve(HashTable* ht, char* key) {
-  assert(ht != NULL);
-  assert(key != NULL);
+HTValue ht_retrieve(HashTable* ht, const char* key) {
 
-  unsigned long hashed_key = hash((unsigned char*) key) % ht->_capacity;
+  unsigned long index = hash(key) % ht->_capacity;
 
-  while (ht->items[hashed_key].key != key) {
+  while (strcmp(ht->items[index].key, key) != 0) {
+   if (index >= ht->_capacity ) 
+      return (HTValue) {.isnull = true};
+   index++;
+  };
 
-    if (hashed_key + 1 > ht->_capacity)
-      return NULL;
-
-    hashed_key++;
-  }
-
-  return ht->items[hashed_key].value;
+  return ht->items[index].data;
 }
 
-void ht_insert(HashTable* ht, char* key, char* value) {
-  assert(ht != NULL);
-  assert(key != NULL);
-  assert(value != NULL);
-
-  HTItem item = ht_item_init(key, value);
-
-  if (ht->_num_items +1 >= ht->_capacity) {
+void ht_insert(HashTable* ht, const char* key, HTValue data) {
+  if (ht->_num_items >= REALLOC_FACTOR * ht->_capacity) {
     ht->_capacity *= 2;
-    ht->items = realloc(ht->items, sizeof(HTItem) * ht->_capacity);
+    ht->items = realloc(ht->items, ht->_capacity * sizeof(HTItem));
   }
 
-  unsigned long hashed_key = hash((unsigned char*) key) % ht->_capacity;
+  unsigned long index = hash(key) % ht->_capacity;
 
-  if (ht->items[hashed_key].value == NULL) {
-    ht->items->value = value;
-    ht->items->key = key;
-  } else {
-    while (ht->items[hashed_key].value != NULL) {
-      hashed_key++;
-    }
+  while (ht->items[index].key != NULL ) {
+   if (index >= ht->_capacity ) return;
+   index++;
   }
 
-  ht->items[hashed_key] = item;
+  ht->items[index].key   = malloc(strlen(key) * sizeof(char) +1);
+  ht->items[index].data = data;
+  ht->items[index].data.isnull = false;
+
+  ht->items[index].key   = strdup(key);
   ht->_num_items++;
 }
 
 void ht_free(HashTable* ht) {
-  assert(ht != NULL);
-  for (size_t i=0; i<ht->_capacity; i++) {
-    ht_item_free(&ht->items[i]);
-  }
+
 }
 
-static void ht_item_free(HTItem* item) {
-  free(item->value);
-  free(item->key);
-}
-
-
-static HTItem ht_item_init(char* key, char* value) {
-  return (HTItem) {
-    .key = key,
-    .value = value,
-  };
-}
-
-// This function was taken from here: https://stackoverflow.com/a/7666577
-static unsigned long hash(unsigned char *str) {
+static unsigned long hash(const char *str) {
     unsigned long hash = 5381;
     int c;
 
@@ -90,4 +66,3 @@ static unsigned long hash(unsigned char *str) {
 
     return hash;
 }
-

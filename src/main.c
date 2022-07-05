@@ -1,6 +1,7 @@
 #include "stdio.h"
 
 #include "lox/lox.h"
+#include "tools/hashtable.h"
 
 int main(int argc, char *argv[]) {
 
@@ -11,4 +12,5 @@ int main(int argc, char *argv[]) {
   } else {
     printf("Usage clox <filename>");
   }
+
 }

@@ -2,7 +2,10 @@
 #define LOX_INTERPRETER_H
 
 #include "declarations.h"
+#include "stmt.h"
 
-void interpret(Expr* expression);
+void interpret(Stmt** statements);
+
+
 
 #endif

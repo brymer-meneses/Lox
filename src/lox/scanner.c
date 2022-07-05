@@ -16,8 +16,7 @@
 #include "lox/declarations.h"
 #include "lox/lox.h"
 
-
-static TokenType get_keyword(const char* text);
+static TokenType get_keyword(char* text);
 
 static void register_token(Token token);
 static void add_token(TokenType type, LoxObject literal);
@@ -33,6 +32,13 @@ static void scan_number();
 
 static HashTable ht;
 
+static HTValue cast(TokenType type) {
+  HTValue val;
+  val.value.tokentype = type;
+  return val;
+}
+
+
 void scanner_init(const char *source) {
   lox.scanner = (Scanner) {
     .current =0, 
@@ -46,24 +52,24 @@ void scanner_init(const char *source) {
   };
   ht = ht_init();
 
-  ht_insert(&ht, "and",   CAST(AND));
-  ht_insert(&ht, "class", CAST(CLASS));
-  ht_insert(&ht, "and",   CAST(AND));
-  ht_insert(&ht, "class", CAST(CLASS));
-  ht_insert(&ht, "else",  CAST(ELSE));
-  ht_insert(&ht, "false", CAST(FALSE));
-  ht_insert(&ht, "for",   CAST(FOR));
-  ht_insert(&ht, "fun",   CAST(FUN));
-  ht_insert(&ht, "if",    CAST(IF));
-  ht_insert(&ht, "nil",   CAST(NIL));
-  ht_insert(&ht, "or",    CAST(OR));
-  ht_insert(&ht, "print", CAST(PRINT));
-  ht_insert(&ht, "return",CAST(RETURN));
-  ht_insert(&ht, "super", CAST(SUPER));
-  ht_insert(&ht, "this",  CAST(THIS));
-  ht_insert(&ht, "true",  CAST(TRUE));
-  ht_insert(&ht, "var",   CAST(VAR));
-  ht_insert(&ht, "while", CAST(WHILE));
+  ht_insert(&ht, "and",   cast(AND));
+  ht_insert(&ht, "class", cast(CLASS));
+  ht_insert(&ht, "and",   cast(AND));
+  ht_insert(&ht, "class", cast(CLASS));
+  ht_insert(&ht, "else",  cast(ELSE));
+  ht_insert(&ht, "false", cast(FALSE));
+  ht_insert(&ht, "for",   cast(FOR));
+  ht_insert(&ht, "fun",   cast(FUN));
+  ht_insert(&ht, "if",    cast(IF));
+  ht_insert(&ht, "nil",   cast(NIL));
+  ht_insert(&ht, "or",    cast(OR));
+  ht_insert(&ht, "print", cast(PRINT));
+  ht_insert(&ht, "return",cast(RETURN));
+  ht_insert(&ht, "super", cast(SUPER));
+  ht_insert(&ht, "this",  cast(THIS));
+  ht_insert(&ht, "true",  cast(TRUE));
+  ht_insert(&ht, "var",   cast(VAR));
+  ht_insert(&ht, "while", cast(WHILE));
 }
 
 Token* scanner_scan() {
@@ -231,11 +237,11 @@ static void scan_string() {
   add_token(STRING, literal); 
 }
 
-static void scan_identifier(Scanner *s) {
+static void scan_identifier() {
   while (isalnum(peek()))
     advance();
 
-  char* identifier = substring(s->source, s->start, s->current-1);
+  char* identifier = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1);
   TokenType type = get_keyword(identifier);
 
   add_token(type, LOX_OBJECT_NULL);
@@ -268,8 +274,12 @@ static bool match(char expected) {
 }
 
 
-static TokenType get_keyword(const char* text) {
-  return atoi(ht_retrieve(&ht, (char*)text));
+static TokenType get_keyword(char* text) {
+  HTValue raw_result =  ht_retrieve(&ht, text);
+  if (raw_result.isnull)
+    return IDENTIFIER;
+  
+  return raw_result.value.tokentype;
 }
 
 

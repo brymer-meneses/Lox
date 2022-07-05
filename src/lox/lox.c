@@ -4,6 +4,7 @@
 #include "tools/astprinter.h"
 #include "tools/utils.h"
 #include "tools/error.h"
+#include "tools/debug.h"
 
 #include "lox/scanner.h"
 #include "lox/declarations.h"
@@ -29,11 +30,12 @@ void run(char source[]) {
   
   scanner_init(source);
   Token* tokens = scanner_scan();
+  log_tokens(tokens);
   
   parser_init(tokens);
-  Expr* expression = parser_parse();
+  Stmt** statements = parser_parse();
 
-  interpret(expression);
+  interpret(statements);
 }
 
 void run_file(const char* filename) {
