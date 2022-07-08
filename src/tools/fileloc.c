@@ -3,13 +3,9 @@
 #include "stdarg.h"
 #include "limits.h"
 
-static size_t min(size_t num1, size_t num2) {
-  if (num1 < num2) {
-    return num1;
-  } 
-  return num2;
-}
 
+static size_t max(size_t num1, size_t num2);
+static size_t min(size_t num1, size_t num2);
 
 FileLoc fileloc_init(const size_t line, const size_t start, const size_t end) {
   return (FileLoc) {
@@ -25,14 +21,14 @@ FileLoc fileloc_range(const unsigned int num_args, ...) {
   va_start(args, num_args);
 
   size_t start = ULONG_MAX;
-  size_t end = ULONG_MAX;
-  size_t line = ULONG_MAX;
+  size_t end = 0;
+  size_t line = 1;
 
   for (unsigned int i=0; i<num_args; i++) {
     FileLoc arg = va_arg(args, FileLoc);
     start = min(arg.start, start);
-    end = min(arg.end, end);
-    line = min(arg.line, line);
+    end =   max(arg.end, end);
+    line =  max(arg.line, line);
   }
 
   va_end(args);
@@ -41,4 +37,18 @@ FileLoc fileloc_range(const unsigned int num_args, ...) {
     .end = end,
     .line = line,
   };
+}
+
+static size_t min(size_t num1, size_t num2) {
+  if (num1 < num2) {
+    return num1;
+  } 
+  return num2;
+}
+
+static size_t max(size_t num1, size_t num2) {
+  if (num1 > num2) {
+    return num1;
+  } 
+  return num2;
 }

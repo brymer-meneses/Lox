@@ -16,6 +16,8 @@ typedef struct Lox {
 
   bool had_error;
   bool had_runtime_error;
+
+  bool is_on_repl;
 } Lox;
 
 

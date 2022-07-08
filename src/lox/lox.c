@@ -30,7 +30,6 @@ void run(char source[]) {
   
   scanner_init(source);
   Token* tokens = scanner_scan();
-  log_tokens(tokens);
   
   parser_init(tokens);
   Stmt** statements = parser_parse();
@@ -50,6 +49,7 @@ void run_file(const char* filename) {
 }
 
 void run_prompt() {
+  lox.is_on_repl = true;
 
   while(true) {
     char line[MAX_INPUT_LIMIT];
