@@ -42,7 +42,8 @@ void ht_insert(HashTable* ht, const char* key, HTValue data) {
 
   while (ht->items[index].key != NULL ) {
    if (index >= ht->_capacity ) return;
-   index++;
+   if (strcmp(ht->items[index].key, key) == 0) return;
+      index++;
   }
 
   ht->items[index].data = data;
