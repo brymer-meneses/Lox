@@ -3,7 +3,7 @@
 #include "assert.h"
 
 #include "tools/hashtable.h"
-#define INITIAL_TABLE_CAPACITY 64
+#define INITIAL_TABLE_CAPACITY 100
 #define REALLOC_FACTOR 0.5
 
 static unsigned long hash(const char *str);
@@ -45,16 +45,10 @@ void ht_insert(HashTable* ht, const char* key, HTValue data) {
    index++;
   }
 
-  ht->items[index].key   = malloc(strlen(key) * sizeof(char) +1);
   ht->items[index].data = data;
   ht->items[index].data.isnull = false;
-
   ht->items[index].key   = strdup(key);
   ht->_num_items++;
-}
-
-void ht_free(HashTable* ht) {
-
 }
 
 static unsigned long hash(const char *str) {

@@ -26,7 +26,6 @@ typedef struct HashTable {
 HashTable ht_init();
 HTValue ht_retrieve(HashTable* ht, const char* key);
 void ht_insert(HashTable* ht, const char* key, HTValue value);
-void ht_free(HashTable* ht);
 
 
 #endif // !HASH_TABLE_H 
