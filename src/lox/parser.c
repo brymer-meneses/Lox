@@ -158,7 +158,8 @@ static void expect(FileLoc* fl, TokenType type, const char* message) {
     return;
   }
 
-  report(str_concat(message, tokentype_to_string(type)), fl);
+  report(fl, message);
+  return NULL;
 }
 
 static FileLoc* find_last_occurence(TokenType type) {
@@ -186,12 +187,12 @@ static Expr* parse_equality() {
     Expr* right = parse_comparison();
 
     if (expr == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
 
     if (right == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -207,12 +208,12 @@ static Expr* parse_comparison() {
     Expr* right = parse_term();
 
     if (expr == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
 
     if (right == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -227,11 +228,11 @@ static Expr* parse_term() {
     Token* operator = previous();
     Expr* right = parse_factor();
     if (right == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
     if (expr == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -247,11 +248,11 @@ static Expr* parse_factor() {
     Token* operator = previous();
     Expr* right = parse_unary();
     if (right == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
     if (expr == NULL) {
-      report("Expected expression before this.", operator->fileloc);
+      report(operator->fileloc, "Expected expression before this.");
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -278,7 +279,7 @@ static Expr* parse_primary() {
     return literal_init(loxobject_init(LOX_NIL, "NIL", previous()->fileloc));
 
   if (match(1, STRING))
-    return literal_init(loxobject_init(LOX_STRING, previous()->lexeme, previous()->fileloc));
+    return literal_init(loxobject_init(LOX_STRING, previous()->literal->data.string, previous()->fileloc));
   if (match(1, NUMBER))
     return literal_init(loxobject_init(LOX_NUMBER, previous()->lexeme, previous()->fileloc));
 

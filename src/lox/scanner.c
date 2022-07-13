@@ -163,10 +163,10 @@ static void scan_token() {
     default:
       if (isdigit(c)) {
         scan_number();
-      } else if (isalpha(c)) {
+      } else if (isalpha(c) || c == '_') {
         scan_identifier();
       } else {
-        report("Got unexpected character.", fileloc_init(lox.scanner.line, lox.scanner.current - 1, lox.scanner.current -1));
+        report(fileloc_init(lox.scanner.line, lox.scanner.current - 1, lox.scanner.current -1), "Got unexpected character: %c", c);
       }
       break;
   }
@@ -222,7 +222,7 @@ static void scan_string() {
 
   // handle when the string doesn't terminate
   if (isfinished()) {
-    report("Expected a closing \" at this position.", fileloc_init(lox.scanner.line, lox.scanner.current-1, lox.scanner.current-1));
+    report(fileloc_init(lox.scanner.line, lox.scanner.current-1, lox.scanner.current-1), "Expected a closing \" at this position.");
     return;
   }
   // consume the last '"' character
@@ -236,7 +236,7 @@ static void scan_string() {
 }
 
 static void scan_identifier() {
-  while (isalnum(peek()))
+  while (isalnum(peek()) || peek() == '_')
     advance();
 
   char* identifier = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1);
@@ -263,7 +263,6 @@ static char peek_next() {
 }
 
 static bool match(char expected) {
-  // printf("Got: %c, Expected: %c \n", scanner_peek(scanner), expected);
   if (peek() == expected) {
     lox.scanner.current++;
     return true;
@@ -277,14 +276,13 @@ static TokenType keywords_match(char* text) {
   if (retval == NULL) return IDENTIFIER;
 
   TokenType token =  *(TokenType* ) retval;
+  free(retval);
   return token;
 }
 
 static void keywords_set(char* text, TokenType type) {
   TokenType* type_ptr = malloc(1 * sizeof(TokenType));
   *type_ptr = type;
-
-  // printf("INSERTING: %d\n", *(TokenType*) type_ptr);
 
   hashmap_insert(keywords, text, type_ptr);
 }

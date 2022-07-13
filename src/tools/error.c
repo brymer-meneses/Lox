@@ -49,7 +49,10 @@ static void point_error_root(char* source, FileLoc* fl) {
   assert(fl->line != 0);
 
   char source_context[64];
-  sprintf(source_context, "    %lu| ", fl->line);
+  if (lox.is_on_repl)
+    sprintf(source_context, "    > | ");
+  else
+    sprintf(source_context, "    %lu| ", fl->line);
 
   const size_t source_context_size = strlen(source_context);
   const size_t source_size = strlen(source);
@@ -73,11 +76,23 @@ static void point_error_root(char* source, FileLoc* fl) {
   free(pointer_str_offset);
 }
 
-void report(char* message, FileLoc* fl) {
+void report(FileLoc* fl, char* message, ...) {
 
   char* line = get_source_line(fl->line);
-
   point_error_root(line, fl);
-  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "%s\n" , message);
   lox.had_error = true;
+
+  char* formatted_message = str_concat(COLOR(ANSI_CODE_RED, "  ERROR: "), message);
+
+  // Put newline
+  formatted_message = str_concat(formatted_message, "\n");
+
+  // Print output
+  va_list args;
+  va_start(args, message);
+
+  vfprintf(stdout, formatted_message, args);
+
+  va_end(args);
 }
+

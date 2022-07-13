@@ -50,9 +50,9 @@ TEST(TestScanner, ScanDoubleChar) {
 }
 
 TEST(TestScanner, ScanKeywords) {
-  char input[] = "print var class return";
+  char input[] = "print var class return varname";
 
-  TokenType correct_types[] = {PRINT, VAR, CLASS,  RETURN, SOURCE_END};
+  TokenType correct_types[] = {PRINT, VAR, CLASS,  RETURN, IDENTIFIER, SOURCE_END};
 
   scanner_init(input);
   Token** tokens = scanner_scan();
@@ -64,18 +64,41 @@ TEST(TestScanner, ScanKeywords) {
   free(tokens);
 }
 
-// TEST(TestScanner, ScanVarDeclaration) {
-//   char input[] = "test test1 test2 test_underscore _test_underscore2";
-//
-//   TokenType correct_types[] = {IDENTIFIER, IDENTIFIER, IDENTIFIER, IDENTIFIER, SOURCE_END};
-//   char** correct_literals = str_split(input, " ");
-//
-//   scanner_init(input);
-//   Token* tokens = scanner_scan();
-//
-//   for (unsigned int i=0; i<lox.scanner.parsed; i++) {
-//     EXPECT_EQ(correct_types[i], tokens[i].type);
-//     EXPECT_TRUE(strcmp(correct_literals[i], tokens[i].literal.data.string) == 0);
-//   }
-//
-// }
+TEST(TestScanner, ScanVariableNames) {
+  char input[] = "test test1 test2 test_underscore _test_underscore";
+
+  TokenType correct_types[] = {IDENTIFIER, IDENTIFIER, IDENTIFIER, IDENTIFIER, IDENTIFIER, SOURCE_END};
+  char** correct_literals = str_split(input, " ");
+
+  scanner_init(input);
+  Token** tokens = scanner_scan();
+
+  for (unsigned int i=0; i<lox.scanner.parsed-1; i++) {
+    EXPECT_EQ(correct_types[i], tokens[i]->type);
+    EXPECT_TRUE(strcmp(correct_literals[i], tokens[i]->lexeme) == 0);
+  }
+
+}
+
+TEST(TestScanner, ScanString) {
+  char input[] = "\"hello world\"";
+  char* correct = substring(input, 1, 11);
+
+  scanner_init(input);
+  Token** tokens = scanner_scan();
+
+  EXPECT_TRUE(strcmp(tokens[0]->literal->data.string, correct) == 0);
+}
+
+TEST(TestScanner, ScanVariableDeclaration) {
+  char input[] = "var input = 5;";
+  TokenType correct_types[] = {VAR, IDENTIFIER, EQUAL, NUMBER, SEMICOLON, SOURCE_END};
+
+  scanner_init(input);
+  Token** tokens = scanner_scan();
+
+  for (unsigned int i=0; i<lox.scanner.parsed-1; i++) {
+    EXPECT_EQ(correct_types[i], tokens[i]->type);
+  }
+  
+}
