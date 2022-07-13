@@ -4,8 +4,8 @@
 #include "tools/astprinter.h"
 #include "tools/debug.h"
 
-void log_tokens(Token* tokens) {
-  for (int i=0; tokens[i].type != SOURCE_END; i++) {
+void log_tokens(Token** tokens) {
+  for (int i=0; tokens[i]->type != SOURCE_END; i++) {
     token_print(tokens[i]);
   }
 }

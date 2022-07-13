@@ -10,20 +10,31 @@
 #include "tools/utils.h"
 #include "tools/fileloc.h"
 
-Token token_init(TokenType type, char* lexeme, LoxObject literal, FileLoc fileloc) {
-  return (Token) {.type = type, .lexeme = lexeme, .literal= literal, .fileloc = fileloc};
+Token* token_init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fileloc) {
+  Token* tok = malloc(1 * sizeof(Token));
+  tok->lexeme = lexeme;
+  tok->type = type;
+  tok->literal = literal;
+  tok->fileloc = fileloc;
+  return tok;
 }
 
 
-void token_print(Token token) {
+void token_print(Token* token) {
   // do not print SOURCE_END token
-  if (token.type == SOURCE_END) return;
+  if (token->type == SOURCE_END) return;
 
   printf("Token: [ ");
-  printf("type: %s, ", tokentype_to_string(token.type));
-  printf("literal: %s, ", loxobject_to_string(token.literal));
-  printf("line: %lu ", token.line);
+  printf("type: %s, ", tokentype_to_string(token->type));
+  printf("literal: %s, ", loxobject_to_string(token->literal));
+  printf("line: %lu ", token->line);
   printf("]\n");
+}
+
+void token_free(Token* token) {
+  free(token->fileloc);
+  free(token->lexeme);
+  free(token->literal);
 }
 
 

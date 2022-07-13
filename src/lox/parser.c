@@ -17,11 +17,12 @@
 
 static bool  isfinished();
 static bool  check(TokenType type);
-static Token peek();
-static Token previous();
-static void  expect(FileLoc fl, TokenType type, const char* expected_literal);
+static void  expect(FileLoc* fl, TokenType type, const char* expected_literal);
 
-/* 
+static Token* peek();
+static Token* previous();
+
+/*
  * expression     → equality ;
  * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
  * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -41,16 +42,19 @@ static Expr* parse_unary();
 static Expr* parse_primary();
 
 /*
- * program        → statement* EOF ;
+ * program        → declaration* EOF ;
+ * declaration    → varDecl | statement ;
  * statement      → exprStmt | printStmt ;
- * exprStmt       → expression ";" ;
+ *
+ *  varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+ * exprStmt       →  expression ";" ;
  * printStmt      → "print" expression ";" ;
- */
+ * */
 static Stmt* parse_expr_stmt();
 static Stmt* parse_print_stmt();
 static Stmt* parse_stmt();
 
-void parser_init(const Token *tokens) {
+void parser_init(Token** tokens) {
   lox.parser = (Parser) {
     .tokens = tokens,
     .current = 0,
@@ -79,13 +83,13 @@ Stmt** parser_parse() {
 }
 
 
-static Token advance() {
-  if (!isfinished()) 
+static Token* advance() {
+  if (!isfinished())
     lox.parser.current++;
   return previous();
 }
 
-static Token previous() {
+static Token* previous() {
   assert(lox.parser.current >= 0);
   return lox.parser.tokens[lox.parser.current - 1];
 }
@@ -113,14 +117,14 @@ static bool check(TokenType expected) {
   if (isfinished())
     return false;
 
-  return peek().type == expected;
+  return peek()->type == expected;
 }
 
 static bool isfinished() {
-  return peek().type == SOURCE_END;
+  return peek()->type == SOURCE_END;
 }
 
-static Token peek() {
+static Token* peek() {
   return lox.parser.tokens[lox.parser.current];
 }
 
@@ -128,9 +132,9 @@ static void synchronize() {
   advance();
 
   while (!isfinished()) {
-    if (previous().type == SEMICOLON) return;
+    if (previous()->type == SEMICOLON) return;
 
-    switch (peek().type) {
+    switch (peek()->type) {
       case CLASS:
       case FUN:
       case VAR:
@@ -148,46 +152,46 @@ static void synchronize() {
 
 }
 
-static void expect(FileLoc fl, TokenType type, const char* message) {
-    if (check(type)) {
-      advance();
-      return;
-    }
+static void expect(FileLoc* fl, TokenType type, const char* message) {
+  if (check(type)) {
+    advance();
+    return;
+  }
 
-   raise_expected_expression_error(message, fl);
+  report(str_concat(message, tokentype_to_string(type)), fl);
 }
 
-static FileLoc find_last_occurence(TokenType type) {
+static FileLoc* find_last_occurence(TokenType type) {
 
   size_t i = lox.parser.current;
   while (i >= 0) {
-    if (lox.parser.tokens[i].type == type) {
-      return lox.parser.tokens[i].fileloc;
+    if (lox.parser.tokens[i]->type == type) {
+      return lox.parser.tokens[i]->fileloc;
     }
     i--;
   }
 
-  return FILE_LOC_NULL;
+  return NULL;
 }
 
 static Expr* parse_expression() {
   return parse_equality();
-}  
+} 
 
 static Expr* parse_equality() {
   Expr* expr = parse_comparison();
 
   while (match(2, BANG_EQUAL, EQUAL_EQUAL)) {
-    Token operator = previous();
+    Token* operator = previous();
     Expr* right = parse_comparison();
 
     if (expr == NULL) {
-      raise_expected_expression_error("Expected expression before this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
 
     if (right == NULL) {
-      raise_expected_expression_error("Expected expression after this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -199,16 +203,16 @@ static Expr* parse_equality() {
 static Expr* parse_comparison() {
   Expr* expr = parse_term();
   while (match(4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-    Token operator = previous();
+    Token* operator = previous();
     Expr* right = parse_term();
 
     if (expr == NULL) {
-      raise_expected_expression_error("Expected expression before this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
 
     if (right == NULL) {
-      raise_expected_expression_error("Expected expression after this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -220,14 +224,14 @@ static Expr* parse_term() {
   Expr* expr = parse_factor();
 
   while (match(2, MINUS, PLUS)) {
-    Token operator = previous();
+    Token* operator = previous();
     Expr* right = parse_factor();
     if (right == NULL) {
-      raise_expected_expression_error("Expected number after this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
     if (expr == NULL) {
-      raise_expected_expression_error("Expected number before this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -240,14 +244,14 @@ static Expr* parse_factor() {
   Expr* expr = parse_unary();
 
   while (match(2, SLASH, STAR)) {
-    Token operator = previous();
+    Token* operator = previous();
     Expr* right = parse_unary();
     if (right == NULL) {
-      raise_expected_expression_error("Expected number after this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
     if (expr == NULL) {
-      raise_expected_expression_error("Expected number before this.", operator.fileloc);
+      report("Expected expression before this.", operator->fileloc);
       break;
     }
     expr = binary_init(expr, operator, right);
@@ -257,7 +261,7 @@ static Expr* parse_factor() {
 
 static Expr* parse_unary() {
   if (match(2, BANG, MINUS)) {
-    Token operator = previous();
+    Token* operator = previous();
     Expr* right = parse_unary();
     return unary_init(operator, right);
   }
@@ -266,12 +270,17 @@ static Expr* parse_unary() {
 }
 
 static Expr* parse_primary() {
-  if (match(1, FALSE)) return literal_init(encode_bool(false), previous().fileloc);
-  if (match(1, TRUE))  return literal_init(encode_bool(true), previous().fileloc);
-  if (match(1, NIL))   return literal_init(LOX_OBJECT_NULL, previous().fileloc);
+  if (match(1, FALSE)) 
+    return literal_init(loxobject_init(LOX_BOOLEAN, "false", previous()->fileloc));
+  if (match(1, TRUE)) 
+    return literal_init(loxobject_init(LOX_BOOLEAN, "true", previous()->fileloc));
+  if (match(1, NIL))  
+    return literal_init(loxobject_init(LOX_NIL, "NIL", previous()->fileloc));
 
-  if (match(2, NUMBER, STRING)) 
-    return literal_init(previous().literal, previous().fileloc);
+  if (match(1, STRING))
+    return literal_init(loxobject_init(LOX_STRING, previous()->lexeme, previous()->fileloc));
+  if (match(1, NUMBER))
+    return literal_init(loxobject_init(LOX_NUMBER, previous()->lexeme, previous()->fileloc));
 
   if (match(1, LEFT_PAREN)) {
     Expr* expr = parse_expression();
@@ -279,7 +288,7 @@ static Expr* parse_primary() {
 
     if (expr) {
       return grouping_init(expr);
-    }  
+    } 
   }
 
 

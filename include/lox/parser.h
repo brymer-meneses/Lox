@@ -6,15 +6,15 @@
 #include "stmt.h"
 
 typedef struct Parser {
-  const Token* tokens;
   const char* source;
+  Token** tokens;
   size_t current;
   size_t num_stmts;
 } Parser;
 
 
 
-void parser_init(const Token* tokens);
+void parser_init(Token** tokens);
 Stmt** parser_parse();
 
 #endif 

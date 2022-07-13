@@ -6,9 +6,10 @@
 #include "assert.h"
 
 #include "tools/error.h"
-#include "tools/hashtable.h"
+#include "tools/hashmap.h"
 #include "tools/utils.h"
 #include "tools/fileloc.h"
+#include "tools/hashmap.h"
 
 #include "lox/object.h"
 #include "lox/token.h"
@@ -16,10 +17,10 @@
 #include "lox/declarations.h"
 #include "lox/lox.h"
 
-static TokenType get_keyword(char* text);
+static TokenType keywords_match(char* text);
+static void keywords_set(char* text, TokenType type);
 
-static void register_token(Token token);
-static void add_token(TokenType type, LoxObject literal);
+static void add_token(TokenType type, LoxObject* literal);
 static char peek();
 static bool match(char expected);
 static char advance();
@@ -30,16 +31,10 @@ static void scan_identifier();
 static void scan_string();
 static void scan_number();
 
-static HashTable ht;
-
-static HTValue cast(TokenType type) {
-  HTValue val;
-  val.value.tokentype = type;
-  return val;
-}
+static Hashmap* keywords;
 
 
-void scanner_init(const char *source) {
+void scanner_init(const char* source) {
   lox.scanner = (Scanner) {
     .current =0, 
     .start =0, 
@@ -48,36 +43,37 @@ void scanner_init(const char *source) {
     .capacity = INITIAL_TOKEN_ARRAY_SIZE,
     .parsed = 0,
     .last_line = 0,
-    .tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token)),
+    .tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token*)),
   };
-  ht = ht_init();
 
-  ht_insert(&ht, "and",   cast(AND));
-  ht_insert(&ht, "class", cast(CLASS));
-  ht_insert(&ht, "and",   cast(AND));
-  ht_insert(&ht, "class", cast(CLASS));
-  ht_insert(&ht, "else",  cast(ELSE));
-  ht_insert(&ht, "false", cast(FALSE));
-  ht_insert(&ht, "for",   cast(FOR));
-  ht_insert(&ht, "fun",   cast(FUN));
-  ht_insert(&ht, "if",    cast(IF));
-  ht_insert(&ht, "nil",   cast(NIL));
-  ht_insert(&ht, "or",    cast(OR));
-  ht_insert(&ht, "print", cast(PRINT));
-  ht_insert(&ht, "return",cast(RETURN));
-  ht_insert(&ht, "super", cast(SUPER));
-  ht_insert(&ht, "this",  cast(THIS));
-  ht_insert(&ht, "true",  cast(TRUE));
-  ht_insert(&ht, "var",   cast(VAR));
-  ht_insert(&ht, "while", cast(WHILE));
+  keywords = hashmap_init();
+  keywords_set("and",   AND);
+  keywords_set("class", CLASS);
+  keywords_set("and",   AND);
+  keywords_set("class", CLASS);
+  keywords_set("else",  ELSE);
+  keywords_set("false", FALSE);
+  keywords_set("for",   FOR);
+  keywords_set("fun",   FUN);
+  keywords_set("if",    IF);
+  keywords_set("nil",   NIL);
+  keywords_set("or",    OR);
+  keywords_set("print", PRINT);
+  keywords_set("return",RETURN);
+  keywords_set("super", SUPER);
+  keywords_set("this",  THIS);
+  keywords_set("true",  TRUE);
+  keywords_set("var",   VAR);
+  keywords_set("while", WHILE);
 }
 
-Token* scanner_scan() {
+Token** scanner_scan() {
   while (!isfinished()) {
     lox.scanner.start = lox.scanner.current;
     scan_token();
   }
-  add_token(SOURCE_END, LOX_OBJECT_NULL);
+  add_token(SOURCE_END, NULL);
+  hashmap_free(keywords);
   return lox.scanner.tokens;
 }
 
@@ -85,69 +81,69 @@ static void scan_token() {
   char c = advance();
   switch (c) {
     case '{':
-      add_token(LEFT_BRACE, LOX_OBJECT_NULL);
+      add_token(LEFT_BRACE, NULL);
       break;
     case '}': 
-      add_token(RIGHT_BRACE, LOX_OBJECT_NULL);
+      add_token(RIGHT_BRACE, NULL);
       break;
     case '(':
-      add_token(LEFT_PAREN, LOX_OBJECT_NULL);
+      add_token(LEFT_PAREN, NULL);
       break;
     case ')':
-      add_token(RIGHT_PAREN, LOX_OBJECT_NULL);
+      add_token(RIGHT_PAREN, NULL);
       break;
     case ',':
-      add_token(COMMA, LOX_OBJECT_NULL);
+      add_token(COMMA, NULL);
       break;
     case '.':
-      add_token(DOT, LOX_OBJECT_NULL);
+      add_token(DOT, NULL);
       break;
     case '*':
-      add_token(STAR, LOX_OBJECT_NULL);
+      add_token(STAR, NULL);
       break;
     case '+':
-      add_token(PLUS, LOX_OBJECT_NULL);
+      add_token(PLUS, NULL);
       break;
     case '-':
-      add_token(MINUS, LOX_OBJECT_NULL);
+      add_token(MINUS, NULL);
       break;
     case ';':
-      add_token(SEMICOLON, LOX_OBJECT_NULL);
+      add_token(SEMICOLON, NULL);
       break;
 
     case '>':
       if (match('=')) 
-        add_token(GREATER_EQUAL, LOX_OBJECT_NULL);
+        add_token(GREATER_EQUAL, NULL);
       else
-        add_token(GREATER, LOX_OBJECT_NULL);
+        add_token(GREATER, NULL);
       break;
 
     case '<':
       if (match('=')) 
-        add_token(LESS_EQUAL, LOX_OBJECT_NULL);
+        add_token(LESS_EQUAL, NULL);
       else
-        add_token(LESS, LOX_OBJECT_NULL);
+        add_token(LESS, NULL);
       break;
 
     case '=':
       if (match('=')) 
-        add_token(EQUAL_EQUAL, LOX_OBJECT_NULL);
+        add_token(EQUAL_EQUAL, NULL);
       else 
-        add_token(EQUAL, LOX_OBJECT_NULL);
+        add_token(EQUAL, NULL);
       break;
 
     case '!':
       if (match('='))
-        add_token(BANG_EQUAL, LOX_OBJECT_NULL);
+        add_token(BANG_EQUAL, NULL);
       else 
-        add_token(BANG, LOX_OBJECT_NULL);
+        add_token(BANG, NULL);
       break;
     case '/':
       if (match('/')) {
         while(peek() != '\n')
           advance();
       } else {
-        add_token(SLASH, LOX_OBJECT_NULL);
+        add_token(SLASH, NULL);
       }
        break;
     
@@ -170,27 +166,26 @@ static void scan_token() {
       } else if (isalpha(c)) {
         scan_identifier();
       } else {
-        raise_unexpected_character_error(c);
+        report("Got unexpected character.", fileloc_init(lox.scanner.line, lox.scanner.current - 1, lox.scanner.current -1));
       }
       break;
   }
 
 }
 
-static void register_token(Token token) {
+static void add_token(TokenType type, LoxObject* literal) {
+  char* text = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1); // current points to the next "char" so we subtract by 1
+  FileLoc* fl = fileloc_init(lox.scanner.line, lox.scanner.start, lox.scanner.current);
+  Token* token = token_init(type, text, literal, fl);
+
+  // Reallocate memory
   if (lox.scanner.parsed == lox.scanner.capacity) {
     lox.scanner.capacity = 2 * lox.scanner.capacity;
-
-    lox.scanner.tokens = realloc(lox.scanner.tokens, lox.scanner.capacity * sizeof(Token));
+    lox.scanner.tokens = realloc(lox.scanner.tokens, lox.scanner.capacity * sizeof(Token*));
   }
+
   lox.scanner.tokens[lox.scanner.parsed] = token;
   lox.scanner.parsed++;
-}
-
-static void add_token(TokenType type, LoxObject literal) {
-  char* text = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1); // current points to the next "char" so we subtract by 1
-  Token token = token_init(type, text, literal, compute_relative_position());
-  register_token(token);
 }
 
 static char advance() {
@@ -211,8 +206,9 @@ static void scan_number() {
     while (isdigit(peek())) 
       advance();
   } 
-  const char* num_lexeme = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1);
-  LoxObject literal = encode_double(strtod(num_lexeme, NULL));
+  char* num_lexeme = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1);
+  FileLoc* fl = fileloc_init(lox.scanner.line, lox.scanner.start, lox.scanner.current - 1);
+  LoxObject* literal = loxobject_init(LOX_NUMBER, num_lexeme, fl);
 
   add_token(NUMBER, literal);
 
@@ -226,14 +222,16 @@ static void scan_string() {
 
   // handle when the string doesn't terminate
   if (isfinished()) {
-    raise_unterminated_string_error();
+    report("Expected a closing \" at this position.", fileloc_init(lox.scanner.line, lox.scanner.current-1, lox.scanner.current-1));
     return;
   }
   // consume the last '"' character
   advance();
 
- char* text = substring(lox.scanner.source, lox.scanner.start+1, lox.scanner.current-2);
- LoxObject literal = encode_string(text);
+  char* text = substring(lox.scanner.source, lox.scanner.start+1, lox.scanner.current-2);
+  FileLoc* fl = fileloc_init(lox.scanner.line, lox.scanner.start, lox.scanner.current - 1);
+
+  LoxObject* literal = loxobject_init(LOX_STRING, text, fl);
   add_token(STRING, literal); 
 }
 
@@ -242,9 +240,9 @@ static void scan_identifier() {
     advance();
 
   char* identifier = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1);
-  TokenType type = get_keyword(identifier);
+  TokenType type = keywords_match(identifier);
 
-  add_token(type, LOX_OBJECT_NULL);
+  add_token(type, NULL);
 }
 
 
@@ -274,12 +272,22 @@ static bool match(char expected) {
 }
 
 
-static TokenType get_keyword(char* text) {
-  HTValue raw_result =  ht_retrieve(&ht, text);
-  if (raw_result.isnull)
-    return IDENTIFIER;
-  
-  return raw_result.value.tokentype;
+static TokenType keywords_match(char* text) {
+  void* retval = hashmap_retrieve(keywords, text);
+  if (retval == NULL) return IDENTIFIER;
+
+  TokenType token =  *(TokenType* ) retval;
+  return token;
 }
+
+static void keywords_set(char* text, TokenType type) {
+  TokenType* type_ptr = malloc(1 * sizeof(TokenType));
+  *type_ptr = type;
+
+  // printf("INSERTING: %d\n", *(TokenType*) type_ptr);
+
+  hashmap_insert(keywords, text, type_ptr);
+}
+
 
 

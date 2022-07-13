@@ -16,8 +16,22 @@
 
 #define COLOR(COLOR, STRING) COLOR STRING ANSI_CODE_RESET
 
+static FileLoc* compute_relative_position() {
+  const Scanner s = lox.scanner;
+  FileLoc* fl = malloc(1 * sizeof(FileLoc));
+  fl->line  = s.line - 1;
+  fl->start = s.start - s.last_line;
+  fl->end   = s.current - 1 - s.last_line;
+  return fl;
+}
+
+static char* get_source_line(const size_t line_num) {
+  char** arr = str_split(lox.scanner.source, "\n");
+  return arr[line_num-1];
+}
+
 static char* init_empty_string(const int size) {
-  char* str = malloc(size * sizeof(char));
+  char* str = malloc(size * sizeof(char) + 1);
 
   for (int i=0; i<size; i++) {
     str[i] = ' ';
@@ -28,79 +42,42 @@ static char* init_empty_string(const int size) {
 
 
 // TODO: print for multiple lines
-static void point_error_root(const char* source, FileLoc fl) {
+static void point_error_root(char* source, FileLoc* fl) {
   assert(source != NULL);
-  assert(fl.line != 0);
+  assert(fl != NULL);
+  // assert(fl->start != 0 && fl->end != 0);
+  assert(fl->line != 0);
 
   char source_context[64];
-  sprintf(source_context, "    %lu| ", fl.line);
+  sprintf(source_context, "    %lu| ", fl->line);
 
-  const unsigned int source_context_size = strlen(source_context);
-  const unsigned int source_size = strlen(source);
+  const size_t source_context_size = strlen(source_context);
+  const size_t source_size = strlen(source);
 
   char* pointer_str = init_empty_string(source_size);
   char* pointer_str_offset = init_empty_string(source_context_size);
-
+  
   for (size_t i=0; i<strlen(source); i++) {
-    if (i>=fl.start && i<= fl.end) {
+    if (i>=fl->start && i<= fl->end) {
       pointer_str[i] = '^';
     }
   }
-
+  
   printf( COLOR(ANSI_CODE_CYAN, "%s"), source_context);
   printf("%s\n", source);
-
+  
   printf("%s", pointer_str_offset);
   printf( COLOR(ANSI_CODE_CYAN, "%s\n"), pointer_str);
-
+  
   free(pointer_str);
   free(pointer_str_offset);
 }
 
-void raise_unterminated_string_error() {
+void report(char* message, FileLoc* fl) {
 
-  FileLoc fl = compute_relative_position();
+  char* line = get_source_line(fl->line);
 
-  char* line = get_source_line(fl.line);
-
-  point_error_root(line, compute_relative_position());
-
-  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Unterminated string, did you forget to place \"?\n");
+  point_error_root(line, fl);
+  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "%s\n" , message);
   lox.had_error = true;
-}
-
-void raise_unexpected_character_error(const char chr) {
-
-  FileLoc fl = compute_relative_position();
-
-  char* line = get_source_line(fl.line);
-
-  point_error_root(line, fl);
-
-  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "Unexpected character: %c\n", chr);
-  lox.had_error = true;
-  free(line);
-}
-
-void raise_expected_expression_error(const char* message, FileLoc fl) {
-
-  char* line = get_source_line(fl.line);
-
-  point_error_root(line, fl);
-  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "%s\n", message);
-
-  lox.had_runtime_error = true;
-  free(line);
-}
-
-void raise_invalid_binary_operation_error(Token op, TokenType t1, TokenType t2) {
-
-  FileLoc fl = op.fileloc;
-  char* line = get_source_line(fl.line);
-
-  point_error_root(line, fl);
-  printf( COLOR(ANSI_CODE_RED, "  ERROR: ") "The operation %s is invalid between %s and %s\n", op.lexeme, tokentype_to_string(t1), tokentype_to_string(t2));
-
-  lox.had_runtime_error = true;
-  free(line);
 }

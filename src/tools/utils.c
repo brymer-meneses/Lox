@@ -104,7 +104,7 @@ char** str_split(const char* str, const char* delim) {
 
   char* substr = strtok(str_copy, delim);
   while ( substr != NULL ) {
-    str_arr[i] = malloc(sizeof(char) * strlen(substr));
+    // str_arr[i] = malloc(sizeof(char) * strlen(substr));
     str_arr[i] = substr;
     i++;
 
@@ -128,47 +128,51 @@ char* str_concat(const char* str1, const char* str2) {
   return sum_str;
 }
 
-char* str_format(const size_t num, const char* str, ...) {
-  va_list args;
-  va_start(args, str);
-
-  size_t str_size = 0;
-
-  size_t buffer_capacity = strlen(str) > 256 ? strlen(str) : 256;
-
-  char* buffer = malloc(buffer_capacity * sizeof(char));
-
-  strcat(buffer, str);
-
-  for (size_t i=0; i <num; i++) {
-    
-    char* arg = va_arg(args, char*);
-    const size_t length = strlen(str);
-
-    if (str_size + length >= buffer_capacity)  {
-        buffer_capacity *= 2;
-        buffer = realloc(buffer, buffer_capacity);
-    }
-
-    strcat(buffer, arg);
-    str_size += length;
-  }
-
-  va_end(args);
-  return buffer;
-}
-
-
-FileLoc compute_relative_position() {
-  const Scanner s = lox.scanner;
-  return (FileLoc) {
-    .line  = s.line,
-    .start = s.start - s.last_line,
-    .end   = s.current - 1 - s.last_line,
-  };
-}
-
-char* get_source_line(const size_t line_num) {
-  char** arr = str_split(lox.scanner.source, "\n");
-  return arr[line_num-1];
-}
+// char* str_format(const char* str, ...) {
+//
+//   typedef struct List {
+//     char* str;
+//     char* arg;
+//     struct List* next;
+//   } List;
+//
+//   
+//   va_list args;
+//   va_start(args, str);
+//
+//   char* substr = strtok(strdup(str), "{}");
+//
+//   struct List* list;
+//   struct List* head = list;
+//
+//   size_t num_args = 0;
+//   size_t buffer_length = strlen(str);
+//
+//   while (substr != NULL) {
+//     substr = strtok(strdup(str), "{}");
+//     char* arg = va_arg(args, char*);
+//     buffer_length += strlen(arg);
+//
+//     if (list == NULL) {
+//       list = malloc( 1 * sizeof(List) );
+//       list->next = NULL;
+//     }
+//
+//     list->arg = arg;
+//     list->str = substr;
+//     list = list->next;
+//
+//     num_args++;
+//   }
+//
+//   char* buffer =malloc(buffer_length * sizeof(char));
+//
+//   for (size_t i=0; i<num_args; i++) {
+//     sprintf(buffer, "%s%s", head->str, head->arg);
+//     head = head->next;
+//   }
+//
+//   va_end(args);
+//   return buffer;
+// }
+//

@@ -20,4 +20,7 @@ test: compile
 	"./build/test_runner"
 
 debug: compile
-	gdb --tui ./build/clox
+	gdb ./build/clox
+
+debug_test: compile
+	gdb ./build/test_runner

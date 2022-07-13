@@ -18,7 +18,7 @@ typedef struct Expr {
     struct {
       struct Expr* left;
       struct Expr* right;
-      Token operation;
+      Token* operation;
     } binary;
 
     struct {
@@ -26,25 +26,22 @@ typedef struct Expr {
     } grouping;
 
     struct {
-      LoxObject value;
+      LoxObject* value;
     } literal;
 
     struct {
-      Token operation;
+      Token* operation;
       struct Expr* right;
     } unary;
   } data;
 
   ExprType type;
-  FileLoc fileloc;
+  FileLoc* fileloc;
 } Expr;
 
-
-Expr* expr_init(ExprType type,  LoxObject value, Expr *left, Token op, Expr *right);
-
-Expr* binary_init(Expr *left, Token op, Expr *right);
-Expr* grouping_init(Expr *expr);
-Expr* literal_init(LoxObject value, FileLoc fl);
-Expr* unary_init(Token op, Expr* right);
+Expr* binary_init(Expr* left, Token* op, Expr *right);
+Expr* grouping_init(Expr* expr);
+Expr* literal_init(LoxObject* value);
+Expr* unary_init(Token* op, Expr* right);
 
 #endif

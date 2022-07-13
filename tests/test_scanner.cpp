@@ -20,15 +20,17 @@ TEST(TestScanner, ScanSingleChar) {
   };
 
   scanner_init(input);
-  Token* tokens = scanner_scan();
+  Token** tokens = scanner_scan();
 
   for (unsigned int i=0; i<lox.scanner.parsed; i++) {
-    EXPECT_EQ(correct_types[i], tokens[i].type);
+    EXPECT_EQ(correct_types[i], tokens[i]->type);
   }
 
   for (unsigned int i=0; i<strlen(input); i++) {
-    EXPECT_EQ(input[i], *tokens[i].lexeme);
+    EXPECT_EQ(input[i], *tokens[i]->lexeme);
   }
+
+  free(tokens);
 }
 
 
@@ -38,11 +40,13 @@ TEST(TestScanner, ScanDoubleChar) {
   TokenType correct_types[] = {EQUAL_EQUAL, BANG_EQUAL, GREATER_EQUAL, LESS_EQUAL, SOURCE_END};
 
   scanner_init(input);
-  Token* tokens = scanner_scan();
+  Token** tokens = scanner_scan();
 
   for (unsigned int i=0; i<lox.scanner.parsed; i++) {
-    EXPECT_EQ(correct_types[i], tokens[i].type);
+    EXPECT_EQ(correct_types[i], tokens[i]->type);
   }
+
+  free(tokens);
 }
 
 TEST(TestScanner, ScanKeywords) {
@@ -51,10 +55,27 @@ TEST(TestScanner, ScanKeywords) {
   TokenType correct_types[] = {PRINT, VAR, CLASS,  RETURN, SOURCE_END};
 
   scanner_init(input);
-  Token* tokens = scanner_scan();
+  Token** tokens = scanner_scan();
 
   for (unsigned int i=0; i<lox.scanner.parsed; i++) {
-    EXPECT_EQ(correct_types[i], tokens[i].type) << tokentype_to_string(tokens[i].type);
+    EXPECT_EQ(correct_types[i], tokens[i]->type);
   }
 
+  free(tokens);
 }
+
+// TEST(TestScanner, ScanVarDeclaration) {
+//   char input[] = "test test1 test2 test_underscore _test_underscore2";
+//
+//   TokenType correct_types[] = {IDENTIFIER, IDENTIFIER, IDENTIFIER, IDENTIFIER, SOURCE_END};
+//   char** correct_literals = str_split(input, " ");
+//
+//   scanner_init(input);
+//   Token* tokens = scanner_scan();
+//
+//   for (unsigned int i=0; i<lox.scanner.parsed; i++) {
+//     EXPECT_EQ(correct_types[i], tokens[i].type);
+//     EXPECT_TRUE(strcmp(correct_literals[i], tokens[i].literal.data.string) == 0);
+//   }
+//
+// }

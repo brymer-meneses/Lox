@@ -13,7 +13,7 @@ typedef struct Scanner {
   size_t line;
   const char *source;
 
-  Token* tokens;
+  Token** tokens;
   size_t parsed;
   size_t capacity;
 
@@ -23,8 +23,6 @@ typedef struct Scanner {
 
 
 void scanner_init(const char *source);
-Token* scanner_scan();
-
-FileLoc compute_relative_position();
+Token** scanner_scan();
 
 #endif

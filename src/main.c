@@ -1,7 +1,8 @@
 #include "stdio.h"
 
 #include "lox/lox.h"
-#include "tools/hashtable.h"
+#include "stdlib.h"
+
 
 int main(int argc, char *argv[]) {
 
@@ -12,5 +13,9 @@ int main(int argc, char *argv[]) {
   } else {
     printf("Usage clox <filename>");
   }
+
+  TokenType* test = malloc(1 * sizeof(TokenType));
+  *test = LEFT_BRACE;
+
 
 }

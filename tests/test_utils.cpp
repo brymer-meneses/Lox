@@ -57,9 +57,9 @@ TEST(TestUtils, StringConcat) {
 }
 
 
-TEST(TestUtils, StringFormat) {
-  const char* source = "hello world";
-  const char* result = str_format(1, "hello ", "world");
-
-  EXPECT_TRUE(strcmp(source, result) == 0) << result;
-}
+// TEST(TestUtils, StringFormat) {
+//   const char* source = "hello world";
+//   const char* result = str_format(1, "hello ", "world");
+//
+//   EXPECT_TRUE(strcmp(source, result) == 0) << result;
+// }

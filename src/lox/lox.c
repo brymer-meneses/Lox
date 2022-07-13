@@ -16,10 +16,6 @@
 
 Lox lox;
 
-FileLoc FILE_LOC_NULL = {.start=0, .end=0, .line=0};
-LoxObject LOX_OBJECT_NULL = {.type = NIL};
-Token TOKEN_NULL = {.type = NIL, 0, "NIL", .literal=(LoxObject){.type = NIL}, .fileloc={0, 0, 0}};
-
 void lox_init() {
   lox.had_runtime_error = false;
   lox.had_error = false;
@@ -29,12 +25,13 @@ void run(char source[]) {
   lox_init();
   
   scanner_init(source);
-  Token* tokens = scanner_scan();
-  
+  Token** tokens = scanner_scan();
+
   parser_init(tokens);
   Stmt** statements = parser_parse();
 
   interpret(statements);
+
 }
 
 void run_file(const char* filename) {
