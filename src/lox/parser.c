@@ -280,7 +280,7 @@ static Expr* term() {
 static Expr* factor() {
   Expr* expr = unary();
 
-  while (match(2, SLASH, STAR)) {
+  while (match(3, SLASH, STAR, POW)) {
     Token* operator = previous();
     Expr* right = unary();
     if (right == NULL) {

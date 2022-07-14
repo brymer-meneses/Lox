@@ -34,7 +34,7 @@ target_include_directories(cloxlib PUBLIC ${PROJECT_SOURCE_DIR}/include/)
 
 # LINK EXECUTABLES
 add_executable(clox ${clox_MAIN})
-target_link_libraries(clox cloxlib)
+target_link_libraries(clox cloxlib m)
 target_include_directories(clox PUBLIC ${PROJECT_SOURCE_DIR}/include/)
 
 # COMPILE TESTS

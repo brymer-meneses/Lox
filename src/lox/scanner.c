@@ -110,7 +110,9 @@ static void scan_token() {
     case ';':
       add_token(SEMICOLON, NULL);
       break;
-
+    case '^':
+      add_token(POW, NULL);
+      break;
     case '>':
       if (match('=')) 
         add_token(GREATER_EQUAL, NULL);

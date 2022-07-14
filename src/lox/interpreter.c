@@ -15,6 +15,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "assert.h"
+#include "math.h"
 
 static LoxObject* expr_evaluate(Expr *expr);
 static void stmt_evaluate(Stmt* stmt);
@@ -87,6 +88,10 @@ static LoxObject* expr_evaluate(Expr *expr) {
               result = loxobject_number(left->data.number + right->data.number, fl);
             }
           }
+          break;
+        case POW:
+          check_same_operands(left->type, right->type, op->fileloc);
+          result = loxobject_number(pow(left->data.number, right->data.number), fl);
           break;
         case GREATER:
           check_same_operands(left->type, right->type, op->fileloc);
