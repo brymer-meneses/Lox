@@ -10,15 +10,15 @@ extern "C" {
 TEST(TestUtils, Substring) {
   const char str[46] = "The quick brown fox jumped over the lazy cat.";
 
-  EXPECT_TRUE(strcmp("The",     substring(str, 0, 2))   ==0);
-  EXPECT_TRUE(strcmp("quick",   substring(str, 4, 8))   ==0);
-  EXPECT_TRUE(strcmp("brown",   substring(str, 10, 14)) ==0);
-  EXPECT_TRUE(strcmp("fox",     substring(str, 16, 18)) ==0);
-  EXPECT_TRUE(strcmp("jumped",  substring(str, 20, 25)) ==0);
-  EXPECT_TRUE(strcmp("over",    substring(str, 27, 30)) ==0);
-  EXPECT_TRUE(strcmp("the",     substring(str, 32, 34)) ==0);
-  EXPECT_TRUE(strcmp("lazy",    substring(str, 36, 39)) ==0);
-  EXPECT_TRUE(strcmp("cat.",    substring(str, 41, 44)) ==0);
+  EXPECT_STREQ("The",     substring(str, 0,  2 ));
+  EXPECT_STREQ("quick",   substring(str, 4,  8 ));
+  EXPECT_STREQ("brown",   substring(str, 10, 14));
+  EXPECT_STREQ("fox",     substring(str, 16, 18));
+  EXPECT_STREQ("jumped",  substring(str, 20, 25));
+  EXPECT_STREQ("over",    substring(str, 27, 30));
+  EXPECT_STREQ("the",     substring(str, 32, 34));
+  EXPECT_STREQ("lazy",    substring(str, 36, 39));
+  EXPECT_STREQ("cat.",    substring(str, 41, 44));
 }
 
 TEST(TestUtils, IsRealNumber) {
@@ -35,6 +35,12 @@ TEST(TestUtils, IsRealNumber) {
   EXPECT_FALSE(is_real_number("-1.234 this is a test!"));
 }
 
+TEST(TestUtils, IsBoolean) {
+  EXPECT_TRUE(is_boolean("true"));
+  EXPECT_TRUE(is_boolean("false"));
+  EXPECT_FALSE(is_boolean("1"));
+}
+
 TEST(TestUtils, StringSplit) {
   const char* source = "The quick brown fox jumped over the lazy cat.";
   const char* str_arr[] = {"The", "quick", "brown", "fox", "jumped", "over",
@@ -43,7 +49,7 @@ TEST(TestUtils, StringSplit) {
   char** result = str_split(source, " ");
 
   for (int i = 0; i< 8; i++) {
-    EXPECT_TRUE(strcmp(str_arr[i], result[i]) == 0);
+    EXPECT_STREQ(str_arr[i], result[i]);
   }
 
   free(result);
@@ -53,13 +59,6 @@ TEST(TestUtils, StringConcat) {
   const char* hello_world = "hello world";
   char* result = str_concat("hello ", "world");
 
-  EXPECT_TRUE(strcmp(hello_world,  result) == 0);
+  EXPECT_STREQ(hello_world,  result);
 }
 
-
-// TEST(TestUtils, StringFormat) {
-//   const char* source = "hello world";
-//   const char* result = str_format(1, "hello ", "world");
-//
-//   EXPECT_TRUE(strcmp(source, result) == 0) << result;
-// }

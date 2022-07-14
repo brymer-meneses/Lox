@@ -13,11 +13,11 @@
 
 char* substring(const char* source, const size_t begin, const size_t end) {
   assert(source != NULL);
-  assert(end <= strlen(source));
+  assert(end < strlen(source));
 
   const size_t length = (end - begin + 1) ; // take into account that ending char '\0'
 
-  char* allocated_str = (char*) malloc(length * sizeof(char));
+  char* allocated_str = malloc(length * sizeof(char));
 
   size_t i = 0;
   while (i < length && source[i] != '\0') {
@@ -30,11 +30,11 @@ char* substring(const char* source, const size_t begin, const size_t end) {
 
 
 bool is_boolean(const char* string) {
+  if (strcmp(string, "true") == 0 || strcmp(string, "false") == 0) {
+    return true;
+  }
 
-  bool istrue =  strcmp(string, "true") == 0;
-  bool isfalse = strcmp(string, "false") == 0;
-
-  return istrue || isfalse;
+  return false;
 }
 
 bool is_real_number(const char *string) {
@@ -127,52 +127,3 @@ char* str_concat(const char* str1, const char* str2) {
 
   return sum_str;
 }
-
-// char* str_format(const char* str, ...) {
-//
-//   typedef struct List {
-//     char* str;
-//     char* arg;
-//     struct List* next;
-//   } List;
-//
-//   
-//   va_list args;
-//   va_start(args, str);
-//
-//   char* substr = strtok(strdup(str), "{}");
-//
-//   struct List* list;
-//   struct List* head = list;
-//
-//   size_t num_args = 0;
-//   size_t buffer_length = strlen(str);
-//
-//   while (substr != NULL) {
-//     substr = strtok(strdup(str), "{}");
-//     char* arg = va_arg(args, char*);
-//     buffer_length += strlen(arg);
-//
-//     if (list == NULL) {
-//       list = malloc( 1 * sizeof(List) );
-//       list->next = NULL;
-//     }
-//
-//     list->arg = arg;
-//     list->str = substr;
-//     list = list->next;
-//
-//     num_args++;
-//   }
-//
-//   char* buffer =malloc(buffer_length * sizeof(char));
-//
-//   for (size_t i=0; i<num_args; i++) {
-//     sprintf(buffer, "%s%s", head->str, head->arg);
-//     head = head->next;
-//   }
-//
-//   va_end(args);
-//   return buffer;
-// }
-//

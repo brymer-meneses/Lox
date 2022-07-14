@@ -50,15 +50,17 @@ TEST(TestScanner, ScanDoubleChar) {
 }
 
 TEST(TestScanner, ScanKeywords) {
-  char input[] = "print var class return varname";
+  char input[] = "print var class return varname true false";
 
-  TokenType correct_types[] = {PRINT, VAR, CLASS,  RETURN, IDENTIFIER, SOURCE_END};
+  TokenType correct_types[] = {PRINT, VAR, CLASS,  RETURN, IDENTIFIER, TRUE, FALSE};
 
   scanner_init(input);
   Token** tokens = scanner_scan();
+  char** lexemes = str_split(input, " ");
 
-  for (unsigned int i=0; i<lox.scanner.parsed; i++) {
+  for (unsigned int i=0; i<lox.scanner.parsed-1; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
+    EXPECT_STREQ(lexemes[i], tokens[i]->lexeme);
   }
 
   free(tokens);

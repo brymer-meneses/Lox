@@ -3,6 +3,7 @@
 #include "string.h"
 
 #include "tools/astprinter.h"
+#include "tools/hashmap.h"
 #include "tools/utils.h"
 #include "tools/error.h"
 #include "tools/debug.h"
@@ -62,4 +63,5 @@ void run_prompt() {
     if (strcmp(line, "\n") == 0)  break; 
   }
 
+  hashmap_free(lox.environment.values);
 }

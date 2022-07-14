@@ -176,7 +176,6 @@ static void stmt_evaluate(Stmt* stmt) {
         value = expr_evaluate(stmt->data.Var.initializer);
       }
       environment_define(stmt->data.Var.name->lexeme, value);
-      environment_dump();
     } break;
     default:
       break;

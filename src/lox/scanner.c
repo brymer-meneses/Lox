@@ -174,9 +174,10 @@ static void scan_token() {
 }
 
 static void add_token(TokenType type, LoxObject* literal) {
-  char* text = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1); // current points to the next "char" so we subtract by 1
-  FileLoc* fl = fileloc_init(lox.scanner.line, lox.scanner.start, lox.scanner.current);
-  Token* token = token_init(type, text, literal, fl);
+  char* lexeme = substring(lox.scanner.source, lox.scanner.start, lox.scanner.current-1); // current points to the next "char" so we subtract by 1
+  FileLoc* fl = fileloc_init(lox.scanner.line, lox.scanner.start, lox.scanner.current-1);
+  Token* token = token_init(type, lexeme, literal, fl);
+
 
   // Reallocate memory
   if (lox.scanner.parsed == lox.scanner.capacity) {

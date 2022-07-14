@@ -12,10 +12,12 @@
 
 Token* token_init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fileloc) {
   Token* tok = malloc(1 * sizeof(Token));
-  tok->lexeme = lexeme;
   tok->type = type;
   tok->literal = literal;
   tok->fileloc = fileloc;
+
+  tok->lexeme = malloc(sizeof(char) * (strlen(lexeme) + 1));
+  strcpy(tok->lexeme, lexeme);
   return tok;
 }
 

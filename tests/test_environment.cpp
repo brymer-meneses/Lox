@@ -17,7 +17,4 @@ TEST(TestEnvionment, Define) {
   LoxObject* obj = (LoxObject*) retval;
 
   EXPECT_EQ(obj->data.number, 5);
-
-  environment_dump();
-
 }
