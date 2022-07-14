@@ -76,7 +76,7 @@ static void point_error_root(char* source, FileLoc* fl) {
   free(pointer_str_offset);
 }
 
-void report(FileLoc* fl, char* message, ...) {
+void report(FileLoc* fl, const char* message, ...) {
 
   char* line = get_source_line(fl->line);
   point_error_root(line, fl);

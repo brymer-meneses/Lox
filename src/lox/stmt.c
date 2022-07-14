@@ -24,3 +24,12 @@ Stmt* stmt_print_init(Expr* expression) {
   return stmt;
 }
 
+Stmt* stmt_vardecl_init(Token* name, Expr* initializer) {
+  assert(name != NULL);
+  Stmt* stmt = malloc(1 * sizeof(Stmt));
+
+  stmt->type = STMT_VAR;
+  stmt->data.Var.initializer = initializer;
+  stmt->data.Var.name= name;
+  return stmt;
+}

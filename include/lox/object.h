@@ -22,12 +22,15 @@ typedef struct {
 } LoxObject;
 
 
-LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl);
 char* loxobject_to_string(LoxObject* obj);
 
-LoxObject* loxobject_boolean(bool value);
-LoxObject* loxobject_string(char* value);
-LoxObject* loxobject_number(double value);
+LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl);
+
+LoxObject* loxobject_boolean(bool value, FileLoc* fl);
+LoxObject* loxobject_string(char* value, FileLoc* fl);
+LoxObject* loxobject_number(double value, FileLoc* fl);
+
+char* loxtype_to_string(LoxType type);
 
 #endif // !LOX_OBJECT_H
 

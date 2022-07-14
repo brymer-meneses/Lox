@@ -1,4 +1,3 @@
-#include "lox/declarations.h"
 #include "stdbool.h"
 #include "stdarg.h"
 #include "stdio.h"
@@ -8,6 +7,7 @@
 #include "tools/fileloc.h"
 #include "tools/utils.h"
 
+#include "lox/declarations.h"
 #include "lox/object.h"
 #include "lox/parser.h"
 #include "lox/expr.h"
@@ -15,15 +15,9 @@
 #include "lox/lox.h"
 #include "lox/stmt.h"
 
-static bool  isfinished();
-static bool  check(TokenType type);
-static void  expect(FileLoc* fl, TokenType type, const char* expected_literal);
-
-static Token* peek();
-static Token* previous();
-
 /*
- * expression     → equality ;
+ * expression     → assignment ;
+ * assignment     → IDENTIFIER "=" assignment | equality ;
  * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
  * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
  * term           → factor ( ( "-" | "+" ) factor )* ;
@@ -32,27 +26,38 @@ static Token* previous();
  * primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
  */
 
-static Expr* parse_equality();
-static Expr* parse_expression();
-static Expr* parse_primary();
-static Expr* parse_comparison();
-static Expr* parse_term();
-static Expr* parse_factor();
-static Expr* parse_unary();
-static Expr* parse_primary();
+static Expr* assignment();
+static Expr* equality();
+static Expr* expression();
+static Expr* primary();
+static Expr* comparison();
+static Expr* term();
+static Expr* factor();
+static Expr* unary();
+static Expr* primary();
 
 /*
  * program        → declaration* EOF ;
  * declaration    → varDecl | statement ;
  * statement      → exprStmt | printStmt ;
  *
- *  varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+ * varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  * exprStmt       →  expression ";" ;
  * printStmt      → "print" expression ";" ;
- * */
-static Stmt* parse_expr_stmt();
-static Stmt* parse_print_stmt();
-static Stmt* parse_stmt();
+ */
+
+static Stmt* declaration();
+static Stmt* expression_statement();
+static Stmt* print_statement();
+static Stmt* statement();
+static Stmt* var_declaration();
+
+// Utility functions
+static bool  isfinished();
+static bool  check(TokenType type);
+static Token* expect(FileLoc* fl, TokenType type, const char* message);
+static Token* peek();
+static Token* previous();
 
 void parser_init(Token** tokens) {
   lox.parser = (Parser) {
@@ -74,7 +79,7 @@ Stmt** parser_parse() {
       statements = realloc(statements, statements_size * sizeof(Stmt*));
     }
 
-    statements[statements_num] = parse_stmt();
+    statements[statements_num] = declaration();
     statements_num++;
   }
 
@@ -90,7 +95,7 @@ static Token* advance() {
 }
 
 static Token* previous() {
-  assert(lox.parser.current >= 0);
+  assert(lox.parser.current != 0);
   return lox.parser.tokens[lox.parser.current - 1];
 }
 
@@ -152,10 +157,10 @@ static void synchronize() {
 
 }
 
-static void expect(FileLoc* fl, TokenType type, const char* message) {
+static Token* expect(FileLoc* fl, TokenType type, const char* message) {
+  assert(fl != NULL);
   if (check(type)) {
-    advance();
-    return;
+    return advance();
   }
 
   report(fl, message);
@@ -165,26 +170,57 @@ static void expect(FileLoc* fl, TokenType type, const char* message) {
 static FileLoc* find_last_occurence(TokenType type) {
 
   size_t i = lox.parser.current;
-  while (i >= 0) {
+  while (i != 0) {
     if (lox.parser.tokens[i]->type == type) {
       return lox.parser.tokens[i]->fileloc;
     }
     i--;
   }
 
-  return NULL;
+  return lox.parser.tokens[0]->fileloc;
 }
 
-static Expr* parse_expression() {
-  return parse_equality();
+static Expr* expression() {
+  return assignment();
 } 
 
-static Expr* parse_equality() {
-  Expr* expr = parse_comparison();
+static Expr* assignment() {
+  Expr* expr = equality();
+
+  if (match(1, EQUAL)) {
+    Token* equals = previous();
+    Expr* value = assignment();
+
+    if (expr->type == EXPR_VAR_DECLARATION) {
+      Token* name = expr->data.VarDecl.name;
+      return assign_init(name, value);
+    }
+
+    report(equals->fileloc, "Invalid assignment target.");
+  }
+ return expr;
+}
+
+static Stmt* declaration() {
+  // Stmt* result = NULL;
+
+  if (match(1, VAR)) 
+    return var_declaration();
+
+  return statement();
+
+  // if (lox.had_error) 
+  //   synchronize();
+  //
+  // return result;
+}
+
+static Expr* equality() {
+  Expr* expr = comparison();
 
   while (match(2, BANG_EQUAL, EQUAL_EQUAL)) {
     Token* operator = previous();
-    Expr* right = parse_comparison();
+    Expr* right = comparison();
 
     if (expr == NULL) {
       report(operator->fileloc, "Expected expression before this.");
@@ -201,11 +237,11 @@ static Expr* parse_equality() {
   return expr;
 }
 
-static Expr* parse_comparison() {
-  Expr* expr = parse_term();
+static Expr* comparison() {
+  Expr* expr = term();
   while (match(4, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
     Token* operator = previous();
-    Expr* right = parse_term();
+    Expr* right = term();
 
     if (expr == NULL) {
       report(operator->fileloc, "Expected expression before this.");
@@ -221,12 +257,12 @@ static Expr* parse_comparison() {
   return expr;
 }
 
-static Expr* parse_term() {
-  Expr* expr = parse_factor();
+static Expr* term() {
+  Expr* expr = factor();
 
   while (match(2, MINUS, PLUS)) {
     Token* operator = previous();
-    Expr* right = parse_factor();
+    Expr* right = factor();
     if (right == NULL) {
       report(operator->fileloc, "Expected expression before this.");
       break;
@@ -241,12 +277,12 @@ static Expr* parse_term() {
   return expr;
 }
 
-static Expr* parse_factor() {
-  Expr* expr = parse_unary();
+static Expr* factor() {
+  Expr* expr = unary();
 
   while (match(2, SLASH, STAR)) {
     Token* operator = previous();
-    Expr* right = parse_unary();
+    Expr* right = unary();
     if (right == NULL) {
       report(operator->fileloc, "Expected expression before this.");
       break;
@@ -260,21 +296,20 @@ static Expr* parse_factor() {
   return expr;
 }
 
-static Expr* parse_unary() {
+static Expr* unary() {
   if (match(2, BANG, MINUS)) {
     Token* operator = previous();
-    Expr* right = parse_unary();
+    Expr* right = unary();
     return unary_init(operator, right);
   }
 
-  return parse_primary();
+  return primary();
 }
 
-static Expr* parse_primary() {
-  if (match(1, FALSE)) 
-    return literal_init(loxobject_init(LOX_BOOLEAN, "false", previous()->fileloc));
-  if (match(1, TRUE)) 
-    return literal_init(loxobject_init(LOX_BOOLEAN, "true", previous()->fileloc));
+static Expr* primary() {
+  if (match(2, FALSE, TRUE)) 
+    return literal_init(loxobject_init(LOX_BOOLEAN, previous()->lexeme, previous()->fileloc));
+
   if (match(1, NIL))  
     return literal_init(loxobject_init(LOX_NIL, "NIL", previous()->fileloc));
 
@@ -284,7 +319,7 @@ static Expr* parse_primary() {
     return literal_init(loxobject_init(LOX_NUMBER, previous()->lexeme, previous()->fileloc));
 
   if (match(1, LEFT_PAREN)) {
-    Expr* expr = parse_expression();
+    Expr* expr = expression();
     expect(find_last_occurence(LEFT_PAREN), RIGHT_PAREN, "Expected matching ) of this token.");
 
     if (expr) {
@@ -292,23 +327,42 @@ static Expr* parse_primary() {
     } 
   }
 
+  if (match(1, IDENTIFIER)) {
+    return vardecl_init(previous());
+  }
+
 
   return NULL;
 }
 
-static Stmt* parse_stmt() {
-  if (match(1, PRINT)) return parse_print_stmt();
-  return parse_expr_stmt();
+static Stmt* statement() {
+  if (match(1, PRINT)) 
+    return print_statement();
+  return expression_statement();
 }
 
-static Stmt* parse_expr_stmt() {
-  Expr* expr = parse_expression();
+static Stmt* expression_statement() {
+  Expr* expr = expression();
   expect(expr->fileloc, SEMICOLON, "Expected ';' after value.");
   return stmt_expr_init(expr);
 }
 
-static Stmt* parse_print_stmt() {
-  Expr* value = parse_expression();
+static Stmt* print_statement() {
+  Expr* value = expression();
   expect(value->fileloc, SEMICOLON, "Expected ';' after value.");
   return stmt_print_init(value);
+}
+
+static Stmt* var_declaration() {
+  Token* name = expect(find_last_occurence(VAR), IDENTIFIER, "Expect variable name.");
+
+  Expr* initializer = NULL;
+
+  if (match(1, EQUAL)) {
+    initializer = expression();
+  }
+
+  expect(name->fileloc, SEMICOLON, "Expect ';' after variable declaration.");
+
+  return stmt_vardecl_init(name, initializer);
 }

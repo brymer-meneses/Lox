@@ -1,3 +1,4 @@
+#include "lox/environment.h"
 #include "stdio.h"
 #include "string.h"
 
@@ -22,10 +23,11 @@ void lox_init() {
 }
 
 void run(char source[]) {
-  lox_init();
   
   scanner_init(source);
   Token** tokens = scanner_scan();
+
+  // log_tokens(tokens);
 
   parser_init(tokens);
   Stmt** statements = parser_parse();
@@ -47,6 +49,8 @@ void run_file(const char* filename) {
 
 void run_prompt() {
   lox.is_on_repl = true;
+  lox_init();
+  environment_init();
 
   while(true) {
     char line[MAX_INPUT_LIMIT];

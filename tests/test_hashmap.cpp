@@ -9,14 +9,14 @@ extern "C" {
 
 
 void hashmap_setstr(Hashmap* hmap, const char* key, const char* value) {
-  void* data = (char*) value;
+  void* data = strdup(value);
 
-  hashmap_insert(hmap, (char*) key, data);
+  hashmap_insert(hmap, strdup(key), data);
 }
 
 char* hashmap_getstr(Hashmap* hmap, const char* key) {
-  void* data = hashmap_retrieve(hmap, (char*) key);
-  return (char* ) data;
+  void* data = hashmap_retrieve(hmap, strdup(key));
+  return (char*) data;
 }
 
 TEST(TestUtils, HashMap) {
@@ -32,7 +32,8 @@ TEST(TestUtils, HashMap) {
   }
 
   for (unsigned int i=0; i<length; i++) {
-    EXPECT_TRUE(strcmp(vals[i], hashmap_getstr(hm, keys[i])) == 0);
+    EXPECT_STREQ(vals[i], hashmap_getstr(hm, keys[i]));
   }
 
+  hashmap_free(hm);
 }

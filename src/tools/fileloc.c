@@ -2,10 +2,7 @@
 #include "tools/utils.h"
 #include "stdarg.h"
 #include "limits.h"
-
-
-static size_t max(size_t num1, size_t num2);
-static size_t min(size_t num1, size_t num2);
+#include <assert.h>
 
 FileLoc* fileloc_init(const size_t line, const size_t start, const size_t end) {
   FileLoc* fl = malloc(1 * sizeof(FileLoc));
@@ -26,25 +23,14 @@ FileLoc* fileloc_range(const unsigned int num_args, ...) {
 
   for (unsigned int i=0; i<num_args; i++) {
     FileLoc* arg = va_arg(args, FileLoc*);
-    start = min(arg->start, start);
-    end =   max(arg->end, end);
-    line =  max(arg->line, line);
+    assert(arg != NULL);
+
+    start =   arg->start < start ? arg->start : start;
+    end   =   arg->end   > end   ? arg->end   : end;
+    line  =   arg->line  > line  ? arg->line  : line;
   }
 
   va_end(args);
   return fileloc_init(line, start, end);
 }
 
-static size_t min(size_t num1, size_t num2) {
-  if (num1 < num2) {
-    return num1;
-  } 
-  return num2;
-}
-
-static size_t max(size_t num1, size_t num2) {
-  if (num1 > num2) {
-    return num1;
-  } 
-  return num2;
-}

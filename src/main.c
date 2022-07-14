@@ -2,9 +2,10 @@
 
 #include "lox/lox.h"
 #include "stdlib.h"
+#include "tools/error.h"
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 
   if (argc == 2) {
     run_file(argv[0]);
@@ -13,9 +14,5 @@ int main(int argc, char *argv[]) {
   } else {
     printf("Usage clox <filename>");
   }
-
-  TokenType* test = malloc(1 * sizeof(TokenType));
-  *test = LEFT_BRACE;
-
 
 }

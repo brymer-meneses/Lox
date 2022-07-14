@@ -9,7 +9,7 @@
 #include "tools/fileloc.h"
 #include "tools/utils.h"
 
-char* loxobject_to_string( LoxObject* obj ) {
+char* loxobject_to_string(LoxObject* obj) {
   if (obj == NULL) return "NIL";
 
   assert(obj != NULL);
@@ -34,6 +34,22 @@ char* loxobject_to_string( LoxObject* obj ) {
   }
   return output;
 }
+char* loxtype_to_string(LoxType type) {
+  switch (type) {
+    case LOX_STRING:
+      return "string";
+      return "boolean";
+    case LOX_NUMBER:
+      return "number";
+      return "boolean";
+    case LOX_BOOLEAN:
+      return "boolean";
+      break;
+    case LOX_NIL:
+      return "nil";
+      break;
+  }
+}
 
 LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl) {
   LoxObject* obj = malloc( 1 * sizeof(LoxObject) );
@@ -52,26 +68,27 @@ LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl) {
       obj->data.string = strdup(lexeme);
       break;
     case LOX_NIL:
+      return NULL;
       break;
   }
   return obj;
 } 
 
-LoxObject* loxobject_boolean(bool value) {
+LoxObject* loxobject_boolean(bool value, FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_BOOLEAN;
   obj->data.boolean = value;
   return obj;
 };
 
-LoxObject* loxobject_string(char* value) {
+LoxObject* loxobject_string(char* value, FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_STRING;
   obj->data.string = value;
   return obj;
 }
 
-LoxObject* loxobject_number(double value) {
+LoxObject* loxobject_number(double value, FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_NUMBER;
   obj->data.number = value;

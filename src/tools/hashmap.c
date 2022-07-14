@@ -1,4 +1,5 @@
 #include "tools/hashmap.h"
+#include "lox/object.h"
 #include "lox/token.h"
 #include "stdlib.h"
 #include "string.h"
@@ -51,10 +52,10 @@ void hashmap_print(Hashmap *hmap) {
 void hashmap_insert(Hashmap* hmap, char* key,  void* value) {
   unsigned long slot = hash(key) % hmap->max_size;
 
-  // if (hmap->curr_size + 1 >= 0.5 * hmap->max_size) {
-  //   hmap->max_size *= 2;
-  //   hmap->entries = realloc(hmap->entries, hmap->max_size);
-  // }
+  if (hmap->curr_size + 1 >= 0.5 * hmap->max_size) {
+    hmap->max_size *= 2;
+    hmap->entries = realloc(hmap->entries, hmap->max_size);
+  }
 
   HashmapEntry* entry = hmap->entries[slot];
 
@@ -84,7 +85,8 @@ void* hashmap_retrieve(Hashmap* hmap, char* key) {
 
   HashmapEntry* entry = hmap->entries[slot];
 
-  if (entry == NULL) return NULL;
+  if (entry == NULL)  
+    return NULL;
 
   while ((entry = hmap->entries[slot]) != NULL) {
 

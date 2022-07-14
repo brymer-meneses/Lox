@@ -75,7 +75,7 @@ TEST(TestScanner, ScanVariableNames) {
 
   for (unsigned int i=0; i<lox.scanner.parsed-1; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
-    EXPECT_TRUE(strcmp(correct_literals[i], tokens[i]->lexeme) == 0);
+    EXPECT_STREQ(correct_literals[i], tokens[i]->lexeme);
   }
 
 }
@@ -87,7 +87,7 @@ TEST(TestScanner, ScanString) {
   scanner_init(input);
   Token** tokens = scanner_scan();
 
-  EXPECT_TRUE(strcmp(tokens[0]->literal->data.string, correct) == 0);
+  EXPECT_STREQ(tokens[0]->literal->data.string, correct);
 }
 
 TEST(TestScanner, ScanVariableDeclaration) {

@@ -68,6 +68,9 @@ Stmt* stmt_while_init(Expr* condition, Stmt* body);
 Stmt* stmt_return_init(Expr* keyword, Expr* value);
 Stmt* stmt_print_init(Expr* expression);
 Stmt* stmt_block_init(Expr* statements);
-Stmt* stmt_function_init(Token name, Token* params, Stmt* body);
+Stmt* stmt_function_init(Token* name, Token* params, Stmt* body);
+Stmt* stmt_vardecl_init(Token* name, Expr* initializer);
+
+
 
 #endif // !STMT_H

@@ -6,6 +6,5 @@
 #include "lox/parser.h"
 #include "stdarg.h"
 
-void report(FileLoc* fl, char* message, ...);
-void report_two(char* message, ...);
+void report(FileLoc* fl, const char* message, ...);
 #endif
