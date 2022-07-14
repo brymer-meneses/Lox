@@ -72,28 +72,24 @@ bool is_real_number(const char *string) {
   return true;
 }
 
-// Credits to: https://www.youtube.com/watch?v=CzAgM5bez-g
 char* read_file(const char* filename) {
-  FILE* file;
-  file = fopen(filename, "r");
-  if (file == NULL) return NULL;
+  FILE* file = fopen(filename, "rt");
 
-  fseek(file, 0, SEEK_END);
-  const int length = ftell(file);
-
-  fseek(file, 0, SEEK_SET);
-
-  char* string = malloc(sizeof(char) * (length + 1)); // accomodate for the null terminator
-
-  char c;
-  int i =0;
-  while ( (c = fgetc(file))  != EOF) {
-    string[i] = c;
-    i++;
+  if (!file) {
+    fprintf(stderr, "ERROR: cannot read file: %s\n", filename);
   }
 
-  string[length] = '\0';
-  return string;
+  fseek(file, 0, SEEK_END);
+  size_t length = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  char* buffer = (char *) malloc(length + 1);
+  buffer[length] = '\0';
+
+  fread(buffer, 1, length, file);
+
+  fclose(file);
+  return buffer;
 }
 
 char** str_split(const char* str, const char* delim) {

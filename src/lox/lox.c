@@ -38,6 +38,8 @@ void run(char source[]) {
 }
 
 void run_file(const char* filename) {
+  lox_init();
+  environment_init();
 
   char* contents = read_file(filename);
   if (contents == NULL) {
@@ -45,6 +47,7 @@ void run_file(const char* filename) {
     return;
   }
   run(contents);
+
   free(contents);
 }
 

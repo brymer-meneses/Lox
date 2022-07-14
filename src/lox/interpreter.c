@@ -1,15 +1,16 @@
-#include "lox/environment.h"
-#include "tools/fileloc.h"
 
 #include "lox/declarations.h"
+#include "lox/environment.h"
 #include "lox/lox.h"
 #include "lox/object.h"
 #include "lox/token.h"
 #include "lox/expr.h"
 #include "lox/interpreter.h"
+#include "lox/stmt.h"
+
+#include "tools/fileloc.h"
 #include "tools/hashmap.h"
 #include "tools/utils.h"
-#include "lox/stmt.h"
 #include "tools/error.h"
 
 #include "string.h"
@@ -119,9 +120,6 @@ static LoxObject* expr_evaluate(Expr *expr) {
           break;
       }
 
-      free(left);
-      free(right);
-      free(expr);
       return result;
       } break;
     case EXPR_UNARY:  {
@@ -139,8 +137,6 @@ static LoxObject* expr_evaluate(Expr *expr) {
            break;
       }
 
-      free(right);
-      free(expr);
       return result;
       } break;
     case EXPR_GROUPING: 
