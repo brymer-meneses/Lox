@@ -16,17 +16,18 @@ char* expr_to_string(const Expr *expr) {
 
   switch (expr->type) {
     case EXPR_UNARY:
-      return parenthesize(expr->data.Unary.operation->lexeme, NULL, expr->data.Unary.right);
+      return parenthesize(expr->as.unary.op->lexeme, NULL, expr->as.unary.right);
       break;
     case EXPR_BINARY:
-      return parenthesize(expr->data.Binary.operation->lexeme, expr->data.Binary.left, expr->data.Binary.right);
+      return parenthesize(expr->as.binary.op->lexeme, expr->as.binary.left, expr->as.binary.right);
       break;
     case EXPR_GROUPING:
-      return parenthesize("group", expr->data.Grouping.expression, NULL);
+      return parenthesize("group", expr->as.grouping.expression, NULL);
       break;
     case EXPR_LITERAL:
-      return loxobject_to_string(expr->data.Literal.value);
+      return loxobject_to_string(expr->as.literal.value);
       break;
+
    }
 };
 

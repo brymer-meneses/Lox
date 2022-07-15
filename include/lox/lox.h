@@ -6,23 +6,29 @@
 #include "parser.h"
 #include "environment.h"
   
-void run(char source[]);
-void run_file(const char* filename);
-void run_prompt();
-void lox_init();
 
 typedef struct Lox {
-  Scanner scanner;
-  Parser parser;
-  Environment environment;
+  struct {
+    bool had_error;
+    bool had_runtime_error;
+    bool is_on_repl;
+  } status;
 
-  bool had_error;
-  bool had_runtime_error;
+  struct {
+    Scanner* scanner;
+    Parser* parser;
+    Environment* environment;
+    char* source_code;
+  } context;
 
-  bool is_on_repl;
 } Lox;
 
+Lox* lox__init();
+void lox__run(char* source);
+Lox* lox__get();
+void lox__free();
 
-extern Lox lox; 
+void lox__run_file(const char* filename);
+void lox__run_prompt();
 
 #endif // !LOX_H

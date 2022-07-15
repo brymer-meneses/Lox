@@ -13,8 +13,7 @@ typedef struct Parser {
 } Parser;
 
 
-
-void parser_init(Token** tokens);
+Parser* parser_init(Token** tokens);
 Stmt** parser_parse();
 
 #endif 

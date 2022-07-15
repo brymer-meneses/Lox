@@ -10,7 +10,7 @@ typedef enum ExprType {
   EXPR_UNARY,
   EXPR_LITERAL,
   EXPR_GROUPING,
-  EXPR_VAR_DECLARATION,
+  EXPR_VAR,
   EXPR_ASSIGN,
 } ExprType;
 
@@ -20,31 +20,31 @@ typedef struct Expr {
     struct {
       struct Expr* left;
       struct Expr* right;
-      Token* operation;
-    } Binary;
+      Token* op;
+    } binary;
 
     struct {
       struct Expr* expression;
-    } Grouping;
+    } grouping;
 
     struct {
       LoxObject* value;
-    } Literal;
+    } literal;
 
     struct {
-      Token* operation;
+      Token* op;
       struct Expr* right;
-    } Unary;
+    } unary;
 
     struct {
       Token* name;
-    } VarDecl;
+    } var;
 
     struct {
       Token* name;
       struct Expr* value;
-    } Assign;
-  } data;
+    } assign;
+  } as;
 
   ExprType type;
   FileLoc* fileloc;

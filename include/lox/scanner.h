@@ -22,7 +22,7 @@ typedef struct Scanner {
 } Scanner;
 
 
-void scanner_init(const char *source);
+Scanner* scanner_init(const char *source);
 Token** scanner_scan();
 
 #endif

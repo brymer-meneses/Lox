@@ -1,5 +1,10 @@
+
 // This is a comment
 
-var hello_world = "hello" + " " + "world!";
+var hello = "hello";
+var world = "world";
+
+var hello_world = hello + " " + world;
 
 print hello_world;
+

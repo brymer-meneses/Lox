@@ -42,13 +42,13 @@ TEST(TestUtils, IsBoolean) {
 }
 
 TEST(TestUtils, StringSplit) {
-  const char* source = "The quick brown fox jumped over the lazy cat.";
+  const char* source = "The\nquick\nbrown\nfox\njumped\nover\nthe\nlazy\n\ncat.";
   const char* str_arr[] = {"The", "quick", "brown", "fox", "jumped", "over",
-    "the", "lazy", "cat." };
+    "the", "lazy", "", "cat." };
 
-  char** result = str_split(source, " ");
+  char** result = str_split(source, "\n");
 
-  for (int i = 0; i< 8; i++) {
+  for (int i = 0; i< 9; i++) {
     EXPECT_STREQ(str_arr[i], result[i]);
   }
 

@@ -19,47 +19,47 @@ typedef struct Stmt {
   union {
     struct {
       struct Stmt* statements;
-    } Block;
+    } block;
 
     struct {
       
-    } Class;
+    } class_;
 
     struct {
       Expr* expression;
-    } Expression;
+    } expression;
 
     struct {
       Token name;
       Token* params;
       struct Stmt* body;
-    } Function;
+    } function;
 
     struct {
       Expr* condition;
       struct Stmt* then_branch;
       struct Stmt* else_branch;
-    } If;
+    } if_;
 
     struct {
       Expr* expression;
-    } Print; 
+    } print; 
 
     struct {
       Token keyword;
       Expr* value;
-    } Return;
+    } return_;
 
     struct {
       Token* name;
       Expr* initializer;
-    } Var;
+    } var;
 
     struct {
       Expr* condition;
       struct Stmt* body;
-    } While;
-  } data;
+    } while_;
+  } as;
   StmtType type;
 } Stmt;
 

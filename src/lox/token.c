@@ -29,7 +29,7 @@ void token_print(Token* token) {
   printf("Token: [ ");
   printf("type: %s, ", tokentype_to_string(token->type));
   printf("literal: %s, ", loxobject_to_string(token->literal));
-  printf("line: %lu ", token->line);
+  printf("line: %lu ", token->fileloc->line);
   printf("]\n");
 }
 

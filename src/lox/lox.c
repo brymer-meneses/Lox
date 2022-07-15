@@ -1,4 +1,3 @@
-#include "lox/environment.h"
 #include "stdio.h"
 #include "string.h"
 
@@ -8,6 +7,7 @@
 #include "tools/error.h"
 #include "tools/debug.h"
 
+#include "lox/environment.h"
 #include "lox/scanner.h"
 #include "lox/declarations.h"
 #include "lox/token.h"
@@ -16,55 +16,68 @@
 #include "lox/lox.h"
 #include "lox/interpreter.h"
 
-Lox lox;
+#include "assert.h"
 
-void lox_init() {
-  lox.had_runtime_error = false;
-  lox.had_error = false;
-}
+static Lox* lox;
 
-void run(char source[]) {
-  
-  scanner_init(source);
+Lox* lox__init() {
+  lox = malloc(1 * sizeof(Lox));
+  lox->status.had_error = false;
+  lox->status.had_runtime_error = false;
+
+  lox->context.environment = environment_init();
+  return lox;
+};
+
+void lox__run(char* source) {
+  assert(lox != NULL); /* Lox must be initialized */
+
+  lox->context.source_code = source;
+  lox->context.scanner = scanner_init(source);
+
   Token** tokens = scanner_scan();
+  lox->context.parser =  parser_init(tokens);
+  Stmt** stmts = parser_parse(tokens);
 
-  // log_tokens(tokens);
+  interpret(
+      stmts,
+      lox->context.environment,
+      lox->context.parser->num_stmts
+  );
+};
 
-  parser_init(tokens);
-  Stmt** statements = parser_parse();
-
-  interpret(statements);
-
-}
-
-void run_file(const char* filename) {
-  lox_init();
-  environment_init();
+void lox__run_file(const char* filename) {
 
   char* contents = read_file(filename);
   if (contents == NULL) {
     fprintf(stderr, "ERROR: Cannot read file: %s.\n", filename);
     return;
   }
-  run(contents);
 
+  lox__run(contents);
   free(contents);
-}
+};
 
-void run_prompt() {
-  lox.is_on_repl = true;
-  lox_init();
-  environment_init();
+Lox* lox__get() {
+  return lox;
+};
+
+void lox__run_prompt() {
+  lox->status.is_on_repl = true;
 
   while(true) {
     char line[MAX_INPUT_LIMIT];
 
     printf("> ");
     fgets(line, sizeof(line) , stdin);
-    
-    run(line);
-    if (strcmp(line, "\n") == 0)  break; 
+   
+    lox__run(line);
+    if (strcmp(line, "\n") == 0)  break;
   }
+}
 
-  hashmap_free(lox.environment.values);
+void lox__free() {
+  // TODO: recursively free expressions, tokens and statements;
+  // NOTE: doing this may free the memory multiple times.
+  hashmap_free(lox->context.environment->values);
 }

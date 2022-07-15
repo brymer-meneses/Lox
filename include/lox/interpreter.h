@@ -3,9 +3,9 @@
 
 #include "declarations.h"
 #include "stmt.h"
+#include "environment.h"
 
-void interpret(Stmt** statements);
 
-
+void interpret(Stmt** statements, Environment* env, size_t num_stmts);
 
 #endif

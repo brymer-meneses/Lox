@@ -16,17 +16,9 @@
 
 #define COLOR(COLOR, STRING) COLOR STRING ANSI_CODE_RESET
 
-static FileLoc* compute_relative_position() {
-  const Scanner s = lox.scanner;
-  FileLoc* fl = malloc(1 * sizeof(FileLoc));
-  fl->line  = s.line - 1;
-  fl->start = s.start - s.last_line;
-  fl->end   = s.current - 1 - s.last_line;
-  return fl;
-}
-
 static char* get_source_line(const size_t line_num) {
-  char** arr = str_split(lox.scanner.source, "\n");
+  char** arr = str_split(lox__get()->context.source_code, "\n");
+
   return arr[line_num-1];
 }
 
@@ -45,11 +37,9 @@ static char* init_empty_string(const int size) {
 static void point_error_root(char* source, FileLoc* fl) {
   assert(source != NULL);
   assert(fl != NULL);
-  // assert(fl->start != 0 && fl->end != 0);
-  assert(fl->line != 0);
 
   char source_context[64];
-  if (lox.is_on_repl)
+  if (lox__get()->status.is_on_repl)
     sprintf(source_context, "    > | ");
   else
     sprintf(source_context, "    %lu| ", fl->line);
@@ -78,9 +68,11 @@ static void point_error_root(char* source, FileLoc* fl) {
 
 void report(FileLoc* fl, const char* message, ...) {
 
-  char* line = get_source_line(fl->line);
-  point_error_root(line, fl);
-  lox.had_error = true;
+
+  if (fl != NULL)  {
+    char* line = get_source_line(fl->line);
+    point_error_root(line, fl);
+  }
 
   char* formatted_message = str_concat(COLOR(ANSI_CODE_RED, "  ERROR: "), message);
 
@@ -94,5 +86,7 @@ void report(FileLoc* fl, const char* message, ...) {
   vfprintf(stdout, formatted_message, args);
 
   va_end(args);
+
+  lox__get()->status.had_error = true;
 }
 

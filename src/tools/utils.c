@@ -11,6 +11,8 @@
 #include "lox/scanner.h"
 #include "lox/lox.h"
 
+static char* compat_strsep(char** stringp, const char* delim);
+
 char* substring(const char* source, const size_t begin, const size_t end) {
   assert(source != NULL);
   assert(end < strlen(source));
@@ -98,9 +100,8 @@ char** str_split(const char* str, const char* delim) {
   char** str_arr = malloc(str_arr_size * sizeof(char*));
   char* str_copy = strdup(str);
 
-  char* substr = strtok(str_copy, delim);
+  char* substr = compat_strsep(&str_copy, delim);
   while ( substr != NULL ) {
-    // str_arr[i] = malloc(sizeof(char) * strlen(substr));
     str_arr[i] = substr;
     i++;
 
@@ -108,7 +109,7 @@ char** str_split(const char* str, const char* delim) {
       str_arr_size *= 2;
       str_arr = realloc(str_arr, str_arr_size * sizeof(char*));
     }
-    substr = strtok(NULL, delim);
+    substr = strsep(&str_copy, delim);
   }
 
 
@@ -122,4 +123,22 @@ char* str_concat(const char* str1, const char* str2) {
   snprintf(sum_str, length, "%s%s", str1, str2);
 
   return sum_str;
+}
+
+// cross-platform strsep, this is for compatibility.
+// credits: https://stackoverflow.com/a/8514474
+static char* compat_strsep(char** stringp, const char* delim) {
+  char* start = *stringp;
+  char* p;
+
+  p = (start != NULL) ? strpbrk(start, delim) : NULL;
+
+  if (p == NULL) {
+    *stringp = NULL;
+  } else {
+    *p = '\0';
+    *stringp = p + 1;
+  }
+
+  return start;
 }

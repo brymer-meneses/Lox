@@ -30,7 +30,6 @@ typedef enum TokenType {
 
 typedef struct Token {
   TokenType type;
-  size_t line;
   char* lexeme;
   LoxObject* literal;
   FileLoc* fileloc;

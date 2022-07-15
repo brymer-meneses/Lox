@@ -22,14 +22,19 @@ static LoxObject* expr_evaluate(Expr *expr);
 static void stmt_evaluate(Stmt* stmt);
 static bool is_equal(LoxObject* obj1, LoxObject* obj2);
 
+static Environment* environment;
+
 void execute(Stmt* stmt) {
+  assert(stmt != NULL);
+
   stmt_evaluate(stmt);
 }
 
-void interpret(Stmt** statements) {
+void interpret(Stmt** statements, Environment* env, size_t num_stmts) {
+  assert(env != NULL);
+  environment = env;
 
-  const size_t num_stmts = lox.parser.num_stmts;
-  for (size_t i=0; i<num_stmts && !lox.had_runtime_error ;i++) {
+  for (size_t i=0; i<num_stmts && !lox__get()->status.had_runtime_error ;i++) {
     execute(statements[i]);
   }
 }
@@ -60,9 +65,9 @@ static LoxObject* expr_evaluate(Expr *expr) {
 
   switch (expr->type) {
     case EXPR_BINARY: {
-      LoxObject* left = expr_evaluate(expr->data.Binary.left);
-      LoxObject* right = expr_evaluate(expr->data.Binary.right);
-      const Token* op = expr->data.Binary.operation;
+      LoxObject* left = expr_evaluate(expr->as.binary.left);
+      LoxObject* right = expr_evaluate(expr->as.binary.right);
+      const Token* op = expr->as.binary.op;
 
       FileLoc* fl = expr->fileloc;
       LoxObject* result = NULL;
@@ -123,10 +128,10 @@ static LoxObject* expr_evaluate(Expr *expr) {
       return result;
       } break;
     case EXPR_UNARY:  {
-      LoxObject* right = expr_evaluate(expr->data.Unary.right);
+      LoxObject* right = expr_evaluate(expr->as.unary.right);
       LoxObject* result = NULL;
 
-      switch (expr->data.Unary.operation->type) {
+      switch (expr->as.unary.op->type) {
         case MINUS:
            result = loxobject_number(-right->data.number, right->fl);
            break;
@@ -140,17 +145,17 @@ static LoxObject* expr_evaluate(Expr *expr) {
       return result;
       } break;
     case EXPR_GROUPING: 
-      return expr_evaluate(expr->data.Grouping.expression); 
+      return expr_evaluate(expr->as.grouping.expression); 
       break;
     case EXPR_LITERAL: 
-      return expr->data.Literal.value; 
+      return expr->as.literal.value; 
       break;
-    case EXPR_VAR_DECLARATION:
-      return environment_get(expr->data.VarDecl.name);
+    case EXPR_VAR:
+      return environment_get(environment, expr->as.var.name);
       break;
     case EXPR_ASSIGN: {
-      LoxObject* value = expr_evaluate(expr->data.Assign.value);
-      environment_assign(expr->data.Assign.name, value);
+      LoxObject* value = expr_evaluate(expr->as.assign.value);
+      environment_assign(environment, expr->as.assign.name, value);
       return value;
     } break;
   }
@@ -163,20 +168,23 @@ static void stmt_evaluate(Stmt* stmt) {
 
   switch (stmt->type) {
     case STMT_EXPRESSION: {
-      LoxObject* obj = expr_evaluate(stmt->data.Expression.expression);
-      if (lox.is_on_repl && !lox.had_error)
-        printf("%s\n", loxobject_to_string(obj));
+      LoxObject* obj = expr_evaluate(stmt->as.expression.expression);
+
+      if (lox__get()->status.is_on_repl && !lox__get()->status.had_error)
+        printf("sdsds %s\n", loxobject_to_string(obj));
     } break;
     case STMT_PRINT: {
-      LoxObject* value = expr_evaluate(stmt->data.Print.expression);
+      LoxObject* value = expr_evaluate(stmt->as.print.expression);
+      if (lox__get()->status.had_error) return;
+
       printf("%s\n", loxobject_to_string(value));
     } break;
     case STMT_VAR: {
       LoxObject* value = NULL;
-      if (stmt->data.Var.initializer != NULL) {
-        value = expr_evaluate(stmt->data.Var.initializer);
+      if (stmt->as.var.initializer != NULL) {
+        value = expr_evaluate(stmt->as.var.initializer);
       }
-      environment_define(stmt->data.Var.name->lexeme, value);
+      environment_define(environment, stmt->as.var.name->lexeme, value);
     } break;
     default:
       break;

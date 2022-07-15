@@ -9,7 +9,7 @@ Stmt* stmt_expr_init(Expr* expression) {
   Stmt* stmt = malloc(1 * sizeof(Stmt));
 
   stmt->type = STMT_EXPRESSION;
-  stmt->data.Expression.expression = expression;
+  stmt->as.expression.expression = expression;
 
   return stmt;
 }
@@ -19,7 +19,7 @@ Stmt* stmt_print_init(Expr* expression) {
   Stmt* stmt = malloc(1 * sizeof(Stmt));
 
   stmt->type = STMT_PRINT;
-  stmt->data.Print.expression = expression;
+  stmt->as.print.expression = expression;
 
   return stmt;
 }
@@ -29,7 +29,7 @@ Stmt* stmt_vardecl_init(Token* name, Expr* initializer) {
   Stmt* stmt = malloc(1 * sizeof(Stmt));
 
   stmt->type = STMT_VAR;
-  stmt->data.Var.initializer = initializer;
-  stmt->data.Var.name= name;
+  stmt->as.var.initializer = initializer;
+  stmt->as.var.name= name;
   return stmt;
 }

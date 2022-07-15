@@ -10,10 +10,10 @@ extern "C" {
 
 TEST(TestEnvionment, Define) {
 
-  environment_init();
-  environment_define((char*) "test", loxobject_number(5, NULL));
+  Environment* env = environment_init();
+  environment_define(env, (char*) "test", loxobject_number(5, NULL));
 
-  void* retval = hashmap_retrieve(lox.environment.values, (char*) "test");
+  void* retval = hashmap_retrieve(env->values, (char*) "test");
   LoxObject* obj = (LoxObject*) retval;
 
   EXPECT_EQ(obj->data.number, 5);

@@ -4,20 +4,20 @@
 #include "tools/error.h"
 #include "tools/hashmap.h"
 
-void environment_init() {
-  lox.environment = (Environment) {
-    .values = hashmap_init(),
-  };
+Environment* environment_init() {
+  Environment* env = malloc(1 * sizeof(Environment));
+  env->values = hashmap_init();
+  return env;
 }
 
-void environment_define(char* name, LoxObject* value) {
-  hashmap_insert(lox.environment.values, name, value);
+void environment_define(Environment* env, char* name, LoxObject* value) {
+  hashmap_insert(env->values, name, value);
 }
 
-void environment_dump() {
+void environment_dump(Environment* env) {
   bool is_emptry = true;
-  for (size_t i=0; i<lox.environment.values->max_size; i++) {
-    const HashmapEntry* entry = lox.environment.values->entries[i];
+  for (size_t i=0; i<env->values->max_size; i++) {
+    const HashmapEntry* entry = env->values->entries[i];
     if (entry != NULL) {
       is_emptry = false;
       printf("[SLOT: %lu] %s -> %s\n", i, entry->key, loxobject_to_string((LoxObject*) entry->value ));
@@ -29,8 +29,8 @@ void environment_dump() {
 }
 
 
-LoxObject* environment_get(Token* name) {
-  void* result = hashmap_retrieve(lox.environment.values, name->lexeme);
+LoxObject* environment_get(Environment* env, Token* name) {
+  void* result = hashmap_retrieve(env->values, name->lexeme);
 
 
   if (result != NULL) {
@@ -41,11 +41,11 @@ LoxObject* environment_get(Token* name) {
   return NULL;
 }
 
-void environment_assign(Token* name, LoxObject* value) {
-  void* result = hashmap_retrieve(lox.environment.values, name->lexeme);
+void environment_assign(Environment* env, Token* name, LoxObject* value) {
+  void* result = hashmap_retrieve(env->values, name->lexeme);
 
   if (result != NULL) {
-    hashmap_insert(lox.environment.values, name->lexeme, value);
+    hashmap_insert(env->values, name->lexeme, value);
     return;
   }
 

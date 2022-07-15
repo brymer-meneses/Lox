@@ -59,14 +59,17 @@ static Token* expect(FileLoc* fl, TokenType type, const char* message);
 static Token* peek();
 static Token* previous();
 
-void parser_init(Token** tokens) {
-  lox.parser = (Parser) {
-    .tokens = tokens,
-    .current = 0,
-  };
+static Parser* parser;
+
+Parser* parser_init(Token** tokens) {
+  parser = malloc(1 * sizeof(Parser));
+  parser->tokens = tokens;
+  parser->current = 0;
+  return parser;
 }
 
 Stmt** parser_parse() {
+  assert(parser != NULL);
 
   size_t statements_num = 0;
   size_t statements_size = 16;
@@ -83,20 +86,20 @@ Stmt** parser_parse() {
     statements_num++;
   }
 
-  lox.parser.num_stmts = statements_num;
+  parser->num_stmts = statements_num;
   return statements;
 }
 
 
 static Token* advance() {
   if (!isfinished())
-    lox.parser.current++;
+    parser->current++;
   return previous();
 }
 
 static Token* previous() {
-  assert(lox.parser.current != 0);
-  return lox.parser.tokens[lox.parser.current - 1];
+  assert(parser->current != 0);
+  return parser->tokens[parser->current - 1];
 }
 
 
@@ -130,7 +133,7 @@ static bool isfinished() {
 }
 
 static Token* peek() {
-  return lox.parser.tokens[lox.parser.current];
+  return parser->tokens[parser->current];
 }
 
 static void synchronize() {
@@ -169,15 +172,15 @@ static Token* expect(FileLoc* fl, TokenType type, const char* message) {
 
 static FileLoc* find_last_occurence(TokenType type) {
 
-  size_t i = lox.parser.current;
+  size_t i = parser->current;
   while (i != 0) {
-    if (lox.parser.tokens[i]->type == type) {
-      return lox.parser.tokens[i]->fileloc;
+    if (parser->tokens[i]->type == type) {
+      return parser->tokens[i]->fileloc;
     }
     i--;
   }
 
-  return lox.parser.tokens[0]->fileloc;
+  return parser->tokens[0]->fileloc;
 }
 
 static Expr* expression() {
@@ -191,8 +194,8 @@ static Expr* assignment() {
     Token* equals = previous();
     Expr* value = assignment();
 
-    if (expr->type == EXPR_VAR_DECLARATION) {
-      Token* name = expr->data.VarDecl.name;
+    if (expr->type == EXPR_VAR) {
+      Token* name = expr->as.var.name;
       return assign_init(name, value);
     }
 
@@ -349,7 +352,7 @@ static Stmt* expression_statement() {
 
 static Stmt* print_statement() {
   Expr* value = expression();
-  expect(value->fileloc, SEMICOLON, "Expected ';' after value.");
+  expect(find_last_occurence(PRINT), SEMICOLON, "Expected ';' after value.");
   return stmt_print_init(value);
 }
 

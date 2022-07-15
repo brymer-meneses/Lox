@@ -16,8 +16,12 @@ TEST(TestParser, VariableDeclaration) {
   Token** tokens = scanner_scan();
 
   parser_init(tokens);
-  // Stmt** statements = parser_parse();
+  Stmt** statements = parser_parse();
 
-  // interpret(statements);
+  EXPECT_EQ(statements[0]->type, STMT_VAR);
+  EXPECT_EQ(statements[0]->as.var.initializer->as.literal.value->type, LOX_NUMBER);
+  EXPECT_EQ(statements[0]->as.var.initializer->as.literal.value->data.number, 5);
 }
+
+
 
