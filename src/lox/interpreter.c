@@ -171,7 +171,7 @@ static void stmt_evaluate(Stmt* stmt) {
       LoxObject* obj = expr_evaluate(stmt->as.expression.expression);
 
       if (lox__get()->status.is_on_repl && !lox__get()->status.had_error)
-        printf("sdsds %s\n", loxobject_to_string(obj));
+        printf("%s\n", loxobject_to_string(obj));
     } break;
     case STMT_PRINT: {
       LoxObject* value = expr_evaluate(stmt->as.print.expression);
