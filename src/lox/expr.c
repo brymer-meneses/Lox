@@ -53,7 +53,7 @@ Expr* unary_init(Token* op, Expr* right) {
   return expr;
 }
 
-Expr* vardecl_init(Token* name) {
+Expr* var_init(Token* name) {
   assert(name != NULL);
   Expr* expr = malloc(1 * sizeof(Expr));
   expr->type = EXPR_VAR;

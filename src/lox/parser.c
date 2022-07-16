@@ -326,7 +326,7 @@ static Expr* primary() {
   }
 
   if (match(1, IDENTIFIER)) {
-    return vardecl_init(previous());
+    return var_init(previous());
   }
 
 

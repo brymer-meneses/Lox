@@ -54,7 +54,7 @@ Expr* binary_init(Expr* left, Token* op, Expr *right);
 Expr* grouping_init(Expr* expr);
 Expr* literal_init(LoxObject* value);
 Expr* unary_init(Token* op, Expr* right);
-Expr* vardecl_init(Token* name);
+Expr* var_init(Token* name);
 Expr* assign_init(Token* name, Expr* value);
 
 void expr_free(Expr* expr);
