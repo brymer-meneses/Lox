@@ -32,6 +32,6 @@ LoxObject* loxobject_number(double value, FileLoc* fl);
 
 char* loxtype_to_string(LoxType type);
 
+void loxobject_free(LoxObject* obj);
+
 #endif // !LOX_OBJECT_H
-
-

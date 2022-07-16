@@ -31,11 +31,11 @@ static void scan_identifier();
 static void scan_string();
 static void scan_number();
 
-static Hashmap* keywords;
 static Scanner* scanner;
+static Hashmap* keywords;
 
 
-Scanner* scanner_init(const char* source) {
+Scanner* scanner_init(char* source) {
   scanner = malloc(1 * sizeof(Scanner));
   scanner->current =0;
   scanner->start =0;
@@ -74,6 +74,7 @@ Token** scanner_scan() {
     scan_token();
   }
   add_token(SOURCE_END, NULL);
+  hashmap_free(keywords);
   return scanner->tokens;
 }
 

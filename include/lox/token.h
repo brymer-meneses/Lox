@@ -41,5 +41,7 @@ Token* token_init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fil
 char* tokentype_to_string(TokenType type);
 
 char*  token_to_string(Token token);
+void token_free(Token* token);
+void tokens_free(size_t num_tokens, Token** tokens);
 
 #endif

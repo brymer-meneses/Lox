@@ -4,6 +4,7 @@
 #include "stdlib.h"
 #include "declarations.h"
 #include "stdbool.h"
+#include "tools/hashmap.h"
 
 typedef struct Scanner {
   // points to the next character
@@ -11,7 +12,7 @@ typedef struct Scanner {
   // points to the start of a prospective token
   size_t start;
   size_t line;
-  const char *source;
+  char *source;
 
   Token** tokens;
   size_t parsed;
@@ -22,7 +23,7 @@ typedef struct Scanner {
 } Scanner;
 
 
-Scanner* scanner_init(const char *source);
+Scanner* scanner_init(char *source);
 Token** scanner_scan();
 
 #endif

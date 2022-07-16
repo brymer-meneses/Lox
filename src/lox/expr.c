@@ -1,3 +1,4 @@
+#include "lox/token.h"
 #include "stdio.h"
 #include "assert.h"
 #include "stdlib.h"
@@ -23,12 +24,12 @@ Expr* grouping_init(Expr *expression) {
   assert(expression != NULL);
 
   FileLoc* fl = expression->fileloc;
-  Expr* new_expr = malloc(1 * sizeof(Expr));
+  Expr* expr = malloc(1 * sizeof(Expr));
 
-  new_expr->type = EXPR_GROUPING;
-  new_expr->as.grouping.expression = expression;
-  new_expr->fileloc = fileloc_init(fl->line, fl->start - 1, fl->end + 1); // handle the parentheses
-  return new_expr;
+  expr->type = EXPR_GROUPING;
+  expr->as.grouping.expression = expression;
+  expr->fileloc = fileloc_init(fl->line, fl->start - 1, fl->end + 1); // handle the parentheses
+  return expr;
 };
 
 Expr* literal_init(LoxObject* value) {
@@ -73,4 +74,32 @@ Expr* assign_init(Token* name, Expr* value) {
   expr->as.assign.value = value;
 
   return expr;
+}
+
+void expr_free(Expr* expr) {
+  if (expr == NULL) return;
+
+  // NOTE: tokens are freed by tokens_free on lox__free, since we only use 1 copy 
+  // of them throughout the runtime of the interpreter.
+
+  switch (expr->type) {
+    case EXPR_BINARY:
+      expr_free(expr->as.binary.left);
+      expr_free(expr->as.binary.right);
+      break;
+    case EXPR_GROUPING:
+      expr_free(expr->as.grouping.expression);
+      break;
+    case EXPR_LITERAL:
+      loxobject_free(expr->as.literal.value);
+      break;
+    case EXPR_UNARY:
+      expr_free(expr->as.unary.right);
+      break;
+    case EXPR_VAR:
+      break;
+    case EXPR_ASSIGN:
+      expr_free(expr->as.assign.value);
+      break;
+  }
 }

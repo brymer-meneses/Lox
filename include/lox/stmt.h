@@ -71,6 +71,7 @@ Stmt* stmt_block_init(Expr* statements);
 Stmt* stmt_function_init(Token* name, Token* params, Stmt* body);
 Stmt* stmt_vardecl_init(Token* name, Expr* initializer);
 
+void stmts_free(size_t num_stmts, Stmt** stmts);
 
 
 #endif // !STMT_H

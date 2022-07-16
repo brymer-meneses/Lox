@@ -10,6 +10,7 @@ typedef struct Parser {
   Token** tokens;
   size_t current;
   size_t num_stmts;
+  Stmt** stmts;
 } Parser;
 
 

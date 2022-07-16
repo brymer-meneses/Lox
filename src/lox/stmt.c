@@ -33,3 +33,30 @@ Stmt* stmt_vardecl_init(Token* name, Expr* initializer) {
   stmt->as.var.name= name;
   return stmt;
 }
+
+static void stmt_free(Stmt* stmt) {
+  if (stmt == NULL) return;
+
+  switch (stmt->type) {
+    case STMT_VAR:
+      // skip as this statements contains a token that will be freed later
+      // token_free(stmt->as.var.name);
+      break;
+    case STMT_EXPRESSION:
+      expr_free(stmt->as.expression.expression);
+      break;
+    case STMT_PRINT:
+      expr_free(stmt->as.print.expression);
+      break;
+    default:
+      break;
+  }
+  free(stmt);
+}
+
+void stmts_free(size_t num_stmts, Stmt** stmts) {
+  for (size_t i=0; i<num_stmts; i++) {
+    stmt_free(stmts[i]);
+  }
+  free(stmts);
+}

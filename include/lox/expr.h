@@ -57,4 +57,5 @@ Expr* unary_init(Token* op, Expr* right);
 Expr* vardecl_init(Token* name);
 Expr* assign_init(Token* name, Expr* value);
 
+void expr_free(Expr* expr);
 #endif

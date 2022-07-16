@@ -1,3 +1,4 @@
+#include "lox/stmt.h"
 #include "stdio.h"
 #include "string.h"
 
@@ -66,6 +67,7 @@ void lox__run_prompt() {
   lox->status.is_on_repl = true;
 
   while(true) {
+    lox->status.had_error = false;
     char line[MAX_INPUT_LIMIT];
 
     printf("> ");
@@ -77,7 +79,12 @@ void lox__run_prompt() {
 }
 
 void lox__free() {
-  // TODO: recursively free expressions, tokens and statements;
-  // NOTE: doing this may free the memory multiple times.
+  stmts_free(lox->context.parser->num_stmts, lox->context.parser->stmts);
+  tokens_free(lox->context.scanner->parsed, lox->context.scanner->tokens);
   hashmap_free(lox->context.environment->values);
+
+  free(lox->context.scanner);
+  free(lox->context.parser);
+  free(lox->context.environment);
+  free(lox);
 }

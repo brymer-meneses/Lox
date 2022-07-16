@@ -1,3 +1,4 @@
+#include "lox/object.h"
 #include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
@@ -34,13 +35,22 @@ void token_print(Token* token) {
 }
 
 void token_free(Token* token) {
+  if (token == NULL) return;
+  loxobject_free(token->literal);
   free(token->fileloc);
   free(token->lexeme);
-  free(token->literal);
+  free(token);
+}
+
+void tokens_free(size_t num_tokens, Token** tokens) {
+  for (size_t i=0; i<num_tokens; i++) {
+    token_free(tokens[i]);
+  }
+  free(tokens);
 }
 
 
-char *tokentype_to_string(TokenType type) {
+char* tokentype_to_string(TokenType type) {
   switch (type) {
     case LEFT_PAREN:      return "LEFT_PAREN";
     case RIGHT_PAREN:     return "RIGHT_PAREN";
@@ -83,4 +93,3 @@ char *tokentype_to_string(TokenType type) {
     case SOURCE_END:        return "EOF";
   }
 }
-

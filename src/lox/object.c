@@ -73,7 +73,6 @@ LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl) {
       obj->data.string = strdup(lexeme);
       break;
     case LOX_NIL:
-      free(obj);
       return NULL;
       break;
   }
@@ -104,3 +103,16 @@ LoxObject* loxobject_number(double value, FileLoc* fl) {
   return obj;
 }
 
+
+void loxobject_free(LoxObject* obj) {
+  if (obj == NULL) return;
+  free(obj->fl);
+  switch (obj->type) {
+    case LOX_STRING:
+      free(obj->data.string);
+      break;
+    default:
+      break;
+  }
+  free(obj);
+}

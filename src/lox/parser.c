@@ -86,6 +86,7 @@ Stmt** parser_parse() {
     statements_num++;
   }
 
+  parser->stmts = statements;
   parser->num_stmts = statements_num;
   return statements;
 }
