@@ -18,7 +18,9 @@
 
 /*
  * expression     → assignment ;
- * assignment     → IDENTIFIER "=" assignment | equality ;
+ * assignment     → IDENTIFIER "=" assignment | equality | logic_or ;
+ * logic_or       → logic_and ( "or" logic_and )"* ;
+ * logic_and      → equality ( "and" eqaulity )"* ;
  * equality       → comparison ( ( "!=" | "==" ) comparison )* ;
  * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
  * term           → factor ( ( "-" | "+" ) factor )* ;
@@ -37,20 +39,25 @@ static Expr* factor();
 static Expr* unary();
 static Expr* primary();
 
+static Expr* or();
+static Expr* and();
 /*
  * program        → declaration* EOF ;
  * declaration    → varDecl | statement ;
- * statement      → exprStmt | printStmt ;
+ * statement      → exprStmt | printStmt | block | ifStmt ;
  *
  * varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  * exprStmt       →  expression ";" ;
  * printStmt      → "print" expression ";" ;
+ * ifStmt         → "if" "(" expression ")" statement
+ *                   ( "else" statement )? ;
  */
 
 static Stmt* declaration();
+static Stmt* statement();
+static Stmt* if_statement();
 static Stmt* expression_statement();
 static Stmt* print_statement();
-static Stmt* statement();
 static Stmt* var_declaration();
 static Stmt* control_flow_statement();
 
@@ -186,7 +193,7 @@ static Expr* expression() {
 } 
 
 static Expr* assignment() {
-  Expr* expr = equality();
+  Expr* expr = or();
 
   if (match(1, EQUAL)) {
     Token* equals = previous();
@@ -200,6 +207,30 @@ static Expr* assignment() {
     report(equals->fileloc, "Invalid assignment target.");
   }
  return expr;
+}
+
+static Expr* or() {
+  Expr* expr = and();
+
+  while (match(1, OR)) {
+    Token* operator = previous();
+    Expr* right = and();
+    expr = logical_init(expr, operator, right);
+  }
+
+  return expr;
+}
+
+static Expr* and() {
+  Expr* expr = equality();
+
+  while (match(1, AND)) {
+    Token* operator = previous();
+    Expr* right = equality();
+    expr = logical_init(expr, operator, right);
+  }
+
+  return expr;
 }
 
 static Stmt* declaration() {
@@ -312,7 +343,7 @@ static Expr* primary() {
     return literal_init(loxobject_init(LOX_BOOLEAN, previous()->lexeme, previous()->fileloc));
 
   if (match(1, NIL))  
-    return literal_init(loxobject_init(LOX_NIL, "NIL", previous()->fileloc));
+    return literal_init(loxobject_nil(previous()->fileloc));
 
   if (match(1, STRING))
     return literal_init(loxobject_init(LOX_STRING, previous()->literal->as.string, previous()->fileloc));
@@ -338,11 +369,26 @@ static Expr* primary() {
 }
 
 static Stmt* statement() {
+  if (match(1, IF)) 
+    return if_statement();
   if (match(1, PRINT)) 
     return print_statement();
   if (match(1, LEFT_BRACE))
     return stmt_block_init(block());
   return expression_statement();
+}
+
+static Stmt* if_statement() {
+  expect(find_last_occurence(IF), LEFT_PAREN, "Expect '(' after 'if'.");
+  Expr* condition = expression();
+  expect(condition->fileloc, RIGHT_PAREN, "Expect ')' after condition.");
+
+  Stmt* then_branch = statement();
+  Stmt* else_branch = NULL;
+  if (match(1, ELSE)) {
+    else_branch = statement();
+  }
+  return stmt_if_init(condition, then_branch, else_branch);
 }
 
 static Stmt* expression_statement() {

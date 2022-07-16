@@ -166,6 +166,17 @@ static LoxObject* interpret_expr(Environment* env, Expr *expr) {
       environment_assign(env, expr->as.assign.name, value);
       return value;
     } break;
+    case EXPR_LOGICAL: {
+      LoxObject* left = interpret_expr(env, expr->as.logical.left);
+
+      if (expr->as.logical.op->type == OR) {
+        if (loxobject_istruthy(left)) return left;
+      } else {
+        if (!loxobject_istruthy(left)) return left;
+      }
+
+      return interpret_expr(env, expr->as.logical.right);
+    }
   }
 
   return NULL;
@@ -195,8 +206,13 @@ static LoxObject* interpret_stmt(Environment* env, Stmt* stmt) {
     case STMT_BLOCK: {
       execute_block(stmt->as.block.statements, environment_init(env));
     }; break;
-    case STMT_CONTROL_FLOW: { 
-
+    case STMT_IF: { 
+      if (loxobject_istruthy(interpret_expr(env, stmt->as.if_statement.condition))) {
+        execute(env, stmt->as.if_statement.then_branch);
+      } else if (stmt->as.if_statement.else_branch != NULL) {
+        execute(env, stmt->as.if_statement.else_branch);
+      }
+      return NULL;
     } break;
     default:
       break;

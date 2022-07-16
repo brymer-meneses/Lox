@@ -29,10 +29,11 @@ LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl);
 LoxObject* loxobject_boolean(bool value, FileLoc* fl);
 LoxObject* loxobject_string(char* value, FileLoc* fl);
 LoxObject* loxobject_number(double value, FileLoc* fl);
+LoxObject* loxobject_nil(FileLoc* fl);
 
 char* loxtype_to_string(LoxType type);
 
 void loxobject_free(LoxObject* obj);
-bool loxobject_truth_value(LoxObject* obj);
+bool loxobject_istruthy(LoxObject* obj);
 
 #endif // !LOX_OBJECT_H

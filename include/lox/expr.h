@@ -7,6 +7,7 @@
 
 typedef enum ExprType {
   EXPR_BINARY,
+  EXPR_LOGICAL,
   EXPR_UNARY,
   EXPR_LITERAL,
   EXPR_GROUPING,
@@ -22,6 +23,12 @@ typedef struct Expr {
       struct Expr* right;
       Token* op;
     } binary;
+
+    struct {
+      struct Expr* left;
+      struct Expr* right;
+      Token* op;
+    } logical;
 
     struct {
       struct Expr* expression;
@@ -56,6 +63,7 @@ Expr* literal_init(LoxObject* value);
 Expr* unary_init(Token* op, Expr* right);
 Expr* var_init(Token* name);
 Expr* assign_init(Token* name, Expr* value);
+Expr* logical_init(Expr* left, Token* op, Expr* right);
 
 void expr_free(Expr* expr);
 #endif

@@ -77,6 +77,19 @@ Expr* assign_init(Token* name, Expr* value) {
   return expr;
 }
 
+Expr* logical_init(Expr* left, Token* op, Expr* right) {
+  assert(left != NULL || right != NULL);
+
+  Expr* expr = malloc(1 * sizeof(Expr));
+
+  expr->type = EXPR_LOGICAL;
+  expr->as.logical.left = left;
+  expr->as.logical.right = right;
+  expr->as.logical.op = op;
+  expr->fileloc = fileloc_range(3, left->fileloc, op->fileloc, right->fileloc);
+  return expr;
+}
+
 
 void expr_free(Expr* expr) {
   if (expr == NULL) return;
@@ -88,6 +101,10 @@ void expr_free(Expr* expr) {
     case EXPR_BINARY:
       expr_free(expr->as.binary.left);
       expr_free(expr->as.binary.right);
+      break;
+    case EXPR_LOGICAL:
+      expr_free(expr->as.logical.left);
+      expr_free(expr->as.logical.right);
       break;
     case EXPR_GROUPING:
       expr_free(expr->as.grouping.expression);

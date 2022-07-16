@@ -9,7 +9,7 @@ typedef enum StmtType {
   STMT_BLOCK,
   STMT_CLASS,
   STMT_EXPRESSION,
-  STMT_CONTROL_FLOW,
+  STMT_IF,
   STMT_PRINT,
   STMT_RETURN,
   STMT_VAR,
@@ -40,7 +40,7 @@ typedef struct Stmt {
       Expr* condition;
       struct Stmt* then_branch;
       struct Stmt* else_branch;
-    } if_;
+    } if_statement;
 
     struct {
       Expr* expression;
@@ -72,6 +72,7 @@ Stmt* stmt_block_init(Array* statements);
 Stmt* stmt_function_init(Token* name, Token* params, Stmt* body);
 Stmt* stmt_vardecl_init(Token* name, Expr* initializer);
 Stmt* stmt_control_flow_init(Expr* condition, Array* then_branch_stmts, Array* else_branch_stmts);
+Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch);
 
 void stmts_free(size_t num_stmts, Stmt** stmts);
 

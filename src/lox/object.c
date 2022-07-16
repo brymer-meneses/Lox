@@ -51,7 +51,7 @@ char* loxtype_to_string(LoxType type) {
   }
 }
 
-bool loxobject_truth_value(LoxObject* obj) {
+bool loxobject_istruthy(LoxObject* obj) {
   assert(obj != NULL);
 
   switch (obj->type) {
@@ -116,6 +116,13 @@ LoxObject* loxobject_number(double value, FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_NUMBER;
   obj->as.number = value;
+  obj->fl = fl;
+  return obj;
+}
+
+LoxObject* loxobject_nil(FileLoc* fl) {
+  LoxObject* obj = malloc(1 * sizeof(LoxObject));
+  obj->type = LOX_NIL;
   obj->fl = fl;
   return obj;
 }

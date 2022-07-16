@@ -1,0 +1,9 @@
+
+var five = 5;
+
+if (five == 5) {
+  five = 6;
+  print five;
+} else {
+  print "hello there!";
+}

@@ -41,6 +41,15 @@ Stmt* stmt_block_init(Array* statements) {
   return stmt;
 }
 
+Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch) {
+  Stmt* stmt = malloc(1 * sizeof(Stmt));
+  stmt->type = STMT_IF;
+  stmt->as.if_statement.then_branch = then_branch;
+  stmt->as.if_statement.else_branch = else_branch;
+  stmt->as.if_statement.condition = condition;
+  return stmt;
+}
+
 
 static void stmt_free(Stmt* stmt) {
   if (stmt == NULL) return;
