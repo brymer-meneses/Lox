@@ -50,6 +50,15 @@ Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch) {
   return stmt;
 }
 
+Stmt* stmt_while_loop_init(Expr* condition, Stmt* body) {
+  Stmt* stmt = malloc(1 * sizeof(Stmt));
+  stmt->type = STMT_WHILE_LOOP;
+  stmt->as.while_loop.condition = condition;
+  stmt->as.while_loop.body = body;
+  return stmt;
+}
+
+
 
 static void stmt_free(Stmt* stmt) {
   if (stmt == NULL) return;
@@ -68,8 +77,9 @@ static void stmt_free(Stmt* stmt) {
     case STMT_BLOCK:
       for (size_t i=0; i<stmt->as.block.statements->curr_size; i++) {
         stmt_free((Stmt*) stmt->as.block.statements->elements[i]);
-      } break;
+      };
       free(stmt->as.block.statements);
+      break;
     default:
       break;
   }

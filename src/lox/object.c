@@ -130,7 +130,6 @@ LoxObject* loxobject_nil(FileLoc* fl) {
 
 void loxobject_free(LoxObject* obj) {
   if (obj == NULL) return;
-  free(obj->fl);
   switch (obj->type) {
     case LOX_STRING:
       free(obj->as.string);

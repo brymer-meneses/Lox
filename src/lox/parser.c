@@ -59,7 +59,8 @@ static Stmt* if_statement();
 static Stmt* expression_statement();
 static Stmt* print_statement();
 static Stmt* var_declaration();
-static Stmt* control_flow_statement();
+static Stmt* while_loop_statement();
+static Stmt* for_loop_statement();
 
 static Array* block();
 
@@ -369,19 +370,24 @@ static Expr* primary() {
 }
 
 static Stmt* statement() {
+  if (match(1, FOR))
+    return for_loop_statement();
   if (match(1, IF)) 
     return if_statement();
   if (match(1, PRINT)) 
     return print_statement();
   if (match(1, LEFT_BRACE))
     return stmt_block_init(block());
+  if (match(1, WHILE))
+    return while_loop_statement();
+
   return expression_statement();
 }
 
 static Stmt* if_statement() {
-  expect(find_last_occurence(IF), LEFT_PAREN, "Expect '(' after 'if'.");
+  expect(find_last_occurence(IF), LEFT_PAREN, "Expected '(' after 'if'.");
   Expr* condition = expression();
-  expect(condition->fileloc, RIGHT_PAREN, "Expect ')' after condition.");
+  expect(condition->fileloc, RIGHT_PAREN, "Expected ')' after condition.");
 
   Stmt* then_branch = statement();
   Stmt* else_branch = NULL;
@@ -389,6 +395,65 @@ static Stmt* if_statement() {
     else_branch = statement();
   }
   return stmt_if_init(condition, then_branch, else_branch);
+}
+
+static Stmt* for_loop_statement() {
+  expect(find_last_occurence(FOR), LEFT_PAREN, "Expected '(' after 'for'.");
+
+  Stmt* initializer = NULL;
+  if (match(1, SEMICOLON)) {
+    initializer = NULL;
+  } else if (match(1, VAR)) {
+    initializer = var_declaration();
+  } else {
+    initializer = expression_statement();
+  }
+
+  Expr* condition = NULL;
+  if (!check(SEMICOLON)) {
+    condition = expression();
+  }
+
+  expect(previous()->fileloc, SEMICOLON, "Expect ';' after loop condition.");
+
+  Expr* increment = NULL;
+  if (!check(RIGHT_PAREN)) {
+    increment = expression();
+  }
+
+  expect(previous()->fileloc, RIGHT_PAREN, "Expect ')' after for clauses");
+
+  Stmt* body = statement();
+  if (increment != NULL) {
+    Array* stmts_array = array_init(sizeof(Stmt*));
+    array_append(stmts_array, body);
+    array_append(stmts_array, increment);
+    body = stmt_block_init(stmts_array);
+  }
+
+  if (condition == NULL) {
+    condition = literal_init(loxobject_boolean(true, previous()->fileloc));
+  }
+
+  body = stmt_while_loop_init(condition, body);
+
+  if (initializer != NULL) {
+    Array* stmts_array = array_init(sizeof(Stmt*));
+    array_append(stmts_array, initializer);
+    array_append(stmts_array, body);
+    body = stmt_block_init(stmts_array);
+  }
+
+  return body;
+}
+
+static Stmt* while_loop_statement() {
+  expect(find_last_occurence(WHILE), LEFT_PAREN, "Expected '(' after while.");
+  Expr* condition = expression();
+  expect(condition->fileloc, RIGHT_PAREN, "Expected '(' after condition.");
+  Stmt* body = statement();
+
+  return stmt_while_loop_init(condition, body);
 }
 
 static Stmt* expression_statement() {

@@ -109,19 +109,19 @@ static LoxObject* interpret_expr(Environment* env, Expr *expr) {
           break;
         case GREATER:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject_boolean(left->as.boolean > right->as.boolean, fl);
+          result = loxobject_boolean(left->as.number > right->as.number, fl);
           break;
         case GREATER_EQUAL:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject_boolean(left->as.boolean >= right->as.boolean, fl);
+          result = loxobject_boolean(left->as.number >= right->as.number, fl);
           break;
         case LESS:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject_boolean(left->as.boolean < right->as.boolean, fl);
+          result = loxobject_boolean(left->as.number < right->as.number, fl);
           break;
         case LESS_EQUAL:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject_boolean(left->as.boolean <= right->as.boolean, fl);
+          result = loxobject_boolean(left->as.number <= right->as.number, fl);
           break;
         case BANG_EQUAL:
           result = loxobject_boolean(!is_equal(left, right), fl);
@@ -212,7 +212,11 @@ static LoxObject* interpret_stmt(Environment* env, Stmt* stmt) {
       } else if (stmt->as.if_statement.else_branch != NULL) {
         execute(env, stmt->as.if_statement.else_branch);
       }
-      return NULL;
+    } break;
+    case STMT_WHILE_LOOP: {
+      while (loxobject_istruthy(interpret_expr(env, stmt->as.while_loop.condition))) {
+        execute(env, stmt->as.while_loop.body);
+      };
     } break;
     default:
       break;

@@ -13,7 +13,7 @@ typedef enum StmtType {
   STMT_PRINT,
   STMT_RETURN,
   STMT_VAR,
-  STMT_WHILE,
+  STMT_WHILE_LOOP,
 } StmtType;
 
 typedef struct Stmt {
@@ -73,6 +73,7 @@ Stmt* stmt_function_init(Token* name, Token* params, Stmt* body);
 Stmt* stmt_vardecl_init(Token* name, Expr* initializer);
 Stmt* stmt_control_flow_init(Expr* condition, Array* then_branch_stmts, Array* else_branch_stmts);
 Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch);
+Stmt* stmt_while_loop_init(Expr* condition, Stmt* body);
 
 void stmts_free(size_t num_stmts, Stmt** stmts);
 

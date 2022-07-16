@@ -79,7 +79,6 @@ Expr* assign_init(Token* name, Expr* value) {
 
 Expr* logical_init(Expr* left, Token* op, Expr* right) {
   assert(left != NULL || right != NULL);
-
   Expr* expr = malloc(1 * sizeof(Expr));
 
   expr->type = EXPR_LOGICAL;
@@ -89,7 +88,6 @@ Expr* logical_init(Expr* left, Token* op, Expr* right) {
   expr->fileloc = fileloc_range(3, left->fileloc, op->fileloc, right->fileloc);
   return expr;
 }
-
 
 void expr_free(Expr* expr) {
   if (expr == NULL) return;
