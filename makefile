@@ -1,5 +1,5 @@
 
-.PHONY: treewalker bytecode
+.PHONY: src build examples include tests
 
 all: compile setup test
 
@@ -24,3 +24,6 @@ debug: compile
 
 debug_test: compile
 	gdb ./build/test_runner
+
+leak: compile
+	valgrind --track-origins=yes --leak-check=full "./build/clox" "./examples/hello_world.lox"
