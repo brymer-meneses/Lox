@@ -20,7 +20,7 @@ TEST(TestParser, VariableDeclaration) {
 
   EXPECT_EQ(statements[0]->type, STMT_VAR);
   EXPECT_EQ(statements[0]->as.var.initializer->as.literal.value->type, LOX_NUMBER);
-  EXPECT_EQ(statements[0]->as.var.initializer->as.literal.value->data.number, 5);
+  EXPECT_EQ(statements[0]->as.var.initializer->as.literal.value->as.number, 5);
 }
 
 

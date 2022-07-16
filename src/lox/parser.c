@@ -312,7 +312,7 @@ static Expr* primary() {
     return literal_init(loxobject_init(LOX_NIL, "NIL", previous()->fileloc));
 
   if (match(1, STRING))
-    return literal_init(loxobject_init(LOX_STRING, previous()->literal->data.string, previous()->fileloc));
+    return literal_init(loxobject_init(LOX_STRING, previous()->literal->as.string, previous()->fileloc));
   if (match(1, NUMBER))
     return literal_init(loxobject_init(LOX_NUMBER, previous()->lexeme, previous()->fileloc));
 

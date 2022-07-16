@@ -88,7 +88,7 @@ TEST(TestScanner, ScanString) {
   scanner_init(input);
   Token** tokens = scanner_scan();
 
-  EXPECT_STREQ(tokens[0]->literal->data.string, correct);
+  EXPECT_STREQ(tokens[0]->literal->as.string, correct);
 }
 
 TEST(TestScanner, ScanVariableDeclaration) {

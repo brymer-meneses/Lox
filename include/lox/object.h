@@ -16,7 +16,7 @@ typedef struct {
     double number;
     char* string;
     bool boolean;
-  } data;
+  } as;
   FileLoc* fl;
   LoxType type;
 } LoxObject;

@@ -7,5 +7,6 @@
 
 
 void interpret(Stmt** statements, Environment* env, size_t num_stmts);
+LoxObject* execute(Environment* env, Stmt* stmt);
 
 #endif

@@ -16,5 +16,5 @@ TEST(TestEnvionment, Define) {
   void* retval = hashmap_retrieve(env->values, (char*) "test");
   LoxObject* obj = (LoxObject*) retval;
 
-  EXPECT_EQ(obj->data.number, 5);
+  EXPECT_EQ(obj->as.number, 5);
 }
