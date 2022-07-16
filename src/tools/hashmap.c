@@ -11,10 +11,10 @@ static HashmapEntry* hashmap_entry(char *key, void* value);
 Hashmap* hashmap_init() {
   Hashmap* hmap = malloc(1 * sizeof(Hashmap));
   hmap->curr_size = 0;
-  hmap->max_size = HASHMAP_MAX_SIZE;
-  hmap->entries = calloc(HASHMAP_MAX_SIZE, sizeof(HashmapEntry*));
+  hmap->max_size = HASHMAP_INITIAL_SIZE;
+  hmap->entries = calloc(HASHMAP_INITIAL_SIZE, sizeof(HashmapEntry*));
 
-  for (size_t i=0; i<HASHMAP_MAX_SIZE; i++) {
+  for (size_t i=0; i<HASHMAP_INITIAL_SIZE; i++) {
     hmap->entries[i] = NULL;
   }
 
@@ -52,9 +52,9 @@ void hashmap_print(Hashmap *hmap) {
 void hashmap_insert(Hashmap* hmap, char* key,  void* value) {
   unsigned long slot = hash(key) % hmap->max_size;
 
-  if (hmap->curr_size + 1 >= 0.5 * hmap->max_size) {
+  if (hmap->curr_size + 1 >= 0.3 * hmap->max_size) {
     hmap->max_size *= 2;
-    hmap->entries = realloc(hmap->entries, hmap->max_size);
+    hmap->entries = realloc(hmap->entries, hmap->max_size * sizeof(HashmapEntry*));
   }
 
   HashmapEntry* entry = hmap->entries[slot];

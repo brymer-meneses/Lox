@@ -5,7 +5,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#define HASHMAP_MAX_SIZE 20000
+#define HASHMAP_INITIAL_SIZE 256
 
 typedef struct HashmapEntry {
   char* key;
