@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "assert.h"
 
+#include "tools/array.h"
 #include "tools/error.h"
 #include "tools/fileloc.h"
 #include "tools/utils.h"
@@ -71,24 +72,17 @@ Parser* parser_init(Token** tokens) {
 Stmt** parser_parse() {
   assert(parser != NULL);
 
-  size_t statements_num = 0;
-  size_t statements_size = 16;
-
-  Stmt** statements = malloc(16 * sizeof(Stmt*));
+  Array* arr = array_init(sizeof(Stmt*));
 
   while (!isfinished()) {
-    if (statements_num + 1>= statements_size) {
-      statements_size *= 2;
-      statements = realloc(statements, statements_size * sizeof(Stmt*));
-    }
-
-    statements[statements_num] = declaration();
-    statements_num++;
+    array_append(arr, declaration());
   }
 
-  parser->stmts = statements;
-  parser->num_stmts = statements_num;
-  return statements;
+  parser->stmts = (Stmt**) arr->elements;
+  parser->num_stmts = arr->curr_size;
+
+  free(arr);
+  return parser->stmts;
 }
 
 

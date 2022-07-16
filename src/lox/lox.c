@@ -80,9 +80,10 @@ void lox__run_prompt() {
 
 void lox__free() {
   stmts_free(lox->context.parser->num_stmts, lox->context.parser->stmts);
-  tokens_free(lox->context.scanner->parsed, lox->context.scanner->tokens);
+  tokens_free(lox->context.scanner->tokens_array->curr_size, (Token**) lox->context.scanner->tokens_array->elements);
   hashmap_free(lox->context.environment->values);
 
+  free(lox->context.scanner->tokens_array);
   free(lox->context.scanner);
   free(lox->context.parser);
   free(lox->context.environment);

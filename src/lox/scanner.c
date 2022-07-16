@@ -10,6 +10,7 @@
 #include "tools/utils.h"
 #include "tools/fileloc.h"
 #include "tools/hashmap.h"
+#include "tools/array.h"
 
 #include "lox/object.h"
 #include "lox/token.h"
@@ -41,10 +42,8 @@ Scanner* scanner_init(char* source) {
   scanner->start =0;
   scanner->line =1;
   scanner->source=source;
-  scanner->capacity = INITIAL_TOKEN_ARRAY_SIZE;
-  scanner->parsed = 0;
   scanner->last_line = 0;
-  scanner->tokens = calloc(INITIAL_TOKEN_ARRAY_SIZE, sizeof(Token*));
+  scanner->tokens_array = array_init(sizeof(Token*));
 
   keywords = hashmap_init();
   keywords_set("and",   AND);
@@ -74,8 +73,8 @@ Token** scanner_scan() {
     scan_token();
   }
   add_token(SOURCE_END, NULL);
-  hashmap_free(keywords);
-  return scanner->tokens;
+  Token** tokens = (Token**) scanner->tokens_array->elements;;
+  return tokens;
 }
 
 static FileLoc* compute_relative_position() {
@@ -188,15 +187,7 @@ static void add_token(TokenType type, LoxObject* literal) {
   FileLoc* fl  =  compute_relative_position();
   Token* token = token_init(type, lexeme, literal, fl);
 
-
-  // Reallocate memory
-  if (scanner->parsed == scanner->capacity) {
-    scanner->capacity = 2 * scanner->capacity;
-    scanner->tokens = realloc(scanner->tokens, scanner->capacity * sizeof(Token*));
-  }
-
-  scanner->tokens[scanner->parsed] = token;
-  scanner->parsed++;
+  array_append(scanner->tokens_array, token);
 }
 
 static char advance() {

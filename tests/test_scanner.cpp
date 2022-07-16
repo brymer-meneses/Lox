@@ -22,7 +22,7 @@ TEST(TestScanner, ScanSingleChar) {
   Scanner* scanner = scanner_init(input);
   Token** tokens = scanner_scan();
 
-  for (unsigned int i=0; i<scanner->parsed; i++) {
+  for (unsigned int i=0; i<scanner->tokens_array->curr_size; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
   }
 
@@ -30,7 +30,6 @@ TEST(TestScanner, ScanSingleChar) {
     EXPECT_EQ(input[i], *tokens[i]->lexeme);
   }
 
-  free(tokens);
 }
 
 
@@ -42,7 +41,7 @@ TEST(TestScanner, ScanDoubleChar) {
   Scanner* scanner = scanner_init(input);
   Token** tokens = scanner_scan();
 
-  for (unsigned int i=0; i<scanner->parsed; i++) {
+  for (unsigned int i=0; i<scanner->tokens_array->curr_size; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
   }
 
@@ -58,7 +57,7 @@ TEST(TestScanner, ScanKeywords) {
   Token** tokens = scanner_scan();
   char** lexemes = str_split(input, " ");
 
-  for (unsigned int i=0; i<scanner->parsed-1; i++) {
+  for (unsigned int i=0; i<scanner->tokens_array->curr_size-1; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
     EXPECT_STREQ(lexemes[i], tokens[i]->lexeme);
   }
@@ -75,7 +74,7 @@ TEST(TestScanner, ScanVariableNames) {
   Scanner* scanner = scanner_init(input);
   Token** tokens = scanner_scan();
 
-  for (unsigned int i=0; i<scanner->parsed-1; i++) {
+  for (unsigned int i=0; i<scanner->tokens_array->curr_size-1; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
     EXPECT_STREQ(correct_literals[i], tokens[i]->lexeme);
   }
@@ -99,7 +98,7 @@ TEST(TestScanner, ScanVariableDeclaration) {
   Scanner* scanner = scanner_init(input);
   Token** tokens = scanner_scan();
 
-  for (unsigned int i=0; i<scanner->parsed-1; i++) {
+  for (unsigned int i=0; i<scanner->tokens_array->curr_size-1; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
   }
   
