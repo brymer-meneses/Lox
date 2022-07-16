@@ -28,9 +28,9 @@ static char advance();
 static bool isfinished();
 
 static void scan_token();
-static void scan_identifier();
 static void scan_string();
 static void scan_number();
+static void scan_identifier();
 
 static Scanner* scanner;
 static Hashmap* keywords;

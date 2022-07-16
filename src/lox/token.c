@@ -90,6 +90,7 @@ char* tokentype_to_string(TokenType type) {
     case TRUE:            return "TRUE";
     case VAR:             return "VAR";
     case WHILE:           return "WHILE";
-    case SOURCE_END:        return "EOF";
+    case SOURCE_END:      return "EOF";
+    case POW:             return "POW"; 
   }
 }

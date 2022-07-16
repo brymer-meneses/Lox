@@ -5,6 +5,7 @@
 
 #include "lox/expr.h"
 #include "lox/declarations.h"
+#include "lox/stmt.h"
 #include "tools/fileloc.h"
 
 Expr* binary_init(Expr* left, Token* op, Expr* right) {
@@ -75,6 +76,7 @@ Expr* assign_init(Token* name, Expr* value) {
 
   return expr;
 }
+
 
 void expr_free(Expr* expr) {
   if (expr == NULL) return;

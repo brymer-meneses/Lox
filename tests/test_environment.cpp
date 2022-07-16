@@ -10,7 +10,7 @@ extern "C" {
 
 TEST(TestEnvionment, Define) {
 
-  Environment* env = environment_init();
+  Environment* env = environment_init(NULL);
   environment_define(env, (char*) "test", loxobject_number(5, NULL));
 
   void* retval = hashmap_retrieve(env->values, (char*) "test");

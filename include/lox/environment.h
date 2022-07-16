@@ -8,9 +8,10 @@
 
 typedef struct Environment {
   Hashmap* values;
+  struct Environment* enclosing;
 } Environment;
 
-Environment* environment_init();
+Environment* environment_init(Environment* enclosing);
 
 void environment_define(Environment* env, char* name, LoxObject* value);
 LoxObject* environment_get(Environment* env, Token *name);

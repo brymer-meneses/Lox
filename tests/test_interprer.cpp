@@ -11,7 +11,7 @@ extern "C" {
 
 TEST(TestInterpreter, BinaryOperation) {
 
-  Environment* env = environment_init();
+  Environment* env = environment_init(NULL);
 
   const char* input = "var ten = 5 + 5;";
 

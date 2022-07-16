@@ -11,6 +11,10 @@ Array* array_init(size_t elem_size) {
   arr->max_size = ARRAY_INITIAL_SIZE;
   arr->elem_size = elem_size;
   arr->elements = calloc(ARRAY_INITIAL_SIZE , elem_size);
+
+  for (size_t i=0; i<ARRAY_INITIAL_SIZE; i++) {
+    arr->elements[i] = NULL;
+  }
   return arr;
 }
 

@@ -30,6 +30,12 @@ LoxObject* execute(Environment* env, Stmt* stmt) {
   return interpret_stmt(env, stmt);
 }
 
+void execute_block(Array* statements, Environment* env) {
+  for (size_t i=0; i<statements->curr_size; i++) {
+    execute(env, statements->elements[i]);
+  }
+}
+
 void interpret(Stmt** statements, Environment* env, size_t num_stmts) {
   assert(env != NULL);
 
@@ -175,6 +181,7 @@ static LoxObject* interpret_stmt(Environment* env, Stmt* stmt) {
     } break;
     case STMT_PRINT: {
       LoxObject* value = interpret_expr(env, stmt->as.print.expression);
+      printf("%s\n", loxobject_to_string(value));
       return value;
     } break;
     case STMT_VAR: {
@@ -184,6 +191,12 @@ static LoxObject* interpret_stmt(Environment* env, Stmt* stmt) {
       }
       environment_define(env, stmt->as.var.name->lexeme, value);
       return value;
+    } break;
+    case STMT_BLOCK: {
+      execute_block(stmt->as.block.statements, environment_init(env));
+    }; break;
+    case STMT_CONTROL_FLOW: { 
+
     } break;
     default:
       break;

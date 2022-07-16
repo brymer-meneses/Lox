@@ -51,6 +51,23 @@ char* loxtype_to_string(LoxType type) {
   }
 }
 
+bool loxobject_truth_value(LoxObject* obj) {
+  assert(obj != NULL);
+
+  switch (obj->type) {
+    case LOX_NUMBER:
+    case LOX_STRING:
+      return false;
+      break;
+    case LOX_BOOLEAN:
+      return obj->as.boolean;
+      break;
+    case LOX_NIL:
+      return false;
+      break;
+  }
+}
+
 LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl) {
   assert(lexeme != NULL);
   assert(fl != NULL);

@@ -4,9 +4,10 @@
 #include "tools/error.h"
 #include "tools/hashmap.h"
 
-Environment* environment_init() {
+Environment* environment_init(Environment* enclosing) {
   Environment* env = malloc(1 * sizeof(Environment));
   env->values = hashmap_init();
+  env->enclosing = enclosing;
   return env;
 }
 
@@ -33,9 +34,9 @@ LoxObject* environment_get(Environment* env, Token* name) {
   void* result = hashmap_retrieve(env->values, name->lexeme);
 
 
-  if (result != NULL) {
-   return (LoxObject*) result;
-  }
+  if (result != NULL) return (LoxObject*) result; 
+
+  if (env->enclosing != NULL) return environment_get(env->enclosing, name);
 
   report(name->fileloc, "Undefined variable: %s", name->lexeme);
   return NULL;

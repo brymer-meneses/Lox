@@ -52,6 +52,9 @@ static Stmt* expression_statement();
 static Stmt* print_statement();
 static Stmt* statement();
 static Stmt* var_declaration();
+static Stmt* control_flow_statement();
+
+static Array* block();
 
 // Utility functions
 static bool  isfinished();
@@ -330,12 +333,15 @@ static Expr* primary() {
   }
 
 
+
   return NULL;
 }
 
 static Stmt* statement() {
   if (match(1, PRINT)) 
     return print_statement();
+  if (match(1, LEFT_BRACE))
+    return stmt_block_init(block());
   return expression_statement();
 }
 
@@ -343,6 +349,17 @@ static Stmt* expression_statement() {
   Expr* expr = expression();
   expect(expr->fileloc, SEMICOLON, "Expected ';' after value.");
   return stmt_expr_init(expr);
+}
+
+static Array* block() {
+  Array* statements = array_init(sizeof(Stmt*));
+
+  while (!check(RIGHT_BRACE) && !isfinished()) {
+    array_append(statements, declaration());
+  }
+
+  expect(previous()->fileloc, RIGHT_BRACE, "Expected '}' after block.");
+  return statements;
 }
 
 static Stmt* print_statement() {
@@ -364,3 +381,4 @@ static Stmt* var_declaration() {
 
   return stmt_vardecl_init(name, initializer);
 }
+

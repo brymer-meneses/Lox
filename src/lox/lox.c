@@ -26,7 +26,7 @@ Lox* lox__init() {
   lox->status.had_error = false;
   lox->status.had_runtime_error = false;
 
-  lox->context.environment = environment_init();
+  lox->context.environment = environment_init(NULL);
   return lox;
 };
 

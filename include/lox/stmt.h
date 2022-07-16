@@ -3,12 +3,13 @@
 
 #include "declarations.h"
 #include "lox/expr.h"
+#include "tools/array.h"
 
 typedef enum StmtType {
   STMT_BLOCK,
   STMT_CLASS,
   STMT_EXPRESSION,
-  STMT_IF,
+  STMT_CONTROL_FLOW,
   STMT_PRINT,
   STMT_RETURN,
   STMT_VAR,
@@ -18,12 +19,12 @@ typedef enum StmtType {
 typedef struct Stmt {
   union {
     struct {
-      struct Stmt* statements;
+      Array* statements;
     } block;
 
     struct {
       
-    } class_;
+    } class_declaration;
 
     struct {
       Expr* expression;
@@ -48,7 +49,7 @@ typedef struct Stmt {
     struct {
       Token keyword;
       Expr* value;
-    } return_;
+    } return_stmt;
 
     struct {
       Token* name;
@@ -58,7 +59,7 @@ typedef struct Stmt {
     struct {
       Expr* condition;
       struct Stmt* body;
-    } while_;
+    } while_loop;
   } as;
   StmtType type;
 } Stmt;
@@ -67,9 +68,10 @@ Stmt* stmt_expr_init(Expr* expression);
 Stmt* stmt_while_init(Expr* condition, Stmt* body);
 Stmt* stmt_return_init(Expr* keyword, Expr* value);
 Stmt* stmt_print_init(Expr* expression);
-Stmt* stmt_block_init(Expr* statements);
+Stmt* stmt_block_init(Array* statements);
 Stmt* stmt_function_init(Token* name, Token* params, Stmt* body);
 Stmt* stmt_vardecl_init(Token* name, Expr* initializer);
+Stmt* stmt_control_flow_init(Expr* condition, Array* then_branch_stmts, Array* else_branch_stmts);
 
 void stmts_free(size_t num_stmts, Stmt** stmts);
 
