@@ -50,7 +50,7 @@ void environment_assign(Environment* env, Token* name, LoxObject* value) {
     return;
   }
   if (env->enclosing != NULL) {
-    hashmap_insert(env->enclosing->values, name->lexeme, value);
+    environment_assign(env->enclosing, name, value);
     return;
   }
   report(name->fileloc, "Undefined variable: %s.", name->lexeme);
