@@ -30,9 +30,9 @@ LoxObject* execute(Environment* env, Stmt* stmt) {
   return interpret_stmt(env, stmt);
 }
 
-void execute_block(Array* statements, Environment* env) {
-  for (size_t i=0; i<statements->curr_size; i++) {
-    execute(env, statements->elements[i]);
+void execute_block(Stmt* stmt, Environment* env) {
+  for (size_t i=0; i<stmt->as.block.length; i++) {
+    execute(env, stmt->as.block.statements[i]);
   }
 }
 
@@ -204,7 +204,7 @@ static LoxObject* interpret_stmt(Environment* env, Stmt* stmt) {
       return value;
     } break;
     case STMT_BLOCK: {
-      execute_block(stmt->as.block.statements, environment_init(env));
+      execute_block(stmt, environment_init(env));
     }; break;
     case STMT_IF: { 
       if (loxobject_istruthy(interpret_expr(env, stmt->as.if_statement.condition))) {

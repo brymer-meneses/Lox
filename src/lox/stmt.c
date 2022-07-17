@@ -34,9 +34,10 @@ Stmt* stmt_vardecl_init(Token* name, Expr* initializer) {
   return stmt;
 }
 
-Stmt* stmt_block_init(Array* statements) {
+Stmt* stmt_block_init(size_t length, Stmt** statements) {
   Stmt* stmt = malloc(1 * sizeof(Stmt));
   stmt->type = STMT_BLOCK;
+  stmt->as.block.length = length;
   stmt->as.block.statements = statements;
   return stmt;
 }
@@ -75,8 +76,8 @@ static void stmt_free(Stmt* stmt) {
       expr_free(stmt->as.print.expression);
       break;
     case STMT_BLOCK:
-      for (size_t i=0; i<stmt->as.block.statements->curr_size; i++) {
-        stmt_free((Stmt*) stmt->as.block.statements->elements[i]);
+      for (size_t i=0; i<stmt->as.block.length; i++) {
+        stmt_free((Stmt*) stmt->as.block.statements[i]);
       };
       free(stmt->as.block.statements);
       break;

@@ -4,6 +4,7 @@
 #include "assert.h"
 
 #include "tools/array.h"
+#include "tools/debug.h"
 #include "tools/error.h"
 #include "tools/fileloc.h"
 #include "tools/utils.h"
@@ -61,8 +62,7 @@ static Stmt* print_statement();
 static Stmt* var_declaration();
 static Stmt* while_loop_statement();
 static Stmt* for_loop_statement();
-
-static Array* block();
+static Stmt* block();
 
 // Utility functions
 static bool  isfinished();
@@ -377,7 +377,7 @@ static Stmt* statement() {
   if (match(1, PRINT)) 
     return print_statement();
   if (match(1, LEFT_BRACE))
-    return stmt_block_init(block());
+    return block();
   if (match(1, WHILE))
     return while_loop_statement();
 
@@ -425,10 +425,10 @@ static Stmt* for_loop_statement() {
 
   Stmt* body = statement();
   if (increment != NULL) {
-    Array* stmts_array = array_init(sizeof(Stmt*));
-    array_append(stmts_array, body);
-    array_append(stmts_array, increment);
-    body = stmt_block_init(stmts_array);
+    Stmt** statements = malloc(2 * sizeof(Stmt*));
+    statements[0] = body;
+    statements[1] = stmt_expr_init(increment);
+    body = stmt_block_init(2, statements);
   }
 
   if (condition == NULL) {
@@ -438,12 +438,11 @@ static Stmt* for_loop_statement() {
   body = stmt_while_loop_init(condition, body);
 
   if (initializer != NULL) {
-    Array* stmts_array = array_init(sizeof(Stmt*));
-    array_append(stmts_array, initializer);
-    array_append(stmts_array, body);
-    body = stmt_block_init(stmts_array);
+    Stmt** statements = malloc(2 * sizeof(Stmt*));
+    statements[0] = initializer;
+    statements[1] = body;
+    body = stmt_block_init(2, statements);
   }
-
   return body;
 }
 
@@ -462,15 +461,16 @@ static Stmt* expression_statement() {
   return stmt_expr_init(expr);
 }
 
-static Array* block() {
-  Array* statements = array_init(sizeof(Stmt*));
+static Stmt* block() {
+  Array* stmts_array = array_init(sizeof(Stmt*));
 
   while (!check(RIGHT_BRACE) && !isfinished()) {
-    array_append(statements, declaration());
+    array_append(stmts_array, declaration());
   }
 
   expect(previous()->fileloc, RIGHT_BRACE, "Expected '}' after block.");
-  return statements;
+  Stmt** statements = (Stmt**) stmts_array->elements;
+  return stmt_block_init(stmts_array->curr_size, statements);
 }
 
 static Stmt* print_statement() {

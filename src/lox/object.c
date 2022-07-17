@@ -52,7 +52,7 @@ char* loxtype_to_string(LoxType type) {
 }
 
 bool loxobject_istruthy(LoxObject* obj) {
-  assert(obj != NULL);
+  if (obj == NULL) return false;
 
   switch (obj->type) {
     case LOX_NUMBER:

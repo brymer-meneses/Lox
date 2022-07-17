@@ -3,7 +3,6 @@
 
 #include "declarations.h"
 #include "lox/expr.h"
-#include "tools/array.h"
 
 typedef enum StmtType {
   STMT_BLOCK,
@@ -19,7 +18,8 @@ typedef enum StmtType {
 typedef struct Stmt {
   union {
     struct {
-      Array* statements;
+      struct Stmt** statements;
+      size_t length;
     } block;
 
     struct {
@@ -68,10 +68,9 @@ Stmt* stmt_expr_init(Expr* expression);
 Stmt* stmt_while_init(Expr* condition, Stmt* body);
 Stmt* stmt_return_init(Expr* keyword, Expr* value);
 Stmt* stmt_print_init(Expr* expression);
-Stmt* stmt_block_init(Array* statements);
+Stmt* stmt_block_init(size_t length, Stmt** statements);
 Stmt* stmt_function_init(Token* name, Token* params, Stmt* body);
 Stmt* stmt_vardecl_init(Token* name, Expr* initializer);
-Stmt* stmt_control_flow_init(Expr* condition, Array* then_branch_stmts, Array* else_branch_stmts);
 Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch);
 Stmt* stmt_while_loop_init(Expr* condition, Stmt* body);
 
