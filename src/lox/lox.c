@@ -5,9 +5,9 @@
 #include "tools/astprinter.h"
 #include "tools/hashmap.h"
 #include "tools/utils.h"
-#include "tools/error.h"
 #include "tools/debug.h"
 
+#include "lox/error.h"
 #include "lox/environment.h"
 #include "lox/scanner.h"
 #include "lox/declarations.h"
@@ -19,15 +19,14 @@
 
 #include "assert.h"
 
-static Lox* lox;
+Lox* lox = NULL;
 
-Lox* lox__init() {
+void lox__init() {
   lox = malloc(1 * sizeof(Lox));
   lox->status.had_error = false;
   lox->status.had_runtime_error = false;
 
   lox->context.environment = environment_init(NULL);
-  return lox;
 };
 
 void lox__run(char* source) {
@@ -59,9 +58,6 @@ void lox__run_file(const char* filename) {
   free(contents);
 };
 
-Lox* lox__get() {
-  return lox;
-};
 
 void lox__run_prompt() {
   lox->status.is_on_repl = true;

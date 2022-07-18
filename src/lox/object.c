@@ -5,7 +5,7 @@
 #include "assert.h"
 
 #include "lox/object.h"
-#include "tools/error.h"
+#include "lox/error.h"
 #include "tools/fileloc.h"
 #include "tools/utils.h"
 

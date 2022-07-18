@@ -1,8 +1,8 @@
 #include "stdio.h"
 
 #include "lox/lox.h"
+#include "lox/error.h"
 #include "stdlib.h"
-#include "tools/error.h"
 
 
 int main(int argc, char* argv[]) {

@@ -1,7 +1,7 @@
 #include "lox/environment.h"
 #include "lox/lox.h"
 #include "lox/object.h"
-#include "tools/error.h"
+#include "lox/error.h"
 #include "tools/hashmap.h"
 
 Environment* environment_init(Environment* enclosing) {

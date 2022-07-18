@@ -5,13 +5,13 @@
 #include "ctype.h"
 #include "assert.h"
 
-#include "tools/error.h"
 #include "tools/hashmap.h"
 #include "tools/utils.h"
 #include "tools/fileloc.h"
 #include "tools/hashmap.h"
 #include "tools/array.h"
 
+#include "lox/error.h"
 #include "lox/object.h"
 #include "lox/token.h"
 #include "lox/scanner.h"

@@ -6,10 +6,10 @@
 
 #include "tools/termcolor.h"
 #include "tools/utils.h"
-#include "tools/error.h"
 #include "tools/fileloc.h"
 
 #include "lox/token.h"
+#include "lox/error.h"
 #include "lox/scanner.h"
 #include "lox/parser.h"
 #include "lox/lox.h"
@@ -17,7 +17,7 @@
 #define COLOR(COLOR, STRING) COLOR STRING ANSI_CODE_RESET
 
 static char* get_source_line(const size_t line_num) {
-  char** arr = str_split(lox__get()->context.source_code, "\n");
+  char** arr = str_split(lox->context.source_code, "\n");
 
   return arr[line_num-1];
 }
@@ -39,7 +39,7 @@ static void point_error_root(char* source, FileLoc* fl) {
   assert(fl != NULL);
 
   char source_context[64];
-  if (lox__get()->status.is_on_repl)
+  if (lox->status.is_on_repl)
     sprintf(source_context, "    > | ");
   else
     sprintf(source_context, "    %lu| ", fl->line);
@@ -68,6 +68,7 @@ static void point_error_root(char* source, FileLoc* fl) {
 
 void report(FileLoc* fl, const char* message, ...) {
 
+  if (lox == NULL) return;
 
   if (fl != NULL)  {
     char* line = get_source_line(fl->line);
@@ -87,6 +88,6 @@ void report(FileLoc* fl, const char* message, ...) {
 
   va_end(args);
 
-  lox__get()->status.had_error = true;
+  lox->status.had_error = true;
 }
 

@@ -23,9 +23,10 @@ typedef struct Lox {
 
 } Lox;
 
-Lox* lox__init();
+extern Lox* lox;
+
+void lox__init();
 void lox__run(char* source);
-Lox* lox__get();
 void lox__free();
 
 void lox__run_file(const char* filename);

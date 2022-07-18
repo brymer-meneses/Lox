@@ -5,10 +5,10 @@
 
 #include "tools/array.h"
 #include "tools/debug.h"
-#include "tools/error.h"
 #include "tools/fileloc.h"
 #include "tools/utils.h"
 
+#include "lox/error.h"
 #include "lox/declarations.h"
 #include "lox/object.h"
 #include "lox/parser.h"
