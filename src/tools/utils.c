@@ -77,9 +77,7 @@ bool is_real_number(const char *string) {
 char* read_file(const char* filename) {
   FILE* file = fopen(filename, "rt");
 
-  if (!file) {
-    fprintf(stderr, "ERROR: cannot read file: %s\n", filename);
-  }
+  if (!file) return NULL;
 
   fseek(file, 0, SEEK_END);
   size_t length = ftell(file);
