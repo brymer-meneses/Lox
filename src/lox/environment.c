@@ -23,16 +23,16 @@ void environment_define(Environment* env, char* name, LoxObject* value) {
 }
 
 void environment_dump(Environment* env) {
-  bool is_emptry = true;
+  bool is_empty = true;
   for (size_t i=0; i<env->values->max_size; i++) {
     const HashmapEntry* entry = env->values->entries[i];
     if (entry != NULL) {
-      is_emptry = false;
+      is_empty = false;
       printf("[SLOT: %lu] %s -> %s\n", i, entry->key, loxobject_to_string((LoxObject*) entry->value ));
     }
   }
 
-  if (is_emptry) 
+  if (is_empty) 
     printf("EMPTY ENVIRONMENT\n");
 }
 
