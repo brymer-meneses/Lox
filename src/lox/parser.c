@@ -77,6 +77,7 @@ Parser* parser_init(Token** tokens) {
   parser = malloc(1 * sizeof(Parser));
   parser->tokens = tokens;
   parser->current = 0;
+  parser->need_repl_resolution = false;
   return parser;
 }
 
@@ -171,6 +172,11 @@ static Token* expect(FileLoc* fl, TokenType type, const char* message) {
   if (check(type)) {
     return advance();
   }
+
+  if (lox->status.is_on_repl && (type == RIGHT_BRACE || type == RIGHT_PAREN)) {
+    parser->need_repl_resolution = true;
+    return NULL;
+  } 
 
   report(fl, message);
   return NULL;

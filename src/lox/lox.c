@@ -62,19 +62,49 @@ void lox__run_file(const char* filename) {
 void lox__run_prompt() {
   lox->status.is_on_repl = true;
 
+  putchar('\n');
+  puts("Lox");
+  puts("A treewalker interpreter of the Lox language in C!");
+  puts("© Brymer Meneses");
+  putchar('\n');
+
+
   while(true) {
     lox->status.had_error = false;
     char line[MAX_INPUT_LIMIT];
 
-    printf("> ");
+    printf(">>> ");
     fgets(line, sizeof(line) , stdin);
-   
+
+    scanner_init(line);
+    Token** tokens = scanner_scan();
+    Parser* parser = parser_init(tokens);
+
+    parser_parse();
+
+    if (tokens[0]->type == SOURCE_END) break; 
+
+    while ( parser->need_repl_resolution ) {
+      parser->need_repl_resolution = false;
+
+      char additional_line[MAX_INPUT_LIMIT];
+      printf("... ");
+      fgets(additional_line, sizeof(line) , stdin);
+      strcat(line, additional_line);
+
+
+      scanner_init(line);
+      tokens = scanner_scan();
+      parser = parser_init(tokens);
+      parser_parse();
+    }
+       
     lox__run(line);
-    if (strcmp(line, "\n") == 0)  break;
   }
 }
 
 void lox__free() {
+  if (lox->context.source_code == NULL) return;
   stmts_free(lox->context.parser->num_stmts, lox->context.parser->stmts);
   tokens_free(lox->context.scanner->tokens_array->curr_size, (Token**) lox->context.scanner->tokens_array->elements);
   hashmap_free(lox->context.environment->values);

@@ -11,6 +11,7 @@ typedef struct Parser {
   size_t current;
   size_t num_stmts;
   Stmt** stmts;
+  bool need_repl_resolution;
 } Parser;
 
 
