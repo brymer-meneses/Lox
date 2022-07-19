@@ -88,6 +88,7 @@ static void stmt_free(Stmt* stmt) {
 }
 
 void stmts_free(size_t num_stmts, Stmt** stmts) {
+  if (stmts == NULL) return;
   for (size_t i=0; i<num_stmts; i++) {
     stmt_free(stmts[i]);
   }

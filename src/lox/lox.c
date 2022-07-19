@@ -107,7 +107,7 @@ void lox__free() {
   if (lox->context.source_code == NULL) return;
   stmts_free(lox->context.parser->num_stmts, lox->context.parser->stmts);
   tokens_free(lox->context.scanner->tokens_array->curr_size, (Token**) lox->context.scanner->tokens_array->elements);
-  hashmap_free(lox->context.environment->values);
+  environment_free(lox->context.environment);
 
   free(lox->context.scanner->tokens_array);
   free(lox->context.scanner);

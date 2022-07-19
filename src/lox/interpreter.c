@@ -21,7 +21,6 @@
 
 static LoxObject* evaluate_expression(Environment* env, Expr *expr);
 static LoxObject* evaluate_statement(Environment* env, Stmt* stmt);
-static bool is_equal(LoxObject* obj1, LoxObject* obj2);
 
 
 void execute(Environment* env, Stmt* stmt) {
@@ -43,20 +42,6 @@ void interpret(Stmt** statements, Environment* env, size_t num_stmts) {
     execute(env, statements[i]);
   }
 
-}
-
-static bool is_equal(LoxObject* obj1, LoxObject* obj2) {
-
-  switch (obj1->type) {
-    case LOX_NUMBER:
-      return obj1->as.number == obj2->as.number;
-    case LOX_STRING:
-      return strcmp(obj1->as.string, obj2->as.string) == 0;
-    case LOX_BOOLEAN:
-      return obj1->as.boolean == obj2->as.boolean;
-    default:
-      return false;
-  }
 }
 
 
@@ -124,10 +109,10 @@ static LoxObject* evaluate_expression(Environment* env, Expr *expr) {
           result = loxobject_boolean(left->as.number <= right->as.number, fl);
           break;
         case BANG_EQUAL:
-          result = loxobject_boolean(!is_equal(left, right), fl);
+          result = loxobject_boolean(!loxobject_isequal(left, right), fl);
           break;
         case EQUAL_EQUAL:
-          result = loxobject_boolean(is_equal(left, right), fl);
+          result = loxobject_boolean(loxobject_isequal(left, right), fl);
           break;
         default:
           break;

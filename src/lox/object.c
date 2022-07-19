@@ -68,6 +68,20 @@ bool loxobject_istruthy(LoxObject* obj) {
   }
 }
 
+bool loxobject_isequal(LoxObject* obj1, LoxObject* obj2) {
+
+  switch (obj1->type) {
+    case LOX_NUMBER:
+      return obj1->as.number == obj2->as.number;
+    case LOX_STRING:
+      return strcmp(obj1->as.string, obj2->as.string) == 0;
+    case LOX_BOOLEAN:
+      return obj1->as.boolean == obj2->as.boolean;
+    default:
+      return false;
+  }
+}
+
 LoxObject* loxobject_init(LoxType type, char* lexeme, FileLoc* fl) {
   assert(lexeme != NULL);
   assert(fl != NULL);

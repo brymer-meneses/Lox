@@ -36,4 +36,6 @@ char* loxtype_to_string(LoxType type);
 void loxobject_free(LoxObject* obj);
 bool loxobject_istruthy(LoxObject* obj);
 
+bool loxobject_isequal(LoxObject* obj1, LoxObject* obj2);
+
 #endif // !LOX_OBJECT_H
