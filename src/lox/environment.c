@@ -2,12 +2,19 @@
 #include "lox/lox.h"
 #include "lox/object.h"
 #include "lox/error.h"
+#include "tools/array.h"
 #include "tools/hashmap.h"
 
 Environment* environment_init(Environment* enclosing) {
   Environment* env = malloc(1 * sizeof(Environment));
   env->values = hashmap_init();
   env->enclosing = enclosing;
+  env->children_environment_array = array_init(sizeof(Environment*));
+
+  if (enclosing != NULL)
+    array_append(enclosing->children_environment_array, env);
+
+
   return env;
 }
 
@@ -55,4 +62,14 @@ void environment_assign(Environment* env, Token* name, LoxObject* value) {
   }
   report(name->fileloc, "Undefined variable: %s.", name->lexeme);
 
+}
+
+void environment_free(Environment* env) {
+  hashmap_free(env->values);
+
+  for (size_t i=0; i<env->children_environment_array->curr_size; i++) {
+    environment_free(env->children_environment_array->elements[i]);
+  }
+
+  free(env->children_environment_array);
 }
