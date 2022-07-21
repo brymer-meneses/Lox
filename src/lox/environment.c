@@ -52,6 +52,10 @@ LoxObject* environment__get(Environment* env, Token* name) {
 void environment__assign(Environment* env, Token* name, LoxObject* value) {
   void* result = hashmap__retrieve(env->values, name->lexeme);
 
+  // ignore when the same value is being applied
+  if (loxobject__isequal(result, value)) 
+    return;
+
   if (result != NULL) {
     hashmap__insert(env->values, name->lexeme, value);
     return;
