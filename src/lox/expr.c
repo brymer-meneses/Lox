@@ -8,7 +8,7 @@
 #include "lox/stmt.h"
 #include "tools/fileloc.h"
 
-Expr* binary_init(Expr* left, Token* op, Expr* right) {
+Expr* binary__init(Expr* left, Token* op, Expr* right) {
   assert(left != NULL || right != NULL);
 
   Expr* expr = malloc(1 * sizeof(Expr));
@@ -17,11 +17,11 @@ Expr* binary_init(Expr* left, Token* op, Expr* right) {
   expr->as.binary.left = left;
   expr->as.binary.right = right;
   expr->as.binary.op = op;
-  expr->fileloc = fileloc_range(3, left->fileloc, op->fileloc, right->fileloc);
+  expr->fileloc = fileloc__range(3, left->fileloc, op->fileloc, right->fileloc);
   return expr;
 }
 
-Expr* grouping_init(Expr *expression) {
+Expr* grouping__init(Expr *expression) {
   assert(expression != NULL);
 
   FileLoc* fl = expression->fileloc;
@@ -29,11 +29,11 @@ Expr* grouping_init(Expr *expression) {
 
   expr->type = EXPR_GROUPING;
   expr->as.grouping.expression = expression;
-  expr->fileloc = fileloc_init(fl->line, fl->start - 1, fl->end + 1); // handle the parentheses
+  expr->fileloc = fileloc__init(fl->line, fl->start - 1, fl->end + 1); // handle the parentheses
   return expr;
 };
 
-Expr* literal_init(LoxObject* value) {
+Expr* literal__init(LoxObject* value) {
   Expr* expr = malloc(1 * sizeof(Expr));
 
   expr->type = EXPR_LITERAL;
@@ -42,7 +42,7 @@ Expr* literal_init(LoxObject* value) {
   return expr;
 };
 
-Expr* unary_init(Token* op, Expr* right) {
+Expr* unary__init(Token* op, Expr* right) {
   assert(right != NULL);
 
   Expr* expr = malloc(1 * sizeof(Expr));
@@ -50,11 +50,11 @@ Expr* unary_init(Token* op, Expr* right) {
   expr->type = EXPR_UNARY;
   expr->as.unary.op = op;
   expr->as.unary.right = right;
-  expr->fileloc = fileloc_range(2, op->fileloc, right->fileloc);
+  expr->fileloc = fileloc__range(2, op->fileloc, right->fileloc);
   return expr;
 }
 
-Expr* var_init(Token* name) {
+Expr* var__init(Token* name) {
   assert(name != NULL);
   Expr* expr = malloc(1 * sizeof(Expr));
   expr->type = EXPR_VAR;
@@ -63,13 +63,13 @@ Expr* var_init(Token* name) {
   return expr;
 }
 
-Expr* assign_init(Token* name, Expr* value) {
+Expr* assign__init(Token* name, Expr* value) {
   assert(name != NULL);
   assert(value != NULL);
 
   Expr* expr = malloc(1 * sizeof(Expr));
   expr->type = EXPR_ASSIGN;
-  expr->fileloc = fileloc_range(2, name->fileloc, value->fileloc);
+  expr->fileloc = fileloc__range(2, name->fileloc, value->fileloc);
 
   expr->as.assign.name = name;
   expr->as.assign.value = value;
@@ -77,7 +77,7 @@ Expr* assign_init(Token* name, Expr* value) {
   return expr;
 }
 
-Expr* logical_init(Expr* left, Token* op, Expr* right) {
+Expr* logical__init(Expr* left, Token* op, Expr* right) {
   assert(left != NULL || right != NULL);
   Expr* expr = malloc(1 * sizeof(Expr));
 
@@ -85,11 +85,25 @@ Expr* logical_init(Expr* left, Token* op, Expr* right) {
   expr->as.logical.left = left;
   expr->as.logical.right = right;
   expr->as.logical.op = op;
-  expr->fileloc = fileloc_range(3, left->fileloc, op->fileloc, right->fileloc);
+  expr->fileloc = fileloc__range(3, left->fileloc, op->fileloc, right->fileloc);
   return expr;
 }
 
-void expr_free(Expr* expr) {
+Expr* call__init(Expr* callee, Token* paren, unsigned int num_args, Expr** args) {
+  assert(callee != NULL);
+  assert(paren != NULL);
+
+  Expr* expr = malloc(1 * sizeof(Expr));
+  expr->type = EXPR_CALL;
+  expr->as.call.callee = callee;
+  expr->as.call.paren = paren;
+  expr->as.call.num_args = num_args;
+  expr->as.call.args = args;
+
+  return expr;
+}
+
+void expr__free(Expr* expr) {
   if (expr == NULL) return;
 
   // NOTE: tokens are freed by tokens_free on lox__free, since we only use 1 copy 
@@ -97,26 +111,26 @@ void expr_free(Expr* expr) {
 
   switch (expr->type) {
     case EXPR_BINARY:
-      expr_free(expr->as.binary.left);
-      expr_free(expr->as.binary.right);
+      expr__free(expr->as.binary.left);
+      expr__free(expr->as.binary.right);
       break;
     case EXPR_LOGICAL:
-      expr_free(expr->as.logical.left);
-      expr_free(expr->as.logical.right);
+      expr__free(expr->as.logical.left);
+      expr__free(expr->as.logical.right);
       break;
     case EXPR_GROUPING:
-      expr_free(expr->as.grouping.expression);
+      expr__free(expr->as.grouping.expression);
       break;
     case EXPR_LITERAL:
-      loxobject_free(expr->as.literal.value);
+      loxobject__free(expr->as.literal.value);
       break;
     case EXPR_UNARY:
-      expr_free(expr->as.unary.right);
+      expr__free(expr->as.unary.right);
       break;
     case EXPR_VAR:
       break;
     case EXPR_ASSIGN:
-      expr_free(expr->as.assign.value);
+      expr__free(expr->as.assign.value);
       break;
   }
 }

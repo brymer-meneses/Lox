@@ -59,6 +59,16 @@ Stmt* stmt_while_loop_init(Expr* condition, Stmt* body) {
   return stmt;
 }
 
+Stmt* stmt_function_init(Token* name, Token** params, size_t num_params, Stmt** body, size_t num_body_stmts) {
+  Stmt* stmt = malloc(1 * sizeof(Stmt));
+  stmt->type = STMT_FUNCTION;
+  stmt->as.function.body = body;
+  stmt->as.function.name = name;
+  stmt->as.function.params = params;
+  stmt->as.function.num_params = num_params;
+  stmt->as.function.num_body_stmts = num_body_stmts;
+  return stmt;
+}
 
 
 static void stmt_free(Stmt* stmt) {
@@ -70,10 +80,10 @@ static void stmt_free(Stmt* stmt) {
       // token_free(stmt->as.var.name);
       break;
     case STMT_EXPRESSION:
-      expr_free(stmt->as.expression.expression);
+      expr__free(stmt->as.expression.expression);
       break;
     case STMT_PRINT:
-      expr_free(stmt->as.print.expression);
+      expr__free(stmt->as.print.expression);
       break;
     case STMT_BLOCK:
       for (size_t i=0; i<stmt->as.block.length; i++) {

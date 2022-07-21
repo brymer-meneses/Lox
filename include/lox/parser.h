@@ -1,7 +1,6 @@
 #ifndef LOX_PARSER_H
 #define LOX_PARSER_H
 
-#include "declarations.h"
 #include "expr.h"
 #include "stmt.h"
 
@@ -14,8 +13,7 @@ typedef struct Parser {
   bool need_repl_resolution;
 } Parser;
 
-
-Parser* parser_init(Token** tokens);
-Stmt** parser_parse();
+Parser* parser__init(Token** tokens);
+Stmt** parser__parse();
 
 #endif 

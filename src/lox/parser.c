@@ -27,6 +27,7 @@
  * term           → factor ( ( "-" | "+" ) factor )* ;
  * factor         → unary ( ( "/" | "*" ) unary )* ;
  * unary          → ( "!" | "-" ) unary | primary ;
+ * call           → primary ( "(" arguments? ")" )* ;
  * primary        → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
  */
 
@@ -39,9 +40,9 @@ static Expr* term();
 static Expr* factor();
 static Expr* unary();
 static Expr* primary();
-
 static Expr* or();
 static Expr* and();
+static Expr* call();
 /*
  * program        → declaration* EOF ;
  * declaration    → varDecl | statement ;
@@ -71,9 +72,10 @@ static Token* expect(FileLoc* fl, TokenType type, const char* message);
 static Token* peek();
 static Token* previous();
 
+static Expr* finish_call();
 static Parser* parser;
 
-Parser* parser_init(Token** tokens) {
+Parser* parser__init(Token** tokens) {
   parser = malloc(1 * sizeof(Parser));
   parser->tokens = tokens;
   parser->current = 0;
@@ -81,13 +83,13 @@ Parser* parser_init(Token** tokens) {
   return parser;
 }
 
-Stmt** parser_parse() {
+Stmt** parser__parse() {
   assert(parser != NULL);
 
-  Array* arr = array_init(sizeof(Stmt*));
+  Array* arr = array__init(sizeof(Stmt*));
 
   while (!isfinished()) {
-    array_append(arr, declaration());
+    array__append(arr, declaration());
   }
 
   parser->stmts = (Stmt**) arr->elements;
@@ -208,7 +210,7 @@ static Expr* assignment() {
 
     if (expr->type == EXPR_VAR) {
       Token* name = expr->as.var.name;
-      return assign_init(name, value);
+      return assign__init(name, value);
     }
 
     report(equals->fileloc, "Invalid assignment target.");
@@ -222,7 +224,7 @@ static Expr* or() {
   while (match(1, OR)) {
     Token* operator = previous();
     Expr* right = and();
-    expr = logical_init(expr, operator, right);
+    expr = logical__init(expr, operator, right);
   }
 
   return expr;
@@ -234,7 +236,7 @@ static Expr* and() {
   while (match(1, AND)) {
     Token* operator = previous();
     Expr* right = equality();
-    expr = logical_init(expr, operator, right);
+    expr = logical__init(expr, operator, right);
   }
 
   return expr;
@@ -270,7 +272,7 @@ static Expr* equality() {
       report(operator->fileloc, "Expected expression before this.");
       break;
     }
-    expr = binary_init(expr, operator, right);
+    expr = binary__init(expr, operator, right);
   }
 
   return expr;
@@ -291,7 +293,7 @@ static Expr* comparison() {
       report(operator->fileloc, "Expected expression before this.");
       break;
     }
-    expr = binary_init(expr, operator, right);
+    expr = binary__init(expr, operator, right);
   }
   return expr;
 }
@@ -310,7 +312,7 @@ static Expr* term() {
       report(operator->fileloc, "Expected expression before this.");
       break;
     }
-    expr = binary_init(expr, operator, right);
+    expr = binary__init(expr, operator, right);
   }
 
   return expr;
@@ -330,7 +332,7 @@ static Expr* factor() {
       report(operator->fileloc, "Expected expression before this.");
       break;
     }
-    expr = binary_init(expr, operator, right);
+    expr = binary__init(expr, operator, right);
   }
   return expr;
 }
@@ -339,35 +341,66 @@ static Expr* unary() {
   if (match(2, BANG, MINUS)) {
     Token* operator = previous();
     Expr* right = unary();
-    return unary_init(operator, right);
+    return unary__init(operator, right);
   }
 
   return primary();
 }
 
+static Expr* call() {
+  Expr* expr = primary();
+
+  while (true) {
+    if (match(1, LEFT_PAREN)) {
+      expr = finish_call(expr);
+    } else {
+      break;
+    }
+  }
+
+  return expr;
+}
+
+static Expr* finish_call(Expr* callee) {
+  Array* args_array = array__init(sizeof(Expr*));
+
+  if (!check(RIGHT_PAREN)) {
+    do {
+      if (args_array->curr_size >= 255) {
+        report(peek()->fileloc, "Can't have more than 255 arguments");
+      }
+      array__append(args_array, expression());
+    } while (match(1, COMMA));
+  }
+
+  Token* paren = expect(previous()->fileloc, RIGHT_PAREN, "Expected ')' after arguments");
+
+  return call__init(callee, paren, args_array->curr_size, (Expr**) args_array->elements);
+}
+
 static Expr* primary() {
   if (match(2, FALSE, TRUE)) 
-    return literal_init(loxobject_init(LOX_BOOLEAN, previous()->lexeme, previous()->fileloc));
+    return literal__init(loxobject__init(LOX_BOOLEAN, previous()->lexeme, previous()->fileloc));
 
   if (match(1, NIL))  
-    return literal_init(loxobject_nil(previous()->fileloc));
+    return literal__init(loxobject__nil(previous()->fileloc));
 
   if (match(1, STRING))
-    return literal_init(loxobject_init(LOX_STRING, previous()->literal->as.string, previous()->fileloc));
+    return literal__init(loxobject__init(LOX_STRING, previous()->literal->as.string, previous()->fileloc));
   if (match(1, NUMBER))
-    return literal_init(loxobject_init(LOX_NUMBER, previous()->lexeme, previous()->fileloc));
+    return literal__init(loxobject__init(LOX_NUMBER, previous()->lexeme, previous()->fileloc));
 
   if (match(1, LEFT_PAREN)) {
     Expr* expr = expression();
     expect(find_last_occurence(LEFT_PAREN), RIGHT_PAREN, "Expected matching ) of this token.");
 
     if (expr) {
-      return grouping_init(expr);
+      return grouping__init(expr);
     } 
   }
 
   if (match(1, IDENTIFIER)) {
-    return var_init(previous());
+    return var__init(previous());
   }
 
 
@@ -438,7 +471,7 @@ static Stmt* for_loop_statement() {
   }
 
   if (condition == NULL) {
-    condition = literal_init(loxobject_boolean(true, previous()->fileloc));
+    condition = literal__init(loxobject__boolean(true, previous()->fileloc));
   }
 
   body = stmt_while_loop_init(condition, body);
@@ -468,10 +501,10 @@ static Stmt* expression_statement() {
 }
 
 static Stmt* block() {
-  Array* stmts_array = array_init(sizeof(Stmt*));
+  Array* stmts_array = array__init(sizeof(Stmt*));
 
   while (!check(RIGHT_BRACE) && !isfinished()) {
-    array_append(stmts_array, declaration());
+    array__append(stmts_array, declaration());
   }
 
   expect(previous()->fileloc, RIGHT_BRACE, "Expected '}' after block.");

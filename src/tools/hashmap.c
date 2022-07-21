@@ -6,9 +6,9 @@
 #include "stdio.h"
 
 static unsigned long hash(const char *str);
-static HashmapEntry* hashmap_entry(char *key, void* value);
+static HashmapEntry* hashmap__entry(char *key, void* value);
 
-Hashmap* hashmap_init() {
+Hashmap* hashmap__init() {
   Hashmap* hmap = malloc(1 * sizeof(Hashmap));
   hmap->curr_size = 0;
   hmap->max_size = HASHMAP_INITIAL_SIZE;
@@ -21,7 +21,7 @@ Hashmap* hashmap_init() {
   return hmap;
 }
 
-void hashmap_free(Hashmap* hmap) {
+void hashmap__free(Hashmap* hmap) {
   for (size_t i=0; i<hmap->max_size; i++) {
 
     if (hmap->entries[i] != NULL) {
@@ -36,7 +36,7 @@ void hashmap_free(Hashmap* hmap) {
   free(hmap);
 };
 
-void hashmap_print(Hashmap *hmap) {
+void hashmap__print(Hashmap *hmap) {
 
   for (size_t i=0; i<hmap->max_size; i++) {
     HashmapEntry* entry = hmap->entries[i];
@@ -49,7 +49,7 @@ void hashmap_print(Hashmap *hmap) {
 
 }
 
-void hashmap_insert(Hashmap* hmap, char* key,  void* value) {
+void hashmap__insert(Hashmap* hmap, char* key,  void* value) {
   unsigned long slot = hash(key) % hmap->max_size;
 
   if (hmap->curr_size + 1 >= 0.3 * hmap->max_size) {
@@ -60,7 +60,7 @@ void hashmap_insert(Hashmap* hmap, char* key,  void* value) {
   HashmapEntry* entry = hmap->entries[slot];
 
   if (entry == NULL) {
-    hmap->entries[slot] = hashmap_entry(key, value);
+    hmap->entries[slot] = hashmap__entry(key, value);
     hmap->curr_size++;
     return;
   }
@@ -77,10 +77,10 @@ void hashmap_insert(Hashmap* hmap, char* key,  void* value) {
   }
 
   hmap->curr_size++;
-  hmap->entries[slot] = hashmap_entry(key, value);
+  hmap->entries[slot] = hashmap__entry(key, value);
 };
 
-void* hashmap_retrieve(Hashmap* hmap, char* key) {
+void* hashmap__retrieve(Hashmap* hmap, char* key) {
   unsigned long slot = hash(key) % hmap->max_size;
 
   HashmapEntry* entry = hmap->entries[slot];
@@ -100,7 +100,7 @@ void* hashmap_retrieve(Hashmap* hmap, char* key) {
   return NULL;
 };
 
-static HashmapEntry* hashmap_entry(char* key, void* value) {
+static HashmapEntry* hashmap__entry(char* key, void* value) {
   HashmapEntry* entry = malloc(1 * sizeof(HashmapEntry));
   entry->key = malloc(strlen(key) + 1);
   entry->value = value;

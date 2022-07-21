@@ -2,9 +2,9 @@
 #include "tools/utils.h"
 #include "stdarg.h"
 #include "limits.h"
-#include <assert.h>
+#include "assert.h"
 
-FileLoc* fileloc_init(const size_t line, const size_t start, const size_t end) {
+FileLoc* fileloc__init(const size_t line, const size_t start, const size_t end) {
   FileLoc* fl = malloc(1 * sizeof(FileLoc));
   fl->line = line;
   fl->start = start;
@@ -12,7 +12,7 @@ FileLoc* fileloc_init(const size_t line, const size_t start, const size_t end) {
   return fl;
 }
 
-FileLoc* fileloc_range(const unsigned int num_args, ...) {
+FileLoc* fileloc__range(const unsigned int num_args, ...) {
 
   va_list args;
   va_start(args, num_args);
@@ -31,6 +31,6 @@ FileLoc* fileloc_range(const unsigned int num_args, ...) {
   }
 
   va_end(args);
-  return fileloc_init(line, start, end);
+  return fileloc__init(line, start, end);
 }
 

@@ -5,30 +5,30 @@
 #include "tools/array.h"
 #include "tools/hashmap.h"
 
-Environment* environment_init(Environment* enclosing) {
+Environment* environment__init(Environment* enclosing) {
   Environment* env = malloc(1 * sizeof(Environment));
-  env->values = hashmap_init();
+  env->values = hashmap__init();
   env->enclosing = enclosing;
-  env->children_environment_array = array_init(sizeof(Environment*));
+  env->children_environment_array = array__init(sizeof(Environment*));
 
   if (enclosing != NULL)
-    array_append(enclosing->children_environment_array, env);
+    array__append(enclosing->children_environment_array, env);
 
 
   return env;
 }
 
-void environment_define(Environment* env, char* name, LoxObject* value) {
-  hashmap_insert(env->values, name, value);
+void environment__define(Environment* env, char* name, LoxObject* value) {
+  hashmap__insert(env->values, name, value);
 }
 
-void environment_dump(Environment* env) {
+void environment__dump(Environment* env) {
   bool is_empty = true;
   for (size_t i=0; i<env->values->max_size; i++) {
     const HashmapEntry* entry = env->values->entries[i];
     if (entry != NULL) {
       is_empty = false;
-      printf("[SLOT: %lu] %s -> %s\n", i, entry->key, loxobject_to_string((LoxObject*) entry->value ));
+      printf("[SLOT: %lu] %s -> %s\n", i, entry->key, loxobject__to_string((LoxObject*) entry->value ));
     }
   }
 
@@ -37,39 +37,40 @@ void environment_dump(Environment* env) {
 }
 
 
-LoxObject* environment_get(Environment* env, Token* name) {
-  void* result = hashmap_retrieve(env->values, name->lexeme);
+LoxObject* environment__get(Environment* env, Token* name) {
+  void* result = hashmap__retrieve(env->values, name->lexeme);
 
 
   if (result != NULL) return (LoxObject*) result; 
 
-  if (env->enclosing != NULL) return environment_get(env->enclosing, name);
+  if (env->enclosing != NULL) return environment__get(env->enclosing, name);
 
   report(name->fileloc, "Undefined variable: %s", name->lexeme);
   return NULL;
 }
 
-void environment_assign(Environment* env, Token* name, LoxObject* value) {
-  void* result = hashmap_retrieve(env->values, name->lexeme);
+void environment__assign(Environment* env, Token* name, LoxObject* value) {
+  void* result = hashmap__retrieve(env->values, name->lexeme);
 
   if (result != NULL) {
-    hashmap_insert(env->values, name->lexeme, value);
+    hashmap__insert(env->values, name->lexeme, value);
     return;
   }
   if (env->enclosing != NULL) {
-    environment_assign(env->enclosing, name, value);
+    environment__assign(env->enclosing, name, value);
     return;
   }
   report(name->fileloc, "Undefined variable: %s.", name->lexeme);
 
 }
 
-void environment_free(Environment* env) {
-  hashmap_free(env->values);
+void environment__free(Environment* env) {
+  hashmap__free(env->values);
 
   for (size_t i=0; i<env->children_environment_array->curr_size; i++) {
-    environment_free(env->children_environment_array->elements[i]);
+    environment__free(env->children_environment_array->elements[i]);
   }
 
   free(env->children_environment_array);
+  free(env);
 }

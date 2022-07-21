@@ -13,13 +13,13 @@ typedef struct Environment {
   Array* children_environment_array;
 } Environment;
 
-Environment* environment_init(Environment* enclosing);
+Environment* environment__init(Environment* enclosing);
 
-void environment_define(Environment* env, char* name, LoxObject* value);
-LoxObject* environment_get(Environment* env, Token *name);
-void environment_assign(Environment* env, Token* name, LoxObject* value);
-void environment_dump(Environment* env);
-void environment_free(Environment* env);
+void environment__define(Environment* env, char* name, LoxObject* value);
+void environment__assign(Environment* env, Token* name, LoxObject* value);
+void environment__dump(Environment* env);
+void environment__free(Environment* env);
+LoxObject* environment__get(Environment* env, Token *name);
 
 
 #endif // !LOX_ENVIRONMENT_H

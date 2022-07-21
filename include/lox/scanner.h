@@ -21,7 +21,7 @@ typedef struct Scanner {
 } Scanner;
 
 
-Scanner* scanner_init(char *source);
-Token** scanner_scan();
+Scanner* scanner__init(char *source);
+Token** scanner__scan();
 
 #endif

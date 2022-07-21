@@ -10,6 +10,8 @@
 #include "stdlib.h"
 #include "tools/fileloc.h"
 #include "token.h"
+#include "parser.h"
+
 
 
 #endif

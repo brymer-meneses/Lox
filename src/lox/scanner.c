@@ -36,16 +36,16 @@ static Scanner* scanner;
 static Hashmap* keywords;
 
 
-Scanner* scanner_init(char* source) {
+Scanner* scanner__init(char* source) {
   scanner = malloc(1 * sizeof(Scanner));
   scanner->current =0;
   scanner->start =0;
   scanner->line =1;
   scanner->source=source;
   scanner->last_line = 0;
-  scanner->tokens_array = array_init(sizeof(Token*));
+  scanner->tokens_array = array__init(sizeof(Token*));
 
-  keywords = hashmap_init();
+  keywords = hashmap__init();
   keywords_set("and",   AND);
   keywords_set("class", CLASS);
   keywords_set("and",   AND);
@@ -67,7 +67,7 @@ Scanner* scanner_init(char* source) {
   return scanner;
 }
 
-Token** scanner_scan() {
+Token** scanner__scan() {
   while (!isfinished()) {
     scanner->start = scanner->current;
     scan_token();
@@ -75,6 +75,10 @@ Token** scanner_scan() {
   add_token(SOURCE_END, NULL);
   Token** tokens = (Token**) scanner->tokens_array->elements;;
   return tokens;
+}
+
+void scanner_free() {
+
 }
 
 static FileLoc* compute_relative_position() {
@@ -175,7 +179,7 @@ static void scan_token() {
       } else if (isalpha(c) || c == '_') {
         scan_identifier();
       } else {
-        report(fileloc_init(scanner->line, scanner->current - 1, scanner->current -1), "Got unexpected character: %c", c);
+        report(fileloc__init(scanner->line, scanner->current - 1, scanner->current -1), "Got unexpected character: %c", c);
       }
       break;
   }
@@ -187,7 +191,7 @@ static void add_token(TokenType type, LoxObject* literal) {
   FileLoc* fl  =  compute_relative_position();
   Token* token = token_init(type, lexeme, literal, fl);
 
-  array_append(scanner->tokens_array, token);
+  array__append(scanner->tokens_array, token);
 }
 
 static char advance() {
@@ -210,7 +214,7 @@ static void scan_number() {
   } 
   char* num_lexeme = substring(scanner->source, scanner->start, scanner->current-1);
   FileLoc* fl = compute_relative_position();
-  LoxObject* literal = loxobject_init(LOX_NUMBER, num_lexeme, fl);
+  LoxObject* literal = loxobject__init(LOX_NUMBER, num_lexeme, fl);
 
   add_token(NUMBER, literal);
 
@@ -233,7 +237,7 @@ static void scan_string() {
   char* text = substring(scanner->source, scanner->start+1, scanner->current-2);
   FileLoc* fl = compute_relative_position();
 
-  LoxObject* literal = loxobject_init(LOX_STRING, text, fl);
+  LoxObject* literal = loxobject__init(LOX_STRING, text, fl);
   add_token(STRING, literal); 
 }
 
@@ -274,7 +278,7 @@ static bool match(char expected) {
 
 
 static TokenType keywords_match(char* text) {
-  void* retval = hashmap_retrieve(keywords, text);
+  void* retval = hashmap__retrieve(keywords, text);
   if (retval == NULL) return IDENTIFIER;
 
   TokenType token =  *(TokenType* ) retval;
@@ -285,7 +289,7 @@ static void keywords_set(char* text, TokenType type) {
   TokenType* type_ptr = malloc(1 * sizeof(TokenType));
   *type_ptr = type;
 
-  hashmap_insert(keywords, text, type_ptr);
+  hashmap__insert(keywords, text, type_ptr);
 }
 
 

@@ -3,7 +3,7 @@
 #include "assert.h"
 #include "string.h"
 
-Array* array_init(size_t elem_size) {
+Array* array__init(size_t elem_size) {
   assert(elem_size > 0);
 
   Array* arr = malloc(1 * sizeof(Array));
@@ -18,7 +18,7 @@ Array* array_init(size_t elem_size) {
   return arr;
 }
 
-void array_append(Array* arr, void* elem) {
+void array__append(Array* arr, void* elem) {
 
   assert(sizeof(elem) == arr->elem_size);
 

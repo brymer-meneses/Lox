@@ -9,7 +9,7 @@ typedef struct {
    size_t end;
 } FileLoc;
 
-FileLoc* fileloc_init(const size_t line, const size_t start, const size_t end);
-FileLoc* fileloc_range(const unsigned int num_args, ...);
+FileLoc* fileloc__init(const size_t line, const size_t start, const size_t end);
+FileLoc* fileloc__range(const unsigned int num_args, ...);
 
 #endif

@@ -17,7 +17,7 @@
 #define COLOR(COLOR, STRING) COLOR STRING ANSI_CODE_RESET
 
 static char* get_source_line(const size_t line_num) {
-  char** arr = str_split(lox->context.source_code, "\n");
+  char** arr = str_split(lox->source_code, "\n");
 
   return arr[line_num-1];
 }

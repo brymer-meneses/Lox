@@ -25,25 +25,14 @@ void lox__init() {
   lox = malloc(1 * sizeof(Lox));
   lox->status.had_error = false;
   lox->status.had_runtime_error = false;
-
-  lox->context.environment = environment_init(NULL);
+  lox->interpreter = interpreter__init();
 };
 
 void lox__run(char* source) {
   assert(lox != NULL); /* Lox must be initialized */
 
-  lox->context.source_code = source;
-  lox->context.scanner = scanner_init(source);
-
-  Token** tokens = scanner_scan();
-  lox->context.parser =  parser_init(tokens);
-  Stmt** stmts = parser_parse(tokens);
-
-  interpret(
-      stmts,
-      lox->context.environment,
-      lox->context.parser->num_stmts
-  );
+  lox->source_code = source;
+  interpreter__run(source);
 };
 
 void lox__run_file(const char* filename) {
@@ -76,11 +65,11 @@ void lox__run_prompt() {
     printf(">>> ");
     fgets(line, sizeof(line) , stdin);
 
-    scanner_init(line);
-    Token** tokens = scanner_scan();
-    Parser* parser = parser_init(tokens);
+    scanner__init(line);
+    Token** tokens = scanner__scan();
+    Parser* parser = parser__init(tokens);
 
-    parser_parse();
+    parser__parse();
 
     if (tokens[0]->type == SOURCE_END) break; 
 
@@ -93,10 +82,10 @@ void lox__run_prompt() {
       strcat(line, additional_line);
 
 
-      scanner_init(line);
-      tokens = scanner_scan();
-      parser = parser_init(tokens);
-      parser_parse();
+      scanner__init(line);
+      tokens = scanner__scan();
+      parser = parser__init(tokens);
+      parser__parse();
     }
        
     lox__run(line);
@@ -104,14 +93,13 @@ void lox__run_prompt() {
 }
 
 void lox__free() {
-  if (lox->context.source_code == NULL) return;
-  stmts_free(lox->context.parser->num_stmts, lox->context.parser->stmts);
-  tokens_free(lox->context.scanner->tokens_array->curr_size, (Token**) lox->context.scanner->tokens_array->elements);
-  environment_free(lox->context.environment);
+  if (lox->source_code == NULL) return;
+  stmts_free(lox->interpreter->parser->num_stmts, lox->interpreter->parser->stmts);
+  tokens_free(lox->interpreter->scanner->tokens_array->curr_size, (Token**) lox->interpreter->scanner->tokens_array->elements);
+  environment__free(lox->interpreter->globals);
 
-  free(lox->context.scanner->tokens_array);
-  free(lox->context.scanner);
-  free(lox->context.parser);
-  free(lox->context.environment);
+  free(lox->interpreter->scanner->tokens_array);
+  free(lox->interpreter->scanner);
+  free(lox->interpreter->parser);
   free(lox);
 }

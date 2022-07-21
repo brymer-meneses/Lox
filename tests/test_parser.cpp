@@ -12,11 +12,11 @@ TEST(TestParser, VariableDeclaration) {
 
   char input[] = "var name = 5;";
 
-  scanner_init(input);
-  Token** tokens = scanner_scan();
+  scanner__init(input);
+  Token** tokens = scanner__scan();
 
-  parser_init(tokens);
-  Stmt** statements = parser_parse();
+  parser__init(tokens);
+  Stmt** statements = parser__parse();
 
   EXPECT_EQ(statements[0]->type, STMT_VAR);
   EXPECT_EQ(statements[0]->as.var.initializer->as.literal.value->type, LOX_NUMBER);

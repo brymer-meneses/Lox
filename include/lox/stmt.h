@@ -1,7 +1,6 @@
 #ifndef STMT_H
 #define STMT_H
 
-#include "declarations.h"
 #include "lox/expr.h"
 
 typedef enum StmtType {
@@ -13,6 +12,7 @@ typedef enum StmtType {
   STMT_RETURN,
   STMT_VAR,
   STMT_WHILE_LOOP,
+  STMT_FUNCTION,
 } StmtType;
 
 typedef struct Stmt {
@@ -31,9 +31,11 @@ typedef struct Stmt {
     } expression;
 
     struct {
-      Token name;
-      Token* params;
-      struct Stmt* body;
+      Token* name;
+      Token** params;
+      size_t num_params;
+      struct Stmt** body;
+      size_t num_body_stmts;
     } function;
 
     struct {
@@ -69,7 +71,8 @@ Stmt* stmt_while_init(Expr* condition, Stmt* body);
 Stmt* stmt_return_init(Expr* keyword, Expr* value);
 Stmt* stmt_print_init(Expr* expression);
 Stmt* stmt_block_init(size_t length, Stmt** statements);
-Stmt* stmt_function_init(Token* name, Token* params, Stmt* body);
+Stmt* stmt_function_init(Token* name, Token** params, size_t num_params, Stmt** body, size_t num_body_stmts);
+
 Stmt* stmt_vardecl_init(Token* name, Expr* initializer);
 Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch);
 Stmt* stmt_while_loop_init(Expr* condition, Stmt* body);

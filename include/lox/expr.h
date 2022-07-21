@@ -2,7 +2,6 @@
 #define EXPR_H
 
 #include "token.h"
-#include "declarations.h"
 
 
 typedef enum ExprType {
@@ -13,6 +12,7 @@ typedef enum ExprType {
   EXPR_GROUPING,
   EXPR_VAR,
   EXPR_ASSIGN,
+  EXPR_CALL,
 } ExprType;
 
 
@@ -39,6 +39,13 @@ typedef struct Expr {
     } literal;
 
     struct {
+      struct Expr* callee;
+      Token* paren;
+      unsigned int num_args;
+      struct Expr** args;
+    } call;
+
+    struct {
       Token* op;
       struct Expr* right;
     } unary;
@@ -57,13 +64,14 @@ typedef struct Expr {
   FileLoc* fileloc;
 } Expr;
 
-Expr* binary_init(Expr* left, Token* op, Expr *right);
-Expr* grouping_init(Expr* expr);
-Expr* literal_init(LoxObject* value);
-Expr* unary_init(Token* op, Expr* right);
-Expr* var_init(Token* name);
-Expr* assign_init(Token* name, Expr* value);
-Expr* logical_init(Expr* left, Token* op, Expr* right);
+Expr* binary__init(Expr* left, Token* op, Expr *right);
+Expr* grouping__init(Expr* expr);
+Expr* literal__init(LoxObject* value);
+Expr* unary__init(Token* op, Expr* right);
+Expr* var__init(Token* name);
+Expr* assign__init(Token* name, Expr* value);
+Expr* logical__init(Expr* left, Token* op, Expr* right);
+Expr* call__init(Expr* callee, Token* paren, unsigned int num_args, Expr** args);
 
-void expr_free(Expr* expr);
+void expr__free(Expr* expr);
 #endif

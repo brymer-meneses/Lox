@@ -2,6 +2,7 @@
 #define LOX_H
 
 #include "declarations.h"
+#include "lox/interpreter.h"
 #include "scanner.h"
 #include "parser.h"
 #include "environment.h"
@@ -14,13 +15,8 @@ typedef struct Lox {
     bool is_on_repl;
   } status;
 
-  struct {
-    Scanner* scanner;
-    Parser* parser;
-    Environment* environment;
-    char* source_code;
-  } context;
-
+  char* source_code;
+  Interpreter* interpreter;
 } Lox;
 
 extern Lox* lox;

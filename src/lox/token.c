@@ -29,14 +29,14 @@ void token_print(Token* token) {
 
   printf("Token: [ ");
   printf("type: %s, ", tokentype_to_string(token->type));
-  printf("literal: %s, ", loxobject_to_string(token->literal));
+  printf("literal: %s, ", loxobject__to_string(token->literal));
   printf("line: %lu ", token->fileloc->line);
   printf("]\n");
 }
 
 void token_free(Token* token) {
   if (token == NULL) return;
-  loxobject_free(token->literal);
+  loxobject__free(token->literal);
   free(token->fileloc);
   free(token->lexeme);
   free(token);

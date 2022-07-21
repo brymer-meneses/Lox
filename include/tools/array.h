@@ -11,8 +11,8 @@ typedef struct Array {
   size_t curr_size;
 } Array;
 
-Array* array_init(size_t size);
-void array_append(Array* arr, void* elem);
+Array* array__init(size_t size);
+void   array__append(Array* arr, void* elem);
 
 
 #endif // !ARRAY_H

@@ -25,7 +25,7 @@ char* expr_to_string(const Expr *expr) {
       return parenthesize("group", expr->as.grouping.expression, NULL);
       break;
     case EXPR_LITERAL:
-      return loxobject_to_string(expr->as.literal.value);
+      return loxobject__to_string(expr->as.literal.value);
       break;
 
    }
