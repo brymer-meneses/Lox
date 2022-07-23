@@ -58,7 +58,7 @@ static void interpret(Environment* env, Stmt** statements, size_t num_stmts) {
   assert(env != NULL);
 
   for (size_t i=0; i<num_stmts && !lox->status.had_runtime_error ;i++) {
-    interpreter__execute(env, statements[i]);
+    evaluate_statement(env, statements[i]);
   }
 
 }
@@ -66,7 +66,7 @@ static void interpret(Environment* env, Stmt** statements, size_t num_stmts) {
 
 static void execute_block(Stmt* stmt, Environment* env) {
   for (size_t i=0; i<stmt->as.block.length; i++) {
-    interpreter__execute(env, stmt->as.block.statements[i]);
+    evaluate_statement(env, stmt->as.block.statements[i]);
   }
 }
 
@@ -232,17 +232,16 @@ static LoxObject* evaluate_statement(Environment* env, Stmt* stmt) {
     }; break;
     case STMT_IF: { 
       if (loxobject__istruthy(evaluate_expression(env, stmt->as.if_statement.condition))) {
-        interpreter__execute(env, stmt->as.if_statement.then_branch);
+        evaluate_statement(env, stmt->as.if_statement.then_branch);
       } else if (stmt->as.if_statement.else_branch != NULL) {
-        interpreter__execute(env, stmt->as.if_statement.else_branch);
+        evaluate_statement(env, stmt->as.if_statement.else_branch);
       }
     } break;
     case STMT_WHILE_LOOP: {
       while (loxobject__istruthy(evaluate_expression(env, stmt->as.while_loop.condition))) {
-        interpreter__execute(env, stmt->as.while_loop.body);
+        evaluate_statement(env, stmt->as.while_loop.body);
       };
     } break;
-      break;
   }
 
   return NULL;
