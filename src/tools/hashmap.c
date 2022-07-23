@@ -5,7 +5,6 @@
 #include "string.h"
 #include "stdio.h"
 
-static unsigned long hash(const char *str);
 static HashmapEntry* hashmap__entry(char *key, void* value);
 
 Hashmap* hashmap__init() {
@@ -109,7 +108,7 @@ static HashmapEntry* hashmap__entry(char* key, void* value) {
 }
 
 
-static unsigned long hash(const char *str) {
+unsigned long hash(const char *str) {
     unsigned long hash = 5381;
     int c;
 

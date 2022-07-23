@@ -5,13 +5,13 @@
 #include "assert.h"
 #include "stdlib.h"
 
-#include "lox/declarations.h"
+#include "lox/core.h"
+#include "lox/fileloc.h"
 #include "lox/token.h"
 
 #include "tools/utils.h"
-#include "tools/fileloc.h"
 
-Token* token_init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fileloc) {
+Token* token__init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fileloc) {
   Token* tok = malloc(1 * sizeof(Token));
   tok->type = type;
   tok->literal = literal;
@@ -23,18 +23,18 @@ Token* token_init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fil
 }
 
 
-void token_print(Token* token) {
+void token__print(Token* token) {
   // do not print SOURCE_END token
   if (token->type == SOURCE_END) return;
 
   printf("Token: [ ");
-  printf("type: %s, ", tokentype_to_string(token->type));
+  printf("type: %s, ", tokentype__to_string(token->type));
   printf("literal: %s, ", loxobject__to_string(token->literal));
   printf("line: %lu ", token->fileloc->line);
   printf("]\n");
 }
 
-void token_free(Token* token) {
+void token__free(Token* token) {
   if (token == NULL) return;
   loxobject__free(token->literal);
   free(token->fileloc);
@@ -42,15 +42,15 @@ void token_free(Token* token) {
   free(token);
 }
 
-void tokens_free(size_t num_tokens, Token** tokens) {
+void tokens__free(size_t num_tokens, Token** tokens) {
   for (size_t i=0; i<num_tokens; i++) {
-    token_free(tokens[i]);
+    token__free(tokens[i]);
   }
   free(tokens);
 }
 
 
-char* tokentype_to_string(TokenType type) {
+char* tokentype__to_string(TokenType type) {
   switch (type) {
     case LEFT_PAREN:      return "LEFT_PAREN";
     case RIGHT_PAREN:     return "RIGHT_PAREN";

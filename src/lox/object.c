@@ -1,11 +1,16 @@
+#include "lox/core.h"
+#include "lox/environment.h"
+#include "lox/interpreter.h"
+
 #include "stdbool.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 #include "assert.h"
 
+#include "lox/object.h"
 #include "lox/error.h"
-#include "tools/fileloc.h"
+#include "lox/fileloc.h"
 #include "tools/utils.h"
 
 char* loxobject__to_string(LoxObject* obj) {
@@ -109,7 +114,7 @@ LoxObject* loxobject__init(LoxType type, char* lexeme, FileLoc* fl) {
   return obj;
 } 
 
-LoxObject* loxobject__boolean(bool value, FileLoc* fl) {
+LoxObject* loxobject__boolean_init(bool value, FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_BOOLEAN;
   obj->as.boolean = value;
@@ -117,7 +122,7 @@ LoxObject* loxobject__boolean(bool value, FileLoc* fl) {
   return obj;
 };
 
-LoxObject* loxobject__string(char* value, FileLoc* fl) {
+LoxObject* loxobject__string_init(char* value, FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_STRING;
   obj->as.string = value;
@@ -125,7 +130,7 @@ LoxObject* loxobject__string(char* value, FileLoc* fl) {
   return obj;
 }
 
-LoxObject* loxobject__number(double value, FileLoc* fl) {
+LoxObject* loxobject__number_init(double value, FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_NUMBER;
   obj->as.number = value;
@@ -133,15 +138,41 @@ LoxObject* loxobject__number(double value, FileLoc* fl) {
   return obj;
 }
 
-LoxObject* loxobject__nil(FileLoc* fl) {
+LoxObject* loxobject__nil_init(FileLoc* fl) {
   LoxObject* obj = malloc(1 * sizeof(LoxObject));
   obj->type = LOX_NIL;
   obj->fl = fl;
   return obj;
 }
 
-LoxObject* loxobject__callable(LoxObject* callee, FileLoc* fl) {
+LoxObject* loxobject__callable_init(char* to_string, unsigned int arity, LoxObject** args, FileLoc* fl) {
+  LoxObject* obj = malloc(1 * sizeof(LoxObject));
+  obj->type = LOX_CALLABLE;
+  obj->as.callable.arity = arity;
+  obj->as.callable.arguments = args;
+  obj->as.callable.to_string = to_string;
+  obj->fl = fl;
+  return obj;
+}
 
+LoxObject* loxobject__function_init(Stmt* declaration) {
+  assert(declaration->type == STMT_FUNCTION);
+  LoxObject* obj = malloc(1 * sizeof(LoxObject));
+  obj->type = LOX_FUNCTION;
+  obj->as.function.declaration = declaration;
+  return obj;
+}
+
+LoxObject* loxobject__call(LoxObject** obj, unsigned int num_args) {
+
+  // Environment* env = environment__init(interpreter__get_globals());
+  // const unsigned int arity = obj->as.function.declaration->as.function.arity;
+  //
+  // for (unsigned int i=0; i< arity; i++) {
+  //   environment__define(env, obj->as.function.declaration->as.function.params[i]->lexeme,
+  //                       NULL
+  //                       );
+  // }
 }
 
 
@@ -155,5 +186,6 @@ void loxobject__free(LoxObject* obj) {
     default:
       break;
   }
+  free(obj->fl);
   free(obj);
 }

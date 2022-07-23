@@ -4,7 +4,7 @@
 #include "lox/stmt.h"
 #include "lox/expr.h"
 
-Stmt* stmt_expr_init(Expr* expression) {
+Stmt* stmt__expr_init(Expr* expression) {
   assert(expression != NULL);
   Stmt* stmt = malloc(1 * sizeof(Stmt));
 
@@ -14,7 +14,7 @@ Stmt* stmt_expr_init(Expr* expression) {
   return stmt;
 }
 
-Stmt* stmt_print_init(Expr* expression) {
+Stmt* stmt__print_init(Expr* expression) {
   assert(expression != NULL);
   Stmt* stmt = malloc(1 * sizeof(Stmt));
 
@@ -24,7 +24,7 @@ Stmt* stmt_print_init(Expr* expression) {
   return stmt;
 }
 
-Stmt* stmt_vardecl_init(Token* name, Expr* initializer) {
+Stmt* stmt__vardecl_init(Token* name, Expr* initializer) {
   assert(name != NULL);
   Stmt* stmt = malloc(1 * sizeof(Stmt));
 
@@ -34,7 +34,7 @@ Stmt* stmt_vardecl_init(Token* name, Expr* initializer) {
   return stmt;
 }
 
-Stmt* stmt_block_init(size_t length, Stmt** statements) {
+Stmt* stmt__block_init(size_t length, Stmt** statements) {
   Stmt* stmt = malloc(1 * sizeof(Stmt));
   stmt->type = STMT_BLOCK;
   stmt->as.block.length = length;
@@ -42,7 +42,7 @@ Stmt* stmt_block_init(size_t length, Stmt** statements) {
   return stmt;
 }
 
-Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch) {
+Stmt* stmt__if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch) {
   Stmt* stmt = malloc(1 * sizeof(Stmt));
   stmt->type = STMT_IF;
   stmt->as.if_statement.then_branch = then_branch;
@@ -51,7 +51,7 @@ Stmt* stmt_if_init(Expr* condition, Stmt* then_branch, Stmt* else_branch) {
   return stmt;
 }
 
-Stmt* stmt_while_loop_init(Expr* condition, Stmt* body) {
+Stmt* stmt__while_loop_init(Expr* condition, Stmt* body) {
   Stmt* stmt = malloc(1 * sizeof(Stmt));
   stmt->type = STMT_WHILE_LOOP;
   stmt->as.while_loop.condition = condition;
@@ -59,19 +59,22 @@ Stmt* stmt_while_loop_init(Expr* condition, Stmt* body) {
   return stmt;
 }
 
-Stmt* stmt_function_init(Token* name, Token** params, size_t num_params, Stmt** body, size_t num_body_stmts) {
+Stmt* stmt__function_init(Token* name, Token** params, unsigned int arity, Stmt* body) {
+  assert(name != NULL);
+  assert(params != NULL);
+  assert(body->type == STMT_BLOCK);
+
   Stmt* stmt = malloc(1 * sizeof(Stmt));
   stmt->type = STMT_FUNCTION;
   stmt->as.function.body = body;
   stmt->as.function.name = name;
   stmt->as.function.params = params;
-  stmt->as.function.num_params = num_params;
-  stmt->as.function.num_body_stmts = num_body_stmts;
+  stmt->as.function.arity = arity;
   return stmt;
 }
 
 
-static void stmt_free(Stmt* stmt) {
+static void stmt__free(Stmt* stmt) {
   if (stmt == NULL) return;
 
   switch (stmt->type) {
@@ -87,7 +90,7 @@ static void stmt_free(Stmt* stmt) {
       break;
     case STMT_BLOCK:
       for (size_t i=0; i<stmt->as.block.length; i++) {
-        stmt_free((Stmt*) stmt->as.block.statements[i]);
+        stmt__free((Stmt*) stmt->as.block.statements[i]);
       };
       free(stmt->as.block.statements);
       break;
@@ -97,10 +100,10 @@ static void stmt_free(Stmt* stmt) {
   free(stmt);
 }
 
-void stmts_free(size_t num_stmts, Stmt** stmts) {
+void stmts__free(size_t num_stmts, Stmt** stmts) {
   if (stmts == NULL) return;
   for (size_t i=0; i<num_stmts; i++) {
-    stmt_free(stmts[i]);
+    stmt__free(stmts[i]);
   }
   free(stmts);
 }

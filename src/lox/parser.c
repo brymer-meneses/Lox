@@ -5,11 +5,11 @@
 
 #include "tools/array.h"
 #include "tools/debug.h"
-#include "tools/fileloc.h"
 #include "tools/utils.h"
 
+#include "lox/fileloc.h"
 #include "lox/error.h"
-#include "lox/declarations.h"
+#include "lox/core.h"
 #include "lox/object.h"
 #include "lox/parser.h"
 #include "lox/expr.h"
@@ -45,9 +45,11 @@ static Expr* and();
 static Expr* call();
 /*
  * program        → declaration* EOF ;
- * declaration    → varDecl | statement ;
+ * declaration    → funDecl | varDecl | statement | statement;
  * statement      → exprStmt | printStmt | block | ifStmt ;
  *
+ * funDecl        → "fun" function ;
+ * function       → IDENTIFIER "(" parameters? ")" block ;
  * varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  * exprStmt       →  expression ";" ;
  * printStmt      → "print" expression ";" ;
@@ -56,11 +58,12 @@ static Expr* call();
  */
 
 static Stmt* declaration();
+static Stmt* var_declaration();
+static Stmt* function_declaration(char* kind);
 static Stmt* statement();
 static Stmt* if_statement();
 static Stmt* expression_statement();
 static Stmt* print_statement();
-static Stmt* var_declaration();
 static Stmt* while_loop_statement();
 static Stmt* for_loop_statement();
 static Stmt* block();
@@ -243,7 +246,8 @@ static Expr* and() {
 }
 
 static Stmt* declaration() {
-  // Stmt* result = NULL;
+  if (match(1, FUN)) 
+    return function_declaration("function");
 
   if (match(1, VAR)) 
     return var_declaration();
@@ -254,6 +258,29 @@ static Stmt* declaration() {
   //   synchronize();
   //
   // return result;
+}
+
+static Stmt* function_declaration(char* kind) {
+  Token* name = expect(find_last_occurence(FUN), IDENTIFIER, "Expected name.");
+  expect(find_last_occurence(IDENTIFIER), RIGHT_PAREN, "Expected ) after name");
+
+  Array* parameters_array = array__init(sizeof(Token*));
+
+  if (!check(RIGHT_PAREN)) {
+    do {
+      if (parameters_array->curr_size >= 255) {
+        report(peek()->fileloc, "Can't have more than 255 parameters.");
+      }
+
+      array__append(parameters_array, expect(peek()->fileloc, IDENTIFIER, "Expected parameter name."));
+    } while(match(1, COMMA));
+  }
+
+  expect(peek()->fileloc, RIGHT_PAREN, "Expected ')' after parameters");
+
+  Stmt* body = block();
+  Token** parameters = (Token**) parameters_array->elements;
+  return stmt__function_init(name, parameters, parameters_array->curr_size, body);
 }
 
 static Expr* equality() {
@@ -383,7 +410,7 @@ static Expr* primary() {
     return literal__init(loxobject__init(LOX_BOOLEAN, previous()->lexeme, previous()->fileloc));
 
   if (match(1, NIL))  
-    return literal__init(loxobject__nil(previous()->fileloc));
+    return literal__init(loxobject__nil_init(previous()->fileloc));
 
   if (match(1, STRING))
     return literal__init(loxobject__init(LOX_STRING, previous()->literal->as.string, previous()->fileloc));
@@ -433,7 +460,7 @@ static Stmt* if_statement() {
   if (match(1, ELSE)) {
     else_branch = statement();
   }
-  return stmt_if_init(condition, then_branch, else_branch);
+  return stmt__if_init(condition, then_branch, else_branch);
 }
 
 static Stmt* for_loop_statement() {
@@ -466,21 +493,21 @@ static Stmt* for_loop_statement() {
   if (increment != NULL) {
     Stmt** statements = malloc(2 * sizeof(Stmt*));
     statements[0] = body;
-    statements[1] = stmt_expr_init(increment);
-    body = stmt_block_init(2, statements);
+    statements[1] = stmt__expr_init(increment);
+    body = stmt__block_init(2, statements);
   }
 
   if (condition == NULL) {
-    condition = literal__init(loxobject__boolean(true, previous()->fileloc));
+    condition = literal__init(loxobject__boolean_init(true, previous()->fileloc));
   }
 
-  body = stmt_while_loop_init(condition, body);
+  body = stmt__while_loop_init(condition, body);
 
   if (initializer != NULL) {
     Stmt** statements = malloc(2 * sizeof(Stmt*));
     statements[0] = initializer;
     statements[1] = body;
-    body = stmt_block_init(2, statements);
+    body = stmt__block_init(2, statements);
   }
   return body;
 }
@@ -491,13 +518,13 @@ static Stmt* while_loop_statement() {
   expect(condition->fileloc, RIGHT_PAREN, "Expected '(' after condition.");
   Stmt* body = statement();
 
-  return stmt_while_loop_init(condition, body);
+  return stmt__while_loop_init(condition, body);
 }
 
 static Stmt* expression_statement() {
   Expr* expr = expression();
   expect(expr->fileloc, SEMICOLON, "Expected ';' after value.");
-  return stmt_expr_init(expr);
+  return stmt__expr_init(expr);
 }
 
 static Stmt* block() {
@@ -509,13 +536,13 @@ static Stmt* block() {
 
   expect(previous()->fileloc, RIGHT_BRACE, "Expected '}' after block.");
   Stmt** statements = (Stmt**) stmts_array->elements;
-  return stmt_block_init(stmts_array->curr_size, statements);
+  return stmt__block_init(stmts_array->curr_size, statements);
 }
 
 static Stmt* print_statement() {
   Expr* value = expression();
   expect(find_last_occurence(PRINT), SEMICOLON, "Expected ';' after value.");
-  return stmt_print_init(value);
+  return stmt__print_init(value);
 }
 
 static Stmt* var_declaration() {
@@ -529,6 +556,6 @@ static Stmt* var_declaration() {
 
   expect(name->fileloc, SEMICOLON, "Expect ';' after variable declaration.");
 
-  return stmt_vardecl_init(name, initializer);
+  return stmt__vardecl_init(name, initializer);
 }
 

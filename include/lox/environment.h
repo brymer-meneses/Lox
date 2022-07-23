@@ -1,17 +1,9 @@
 #ifndef LOX_ENVIRONMENT_H
 #define LOX_ENVIRONMENT_H
 
-#include "lox/object.h"
-#include "lox/token.h"
 
-#include "tools/array.h"
-#include "tools/hashmap.h"
+#include "lox/core.h"
 
-typedef struct Environment {
-  Hashmap* values;
-  struct Environment* enclosing;
-  Array* children_environment_array;
-} Environment;
 
 Environment* environment__init(Environment* enclosing);
 

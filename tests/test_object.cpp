@@ -2,10 +2,10 @@
 
 extern "C" {
   #include "lox/token.h"
-  #include "lox/declarations.h"
+  #include "lox/core.h"
   #include "lox/object.h"
+  #include "lox/fileloc.h"
   #include "tools/utils.h"
-  #include "tools/fileloc.h"
   #include "string.h"
 }
 

@@ -10,7 +10,7 @@
 #include "lox/error.h"
 #include "lox/environment.h"
 #include "lox/scanner.h"
-#include "lox/declarations.h"
+#include "lox/core.h"
 #include "lox/token.h"
 #include "lox/expr.h"
 #include "lox/parser.h"
@@ -94,9 +94,9 @@ void lox__run_prompt() {
 
 void lox__free() {
   if (lox->source_code == NULL) return;
-  stmts_free(lox->interpreter->parser->num_stmts, lox->interpreter->parser->stmts);
-  tokens_free(lox->interpreter->scanner->tokens_array->curr_size, (Token**) lox->interpreter->scanner->tokens_array->elements);
-  environment__free(lox->interpreter->globals);
+  // stmts__free(lox->interpreter->parser->num_stmts, lox->interpreter->parser->stmts);
+  // tokens__free(lox->interpreter->scanner->tokens_array->curr_size, (Token**) lox->interpreter->scanner->tokens_array->elements);
+  // environment__free(lox->interpreter->globals);
 
   free(lox->interpreter->scanner->tokens_array);
   free(lox->interpreter->scanner);

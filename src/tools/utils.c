@@ -7,7 +7,6 @@
 #include "assert.h"
 
 #include "tools/utils.h"
-#include "tools/fileloc.h"
 #include "lox/scanner.h"
 #include "lox/lox.h"
 

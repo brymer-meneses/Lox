@@ -6,8 +6,8 @@
 
 #include "tools/termcolor.h"
 #include "tools/utils.h"
-#include "tools/fileloc.h"
 
+#include "lox/core.h"
 #include "lox/token.h"
 #include "lox/error.h"
 #include "lox/scanner.h"

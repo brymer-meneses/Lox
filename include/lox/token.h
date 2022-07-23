@@ -1,47 +1,18 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#include "tools/fileloc.h"
-#include "lox/object.h"
+#include "lox/core.h"
 #include "stdlib.h"
 #include "stdbool.h"
 
-typedef enum TokenType {
-  // Single-character tokens.
-  LEFT_PAREN,
-  RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
-  COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR, POW,
-
-  // One or two character tokens.
-  BANG, BANG_EQUAL,
-  EQUAL, EQUAL_EQUAL,
-  GREATER, GREATER_EQUAL,
-  LESS, LESS_EQUAL,
-
-  // Literals.
-  IDENTIFIER, STRING, NUMBER,
-
-  // Keywords.
-  AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
-  PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
-
-  SOURCE_END
-} TokenType;
-
-typedef struct Token {
-  TokenType type;
-  char* lexeme;
-  LoxObject* literal;
-  FileLoc* fileloc;
-} Token;
 
 
-void  token_print(Token* token);
-Token* token_init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fileloc);
-char* tokentype_to_string(TokenType type);
+void  token__print(Token* token);
+Token* token__init(TokenType type, char* lexeme, LoxObject* literal, FileLoc* fileloc);
+char* tokentype__to_string(TokenType type);
 
-char*  token_to_string(Token token);
-void token_free(Token* token);
-void tokens_free(size_t num_tokens, Token** tokens);
+char*  token__to_string(Token token);
+void token__free(Token* token);
+void tokens__free(size_t num_tokens, Token** tokens);
 
 #endif

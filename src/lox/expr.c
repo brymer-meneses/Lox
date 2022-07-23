@@ -4,9 +4,10 @@
 #include "stdlib.h"
 
 #include "lox/expr.h"
-#include "lox/declarations.h"
+#include "lox/core.h"
 #include "lox/stmt.h"
-#include "tools/fileloc.h"
+#include "lox/fileloc.h"
+#include "lox/object.h"
 
 Expr* binary__init(Expr* left, Token* op, Expr* right) {
   assert(left != NULL || right != NULL);

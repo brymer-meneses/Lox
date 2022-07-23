@@ -1,19 +1,12 @@
-
-#include "lox/declarations.h"
+#include "lox/core.h"
 #include "lox/environment.h"
-#include "lox/lox.h"
-#include "lox/object.h"
 #include "lox/parser.h"
 #include "lox/scanner.h"
-#include "lox/token.h"
-#include "lox/expr.h"
-#include "lox/interpreter.h"
-#include "lox/stmt.h"
+#include "lox/object.h"
 #include "lox/error.h"
+#include "lox/lox.h"
+#include "lox/interpreter.h"
 
-#include "tools/array.h"
-#include "tools/fileloc.h"
-#include "tools/hashmap.h"
 #include "tools/utils.h"
 
 #include "string.h"
@@ -49,6 +42,10 @@ void interpreter__run(const char* source) {
 
 void interpreter__free() {
 
+}
+
+Environment* interpreter__get_globals() {
+  return interpreter->globals;
 }
 
 void interpreter__execute(Environment* env, Stmt* stmt) {
@@ -95,23 +92,23 @@ static LoxObject* evaluate_expression(Environment* env, Expr *expr) {
       switch (op->type) {
         case MINUS:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__number(left->as.number - right->as.number, fl);
+          result = loxobject__number_init(left->as.number - right->as.number, fl);
           break;
         case SLASH:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__number(left->as.number / right->as.number, fl);
+          result = loxobject__number_init(left->as.number / right->as.number, fl);
           break;
         case STAR:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__number(left->as.number * right->as.number, fl);
+          result = loxobject__number_init(left->as.number * right->as.number, fl);
           break;
         case PLUS: {
             if (left->type == LOX_STRING  && right->type == LOX_STRING) {
-              result = loxobject__string(str_concat(left->as.string, right->as.string), fl);
+              result = loxobject__string_init(str_concat(left->as.string, right->as.string), fl);
             }
 
             if (left->type == LOX_NUMBER  && right->type == LOX_NUMBER) {
-              result = loxobject__number(left->as.number + right->as.number, fl);
+              result = loxobject__number_init(left->as.number + right->as.number, fl);
             }
             if (left->type != right->type) 
               report(fileloc__range(3, left->fl, op->fileloc, right->fl), "The operation + is invalid for types: %s and %s", loxtype__to_string(left->type), loxtype__to_string(right->type));
@@ -119,29 +116,29 @@ static LoxObject* evaluate_expression(Environment* env, Expr *expr) {
           break;
         case POW:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__number(pow(left->as.number, right->as.number), fl);
+          result = loxobject__number_init(pow(left->as.number, right->as.number), fl);
           break;
         case GREATER:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__boolean(left->as.number > right->as.number, fl);
+          result = loxobject__boolean_init(left->as.number > right->as.number, fl);
           break;
         case GREATER_EQUAL:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__boolean(left->as.number >= right->as.number, fl);
+          result = loxobject__boolean_init(left->as.number >= right->as.number, fl);
           break;
         case LESS:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__boolean(left->as.number < right->as.number, fl);
+          result = loxobject__boolean_init(left->as.number < right->as.number, fl);
           break;
         case LESS_EQUAL:
           check_same_operands(left->type, right->type, op->fileloc);
-          result = loxobject__boolean(left->as.number <= right->as.number, fl);
+          result = loxobject__boolean_init(left->as.number <= right->as.number, fl);
           break;
         case BANG_EQUAL:
-          result = loxobject__boolean(!loxobject__isequal(left, right), fl);
+          result = loxobject__boolean_init(!loxobject__isequal(left, right), fl);
           break;
         case EQUAL_EQUAL:
-          result = loxobject__boolean(loxobject__isequal(left, right), fl);
+          result = loxobject__boolean_init(loxobject__isequal(left, right), fl);
           break;
         default:
           break;
@@ -155,10 +152,10 @@ static LoxObject* evaluate_expression(Environment* env, Expr *expr) {
 
       switch (expr->as.unary.op->type) {
         case MINUS:
-           result = loxobject__number(-right->as.number, right->fl);
+           result = loxobject__number_init(-right->as.number, right->fl);
            break;
         case BANG:
-           result = loxobject__boolean(!right->as.boolean, right->fl);
+           result = loxobject__boolean_init(!right->as.boolean, right->fl);
            break;
         default:
            break;

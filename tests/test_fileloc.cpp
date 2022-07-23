@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
 extern "C" {
- #include "tools/fileloc.h"
+ #include "lox/fileloc.h"
 }
 
 TEST(TestUtils, FileLocRange) {

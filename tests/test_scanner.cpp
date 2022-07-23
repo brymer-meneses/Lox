@@ -7,8 +7,8 @@ extern "C" {
   #include "lox/scanner.h"
   #include "lox/token.h"
   #include "lox/lox.h"
+  #include "lox/fileloc.h"
 
-  #include "tools/fileloc.h"
   #include "tools/utils.h"
 }
 

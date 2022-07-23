@@ -11,7 +11,7 @@ extern "C" {
 TEST(TestEnvionment, Define) {
 
   Environment* env = environment__init(NULL);
-  environment__define(env, (char*) "test", loxobject__number(5, NULL));
+  environment__define(env, (char*) "test", loxobject__number_init(5, NULL));
 
   void* retval = hashmap__retrieve(env->values, (char*) "test");
   LoxObject* obj = (LoxObject*) retval;

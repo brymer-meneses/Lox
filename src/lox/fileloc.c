@@ -1,8 +1,9 @@
-#include "tools/fileloc.h"
 #include "tools/utils.h"
 #include "stdarg.h"
 #include "limits.h"
 #include "assert.h"
+
+#include "lox/fileloc.h"
 
 FileLoc* fileloc__init(const size_t line, const size_t start, const size_t end) {
   FileLoc* fl = malloc(1 * sizeof(FileLoc));

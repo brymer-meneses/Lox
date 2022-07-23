@@ -23,5 +23,6 @@ void hashmap__insert(Hashmap* hmap, char* key, void* value);
 void* hashmap__retrieve(Hashmap* hmap, char* key);
 void hashmap__print(Hashmap* hmap);
 
+unsigned long hash(const char *str);
 #endif // !HASH_MAP_H 
 

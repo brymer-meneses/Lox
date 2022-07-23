@@ -1,11 +1,7 @@
 #ifndef LOX_H
 #define LOX_H
 
-#include "declarations.h"
-#include "lox/interpreter.h"
-#include "scanner.h"
-#include "parser.h"
-#include "environment.h"
+#include "lox/core.h"
   
 
 typedef struct Lox {

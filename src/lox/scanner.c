@@ -7,19 +7,16 @@
 
 #include "tools/hashmap.h"
 #include "tools/utils.h"
-#include "tools/fileloc.h"
-#include "tools/hashmap.h"
 #include "tools/array.h"
 
+#include "lox/fileloc.h"
 #include "lox/error.h"
 #include "lox/object.h"
 #include "lox/token.h"
 #include "lox/scanner.h"
-#include "lox/declarations.h"
+#include "lox/core.h"
 #include "lox/lox.h"
 
-static TokenType keywords_match(char* text);
-static void keywords_set(char* text, TokenType type);
 
 static void add_token(TokenType type, LoxObject* literal);
 static char peek();
@@ -33,7 +30,33 @@ static void scan_number();
 static void scan_identifier();
 
 static Scanner* scanner;
-static Hashmap* keywords;
+static TokenType keywords_match(char* text);
+
+typedef struct Keyword {
+  char* lexeme;
+  TokenType type;
+} Keyword;
+
+static Keyword keywords[] = {
+   {"and",    AND   },
+   {"class",  CLASS },
+   {"else",   ELSE  },
+   {"false",  FALSE },
+   {"for",    FOR   },
+   {"fun",    FUN   },
+   {"if",     IF    },
+   {"nil",    NIL   },
+   {"or",     OR    },
+   {"print",  PRINT },
+   {"return", RETURN},
+   {"super",  SUPER },
+   {"this",   THIS  },
+   {"true",   TRUE  },
+   {"var",    VAR   },
+   {"while",  WHILE },
+};
+
+static const unsigned int keywords_length = sizeof(keywords) / sizeof(keywords[0]);
 
 
 Scanner* scanner__init(char* source) {
@@ -44,26 +67,6 @@ Scanner* scanner__init(char* source) {
   scanner->source=source;
   scanner->last_line = 0;
   scanner->tokens_array = array__init(sizeof(Token*));
-
-  keywords = hashmap__init();
-  keywords_set("and",   AND);
-  keywords_set("class", CLASS);
-  keywords_set("and",   AND);
-  keywords_set("class", CLASS);
-  keywords_set("else",  ELSE);
-  keywords_set("false", FALSE);
-  keywords_set("for",   FOR);
-  keywords_set("fun",   FUN);
-  keywords_set("if",    IF);
-  keywords_set("nil",   NIL);
-  keywords_set("or",    OR);
-  keywords_set("print", PRINT);
-  keywords_set("return",RETURN);
-  keywords_set("super", SUPER);
-  keywords_set("this",  THIS);
-  keywords_set("true",  TRUE);
-  keywords_set("var",   VAR);
-  keywords_set("while", WHILE);
   return scanner;
 }
 
@@ -189,7 +192,7 @@ static void scan_token() {
 static void add_token(TokenType type, LoxObject* literal) {
   char* lexeme = substring(scanner->source, scanner->start, scanner->current-1); // current points to the next "char" so we subtract by 1
   FileLoc* fl  =  compute_relative_position();
-  Token* token = token_init(type, lexeme, literal, fl);
+  Token* token = token__init(type, lexeme, literal, fl);
 
   array__append(scanner->tokens_array, token);
 }
@@ -278,19 +281,10 @@ static bool match(char expected) {
 
 
 static TokenType keywords_match(char* text) {
-  void* retval = hashmap__retrieve(keywords, text);
-  if (retval == NULL) return IDENTIFIER;
-
-  TokenType token =  *(TokenType* ) retval;
-  return token;
+  for (unsigned int i=0; i <keywords_length; i++) {
+    if (strcmp(text, keywords[i].lexeme) == 0) {
+      return keywords[i].type;
+    }
+  }
+  return IDENTIFIER;
 }
-
-static void keywords_set(char* text, TokenType type) {
-  TokenType* type_ptr = malloc(1 * sizeof(TokenType));
-  *type_ptr = type;
-
-  hashmap__insert(keywords, text, type_ptr);
-}
-
-
-
