@@ -65,8 +65,8 @@ void lox__run_prompt() {
     printf(">>> ");
     fgets(line, sizeof(line) , stdin);
 
-    scanner__init(line);
-    Token** tokens = scanner__scan();
+    Scanner* scanner = scanner__init(line);
+    Token** tokens = scanner__scan(scanner);
     Parser* parser = parser__init(tokens);
 
     parser__parse();
@@ -82,8 +82,8 @@ void lox__run_prompt() {
       strcat(line, additional_line);
 
 
-      scanner__init(line);
-      tokens = scanner__scan();
+      Scanner* scanner = scanner__init(line);
+      tokens = scanner__scan(scanner);
       parser = parser__init(tokens);
       parser__parse();
     }

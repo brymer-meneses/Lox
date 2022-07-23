@@ -20,7 +20,7 @@ TEST(TestScanner, ScanSingleChar) {
   };
 
   Scanner* scanner = scanner__init(input);
-  Token** tokens = scanner__scan();
+  Token** tokens = scanner__scan(scanner);
 
   for (unsigned int i=0; i<scanner->tokens_array->curr_size; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
@@ -39,7 +39,7 @@ TEST(TestScanner, ScanDoubleChar) {
   TokenType correct_types[] = {EQUAL_EQUAL, BANG_EQUAL, GREATER_EQUAL, LESS_EQUAL, SOURCE_END};
 
   Scanner* scanner = scanner__init(input);
-  Token** tokens = scanner__scan();
+  Token** tokens = scanner__scan(scanner);
 
   for (unsigned int i=0; i<scanner->tokens_array->curr_size; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
@@ -54,7 +54,7 @@ TEST(TestScanner, ScanKeywords) {
   TokenType correct_types[] = {PRINT, VAR, CLASS,  RETURN, IDENTIFIER, TRUE, FALSE};
 
   Scanner* scanner = scanner__init(input);
-  Token** tokens = scanner__scan();
+  Token** tokens = scanner__scan(scanner);
   char** lexemes = str_split(input, " ");
 
   for (unsigned int i=0; i<scanner->tokens_array->curr_size-1; i++) {
@@ -72,7 +72,7 @@ TEST(TestScanner, ScanVariableNames) {
   char** correct_literals = str_split(input, " ");
 
   Scanner* scanner = scanner__init(input);
-  Token** tokens = scanner__scan();
+  Token** tokens = scanner__scan(scanner);
 
   for (unsigned int i=0; i<scanner->tokens_array->curr_size-1; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);
@@ -85,8 +85,8 @@ TEST(TestScanner, ScanString) {
   char input[] = "\"hello world\"";
   char* correct = substring(input, 1, 11);
 
-  scanner__init(input);
-  Token** tokens = scanner__scan();
+  Scanner* scanner = scanner__init(input);
+  Token** tokens = scanner__scan(scanner);
 
   EXPECT_STREQ(tokens[0]->literal->as.string, correct);
 }
@@ -96,7 +96,7 @@ TEST(TestScanner, ScanVariableDeclaration) {
   TokenType correct_types[] = {VAR, IDENTIFIER, EQUAL, NUMBER, SEMICOLON, SOURCE_END};
 
   Scanner* scanner = scanner__init(input);
-  Token** tokens = scanner__scan();
+  Token** tokens = scanner__scan(scanner);
 
   for (unsigned int i=0; i<scanner->tokens_array->curr_size-1; i++) {
     EXPECT_EQ(correct_types[i], tokens[i]->type);

@@ -12,8 +12,8 @@ TEST(TestParser, VariableDeclaration) {
 
   char input[] = "var name = 5;";
 
-  scanner__init(input);
-  Token** tokens = scanner__scan();
+  Scanner* s = scanner__init(input);
+  Token** tokens = scanner__scan(s);
 
   parser__init(tokens);
   Stmt** statements = parser__parse();

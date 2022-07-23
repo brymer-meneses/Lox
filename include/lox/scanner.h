@@ -6,6 +6,6 @@
 #include "lox/core.h"
 
 Scanner* scanner__init(char *source);
-Token** scanner__scan();
+Token** scanner__scan(Scanner* s);
 
 #endif

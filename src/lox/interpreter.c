@@ -6,6 +6,7 @@
 #include "lox/error.h"
 #include "lox/lox.h"
 #include "lox/interpreter.h"
+#include "lox/fileloc.h"
 
 #include "tools/utils.h"
 
@@ -30,7 +31,7 @@ Interpreter* interpreter__init() {
 
 void interpreter__run(const char* source) {
   Scanner* scanner = scanner__init((char*) source);
-  Token** tokens = scanner__scan();
+  Token** tokens = scanner__scan(scanner);
   Parser* parser = parser__init(tokens);
   Stmt** statements = parser__parse();
 
