@@ -57,12 +57,16 @@ fn it_should_recognize_comments() {
 
 #[test]
 fn it_should_scan_string() {
-    let mut scanner = Scanner::new(" \"The quick brown fox jumped over the lazy cat.\" ");
+    let mut scanner = Scanner::new(" \"The quick brown fox jumped over the lazy cat.\" \"If you're reading this have a good day!\" ");
     let tokens = scanner.scan().unwrap();
 
     assert_eq!(tokens[0].token_type, TokenType::String);
     assert_eq!(tokens[0].literal, Some(LoxObject::String("The quick brown fox jumped over the lazy cat.".to_string())));
     assert_eq!(tokens[0].lexeme, "\"The quick brown fox jumped over the lazy cat.\"");
+
+    assert_eq!(tokens[1].token_type, TokenType::String);
+    assert_eq!(tokens[1].literal, Some(LoxObject::String("If you're reading this have a good day!".to_string())));
+    assert_eq!(tokens[1].lexeme, "\"If you're reading this have a good day!\"");
 }
 
 #[test]
