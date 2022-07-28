@@ -99,3 +99,12 @@ fn it_should_scan_keywords() {
         assert_eq!(token.token_type, correct_types[i]);
     };
 }
+
+#[test]
+fn it_should_scan_numbers() {
+    let mut scanner = Scanner::new("3.1415926536 2.7182818284");
+    let tokens = scanner.scan().unwrap();
+
+    assert_eq!(tokens[0].literal, Some(LoxObject::Number(3.1415926536)));
+    assert_eq!(tokens[1].literal, Some(LoxObject::Number(2.7182818284)));
+}
