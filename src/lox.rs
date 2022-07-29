@@ -3,6 +3,7 @@ use std::io::Write;
 use crate::error::LoxError;
 use crate::parser::Parser;
 use crate::scanner::Scanner;
+// use crate::token::TokenType;
 
 pub fn run_prompt() {
     loop {
@@ -40,6 +41,11 @@ pub fn run(is_on_repl: bool, source_code: &str) {
             return;
         }
     };
+
+    // for token in tokens.iter() {
+    //     if token.kind == TokenType::EOF {continue};
+    //     println!("{:#?}", token);
+    // }
 
     let mut parser = Parser::new(tokens);
     let statements = match parser.parse() {
