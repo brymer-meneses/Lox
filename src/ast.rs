@@ -54,3 +54,15 @@ impl Expr {
         }
     }
 }
+
+pub trait StmtVisitor<T> {
+    fn visit_block_statement(&self) -> T;
+    fn visit_expression_statement(&self) -> T;
+}
+
+pub trait ExpressionVisitor<T> {
+    fn visit_grouping_expression(&self) -> T;
+    fn visit_binary_expression(&self) -> T;
+    fn visit_unary_expression(&self) -> T;
+    fn visit_literal_expression(&self) -> T;
+}

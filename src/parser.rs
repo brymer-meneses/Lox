@@ -1,7 +1,10 @@
+use std::usize;
+
+use crate::ast::Expr;
+use crate::ast::Stmt;
 use crate::error::ParserError;
 use crate::object::LoxObject;
-use crate::syntax::Expr;
-use crate::syntax::Stmt;
+use crate::source_location::SourceLocation;
 use crate::token::{Token, TokenType};
 
 pub struct Parser<'a> {
@@ -62,7 +65,7 @@ impl<'a> Parser<'a> {
             let right = self.parse_comparison()?;
 
             expr = Expr::Binary {
-                location: expr.location(),
+                location: expr.location() + operator.location + right.location(),
                 left: Box::new(expr),
                 operator: operator.clone(),
                 right: Box::new(right),
@@ -85,7 +88,7 @@ impl<'a> Parser<'a> {
             let right = self.parse_term()?;
 
             expr = Expr::Binary {
-                location: self.previous().location,
+                location: expr.location() + operator.location + right.location(),
                 left: Box::new(expr),
                 operator: operator.clone(),
                 right: Box::new(right),
@@ -103,7 +106,7 @@ impl<'a> Parser<'a> {
             let right = self.parse_factor()?;
 
             expr = Expr::Binary {
-                location: self.previous().location,
+                location: expr.location() + operator.location + right.location(),
                 left: Box::new(expr),
                 operator: operator.clone(),
                 right: Box::new(right),
@@ -120,7 +123,7 @@ impl<'a> Parser<'a> {
             let right = self.parse_unary()?;
 
             expr = Expr::Binary {
-                location: self.previous().location,
+                location: expr.location() + operator.location + right.location(),
                 left: Box::new(expr),
                 operator: operator.clone(),
                 right: Box::new(right),
@@ -135,7 +138,7 @@ impl<'a> Parser<'a> {
             let right = self.parse_unary()?;
 
             return Ok(Expr::Unary {
-                location: self.peek().location,
+                location: operator.location + right.location(),
                 operator: operator.clone(),
                 right: Box::new(right),
             });
@@ -181,7 +184,9 @@ impl<'a> Parser<'a> {
             )?;
 
             return Ok(Expr::Grouping {
-                location: self.previous().location,
+                location: self.find_location(TokenType::LeftParen)
+                    + expr.location()
+                    + self.find_location(TokenType::RightParen),
                 expression: Box::new(expr),
             });
         }
@@ -240,6 +245,15 @@ impl<'a> Parser<'a> {
 
     fn is_at_end(&self) -> bool {
         self.peek().kind == TokenType::EOF
+    }
+
+    fn find_location(&self, expected: TokenType) -> SourceLocation {
+        for i in (0..self.current).rev() {
+            if self.tokens[i].kind == expected {
+                return self.tokens[i].location;
+            }
+        }
+        panic!("Cannot find last occurence of {:?}", expected);
     }
 }
 

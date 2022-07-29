@@ -86,10 +86,11 @@ impl Scanner {
                 }
             }
             ' ' | '\t' | '\r' => {}
-            '\n' => { 
+            '\n' => {
                 if !self.is_at_end() {
-                  self.line += 1 };
-                },
+                    self.line += 1
+                };
+            }
             '"' => self.scan_string()?,
             _ => {
                 if c.is_digit(10) {
@@ -204,15 +205,13 @@ impl Scanner {
     }
 
     fn add_token(&mut self, kind: TokenType, literal: Option<LoxObject>) {
-
         let lexeme = self
             .source_code
             .get(self.start..self.current)
             .unwrap_or("\0")
             .to_string();
 
-        let location =
-            SourceLocation::new_single_line(self.line, self.start, self.current - 1);
+        let location = SourceLocation::new_single_line(self.line, self.start, self.current - 1);
 
         self.tokens
             .push(Token::new(kind, location, lexeme, literal));

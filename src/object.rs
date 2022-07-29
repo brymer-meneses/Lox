@@ -5,4 +5,3 @@ pub enum LoxObject {
     Boolean(bool),
     Nil,
 }
-

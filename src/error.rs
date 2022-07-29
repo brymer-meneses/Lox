@@ -20,6 +20,12 @@ pub enum ParserError {
     UnexpectedToken(SourceLocation, String),
 }
 
+#[derive(PartialEq, Debug)]
+pub enum InterpreterError {
+    InvalidBinaryOperation(SourceLocation, String),
+    InvalidUnaryOperation(SourceLocation, String),
+}
+
 impl LoxError for ScannerError {
     fn report(&self, is_on_repl: bool, source_code: &str) {
         let location = match self {

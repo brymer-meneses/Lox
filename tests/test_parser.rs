@@ -1,7 +1,7 @@
+use lox::ast::{Expr, Stmt};
 use lox::object::LoxObject;
 use lox::parser::Parser;
 use lox::source_location::SourceLocation;
-use lox::syntax::{Expr, Stmt};
 use lox::token::Token;
 use lox::token::TokenType;
 

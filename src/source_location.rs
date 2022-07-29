@@ -1,3 +1,6 @@
+use std::cmp::{max, min};
+use std::ops;
+
 #[derive(PartialEq, Debug, Copy, Clone)]
 pub struct SourceLocation {
     // start and end position of lines
@@ -24,6 +27,19 @@ impl SourceLocation {
             line_start: line,
             start,
             end,
+        }
+    }
+}
+
+impl ops::Add<SourceLocation> for SourceLocation {
+    type Output = SourceLocation;
+
+    fn add(self, rhs: SourceLocation) -> SourceLocation {
+        SourceLocation {
+            line_start: min(self.line_start, rhs.line_start),
+            line_end: max(self.line_end, rhs.line_end),
+            start: min(self.start, rhs.start),
+            end: max(self.end, rhs.end),
         }
     }
 }
