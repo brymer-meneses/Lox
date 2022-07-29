@@ -69,12 +69,12 @@ impl Token {
         lexeme: String,
         literal: Option<LoxObject>,
     ) -> Self {
-        return Token {
+        Token {
             kind,
             location,
             lexeme,
             literal,
-        };
+        }
     }
 
     pub fn keyword(keyword: &str) -> TokenType {

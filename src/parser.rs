@@ -40,7 +40,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_declaration_statement(&mut self) -> ParserResult<Stmt> {
-        return self.parse_expression_statement();
+        self.parse_expression_statement()
     }
 }
 
@@ -202,14 +202,14 @@ impl<'a> Parser<'a> {
                 return true;
             };
         }
-        return false;
+        false
     }
 
     fn expect(&mut self, expected: TokenType, error: ParserError) -> ParserResult<&'a Token> {
         if self.check(&expected) {
             return Ok(self.advance());
         };
-        return Err(error);
+        Err(error)
     }
 
     fn check(&self, expected: &TokenType) -> bool {
@@ -224,18 +224,18 @@ impl<'a> Parser<'a> {
         if !self.is_at_end() {
             self.current += 1;
         }
-        return self.previous();
+        self.previous()
     }
 
     fn peek(&self) -> &'a Token {
-        return &self.tokens[self.current];
+        &self.tokens[self.current]
     }
 
     fn previous(&self) -> &'a Token {
         if self.current == 0 {
             return &self.tokens[0];
         }
-        return &self.tokens[self.current - 1];
+        &self.tokens[self.current - 1]
     }
 
     fn is_at_end(&self) -> bool {

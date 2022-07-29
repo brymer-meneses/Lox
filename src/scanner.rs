@@ -17,13 +17,13 @@ type ScannerResult<T> = Result<T, ScannerError>;
 
 impl Scanner {
     pub fn new(source_code: &str) -> Self {
-        return Scanner {
+        Scanner {
             source_code: source_code.to_string(),
             current: 0,
             start: 0,
             line: 1,
             tokens: Vec::new(),
-        };
+        }
     }
 
     pub fn scan(&mut self) -> ScannerResult<&Vec<Token>> {
@@ -33,7 +33,7 @@ impl Scanner {
         }
 
         self.add_token(TokenType::EOF, None);
-        return Ok(&self.tokens);
+        Ok(&self.tokens)
     }
 
     fn scan_token(&mut self) -> ScannerResult<()> {
@@ -215,7 +215,7 @@ impl Scanner {
     }
 
     fn is_at_end(&self) -> bool {
-        return self.current == self.source_code.chars().count();
+        self.current == self.source_code.chars().count()
     }
 
     fn match_char(&mut self, expected: char) -> bool {
@@ -229,6 +229,6 @@ impl Scanner {
             return false;
         }
         self.current += 1;
-        return true;
+        true
     }
 }

@@ -36,7 +36,7 @@ impl LoxError for ScannerError {
                 location
             }
         };
-        highlight_location(is_on_repl, source_code, &location)
+        highlight_location(is_on_repl, source_code, location)
     }
 }
 
@@ -45,11 +45,11 @@ impl LoxError for ParserError {
         match self {
             ParserError::ExpectedToken(location, kind) => {
                 eprintln!("{}: Expected token {:?}", "error".red(), kind);
-                highlight_location(is_on_repl, source_code, &location)
+                highlight_location(is_on_repl, source_code, location)
             }
             ParserError::UnexpectedToken(location, lexeme) => {
                 eprintln!("{}: Unexpected token {:?}", "error".red(), lexeme);
-                highlight_location(is_on_repl, source_code, &location)
+                highlight_location(is_on_repl, source_code, location)
             }
             _ => {}
         }

@@ -7,5 +7,3 @@ pub mod source_location;
 pub mod syntax;
 pub mod token;
 
-// pub use lox;;
-// pub use scanner;
