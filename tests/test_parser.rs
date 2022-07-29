@@ -13,7 +13,7 @@ fn it_should_parse_primary() {
             TokenType::Number,
             location,
             "5.55".to_string(),
-            Some(LoxObject::Number(5.55)),
+            Some(LoxObject::Number{ location, value: 5.55 } ),
         ),
         Token::new(TokenType::EOF, location, "".to_string(), None),
     ];
@@ -27,7 +27,7 @@ fn it_should_parse_primary() {
 
     let expected = Expr::Literal {
         location,
-        literal: LoxObject::Number(5.55),
+        literal: LoxObject::Number {location, value: 5.55},
     };
     assert_eq!(expr, &expected);
 }
@@ -35,7 +35,7 @@ fn it_should_parse_primary() {
 #[test]
 fn it_should_parse_grouping() {
     let location = SourceLocation::new_single_line(1, 0, 0);
-    let literal = LoxObject::String("The quick brown fox jumped over the lazy cat.".to_string());
+    let literal = LoxObject::String{ location, value:"The quick brown fox jumped over the lazy cat.".to_string()};
     let tokens = vec![
         Token::new(TokenType::LeftParen, location, "(".to_string(), None),
         Token::new(

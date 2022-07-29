@@ -121,14 +121,19 @@ impl Scanner {
             }
         }
 
-        let number: f64 = self
+        let value: f64 = self
             .source_code
             .get(self.start..self.current)
             .unwrap()
             .parse()
             .unwrap();
+        let location = SourceLocation::new_single_line(
+                    self.line,
+                    self.start,
+                    self.current,
+                );
 
-        self.add_token(TokenType::Number, Some(LoxObject::Number(number)));
+        self.add_token(TokenType::Number, Some(LoxObject::Number{location, value}));
         Ok(())
     }
 
@@ -154,16 +159,15 @@ impl Scanner {
         }
 
         let line_end = self.line;
-
-        if self.is_at_end() {
-            return Err(ScannerError::UnterminatedString(
-                SourceLocation::new_multiple_line(
+        let location = SourceLocation::new_multiple_line(
                     line_start,
                     line_end,
                     self.start,
-                    self.current - 1,
-                ),
-            ));
+                    self.current,
+                );
+
+        if self.is_at_end() {
+            return Err(ScannerError::UnterminatedString(location));
         }
 
         // consume last ending "
@@ -175,7 +179,7 @@ impl Scanner {
             .unwrap()
             .to_string();
 
-        self.add_token(TokenType::String, Some(LoxObject::String(string)));
+        self.add_token(TokenType::String, Some(LoxObject::String{ location, value: string}));
         Ok(())
     }
 

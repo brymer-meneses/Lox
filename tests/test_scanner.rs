@@ -1,6 +1,7 @@
 use lox::object::LoxObject;
 use lox::scanner::Scanner;
 use lox::token::TokenType;
+use lox::source_location::SourceLocation;
 
 #[test]
 fn it_should_scan_single_char_tokens() {
@@ -57,15 +58,18 @@ fn it_should_recognize_comments() {
 
 #[test]
 fn it_should_scan_string() {
+    let location1 = SourceLocation::new_single_line(1, 1, 47);
+    let location2 = SourceLocation::new_single_line(1, 49, 89);
     let mut scanner = Scanner::new(" \"The quick brown fox jumped over the lazy cat.\" \"If you're reading this have a good day!\" ");
     let tokens = scanner.scan().unwrap();
 
     assert_eq!(tokens[0].kind, TokenType::String);
     assert_eq!(
         tokens[0].literal,
-        Some(LoxObject::String(
-            "The quick brown fox jumped over the lazy cat.".to_string()
-        ))
+        Some(LoxObject::String{
+            location: location1,
+            value: "The quick brown fox jumped over the lazy cat.".to_string()
+        })
     );
     assert_eq!(
         tokens[0].lexeme,
@@ -75,9 +79,10 @@ fn it_should_scan_string() {
     assert_eq!(tokens[1].kind, TokenType::String);
     assert_eq!(
         tokens[1].literal,
-        Some(LoxObject::String(
-            "If you're reading this have a good day!".to_string()
-        ))
+        Some(LoxObject::String{
+            location: location2,
+            value: "If you're reading this have a good day!".to_string()
+        })
     );
     assert_eq!(
         tokens[1].lexeme,
@@ -121,8 +126,11 @@ fn it_should_scan_keywords() {
 #[test]
 fn it_should_scan_numbers() {
     let mut scanner = Scanner::new("3.1415926536 2.7182818284");
+    let location1 = SourceLocation::new_single_line(1, 0, 12);
+    let location2 = SourceLocation::new_single_line(1, 13, 25);
+
     let tokens = scanner.scan().unwrap();
 
-    assert_eq!(tokens[0].literal, Some(LoxObject::Number(3.1415926536)));
-    assert_eq!(tokens[1].literal, Some(LoxObject::Number(2.7182818284)));
+    assert_eq!(tokens[0].literal, Some(LoxObject::Number{location: location1, value: 3.1415926536}));
+    assert_eq!(tokens[1].literal, Some(LoxObject::Number{location: location2, value: 2.7182818284}));
 }

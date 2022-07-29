@@ -1,6 +1,7 @@
 use std::io::Write;
 
 use crate::error::LoxError;
+use crate::interpreter::Interpreter;
 use crate::parser::Parser;
 use crate::scanner::Scanner;
 // use crate::token::TokenType;
@@ -56,7 +57,11 @@ pub fn run(is_on_repl: bool, source_code: &str) {
         }
     };
 
-    for statement in statements.iter() {
-        println!("{:#?}", statement);
-    }
+    let interpreter = Interpreter::new();
+    interpreter.interpret(statements).unwrap();
+
+    // for statement in statements.iter() {
+    //     println!("{:#?}", statement);
+    // }
+
 }

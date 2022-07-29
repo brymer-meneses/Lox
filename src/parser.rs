@@ -26,7 +26,7 @@ impl<'a> Parser<'a> {
     }
     pub fn parse(&mut self) -> ParserResult<&Vec<Stmt>> {
         while !self.is_at_end() {
-            let statement = self.parse_declaration_statement()?;
+            let statement = self.parse_declaration()?;
             self.statements.push(statement);
         }
 
@@ -35,6 +35,15 @@ impl<'a> Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
+    fn parse_statement(&mut self) -> ParserResult<Stmt> {
+
+        if self.match_token(&[TokenType::Print]) {
+            return self.parse_print_statement()
+        }
+
+        self.parse_expression_statement()
+    }
+
     fn parse_expression_statement(&mut self) -> ParserResult<Stmt> {
         Ok(Stmt::Expression {
             location: self.peek().location,
@@ -42,8 +51,16 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_declaration_statement(&mut self) -> ParserResult<Stmt> {
-        self.parse_expression_statement()
+    fn parse_print_statement(&mut self) -> ParserResult<Stmt> {
+        let expression = self.parse_expression()?;
+        Ok(Stmt::Print {
+            location: self.find_location(TokenType::Print) + expression.location(),
+            expression
+        })
+    }
+
+    fn parse_declaration(&mut self) -> ParserResult<Stmt> {
+        self.parse_statement()
     }
 }
 
@@ -149,29 +166,33 @@ impl<'a> Parser<'a> {
 
     fn parse_primary(&mut self) -> ParserResult<Expr> {
         if self.match_token(&[TokenType::False]) {
+            let location = self.previous().location;
             return Ok(Expr::Literal {
-                location: self.previous().location,
-                literal: LoxObject::Boolean(false),
+                location,
+                literal: LoxObject::Boolean { location, value: false },
             });
         }
 
         if self.match_token(&[TokenType::True]) {
+            let location = self.previous().location;
             return Ok(Expr::Literal {
-                location: self.previous().location,
-                literal: LoxObject::Boolean(true),
+                location,
+                literal: LoxObject::Boolean { location, value: true },
             });
         }
 
         if self.match_token(&[TokenType::Nil]) {
+            let location = self.previous().location;
             return Ok(Expr::Literal {
-                location: self.previous().location,
-                literal: LoxObject::Nil,
+                location,
+                literal: LoxObject::Nil { location },
             });
         }
 
         if self.match_token(&[TokenType::String, TokenType::Number]) {
+            let location = self.previous().location;
             return Ok(Expr::Literal {
-                location: self.previous().location,
+                location,
                 literal: self.previous().literal.as_ref().unwrap().clone(),
             });
         }
