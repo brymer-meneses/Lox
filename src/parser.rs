@@ -1,9 +1,8 @@
-
+use crate::error::ParserError;
 use crate::object::LoxObject;
 use crate::syntax::Expr;
 use crate::syntax::Stmt;
 use crate::token::{Token, TokenType};
-use crate::error::ParserError;
 
 pub struct Parser<'a> {
     current: usize,
@@ -34,7 +33,10 @@ impl<'a> Parser<'a> {
 
 impl<'a> Parser<'a> {
     fn parse_expression_statement(&mut self) -> ParserResult<Stmt> {
-        Ok(Stmt::Expression(Box::new(self.parse_expression()?)))
+        Ok(Stmt::Expression {
+            location: self.peek().location,
+            expression: self.parse_expression()?,
+        })
     }
 
     fn parse_declaration_statement(&mut self) -> ParserResult<Stmt> {
@@ -55,12 +57,16 @@ impl<'a> Parser<'a> {
     fn parse_equality(&mut self) -> ParserResult<Expr> {
         let mut expr = self.parse_comparison()?;
 
-
         while self.match_token(&[TokenType::BangEqual, TokenType::EqualEqual]) {
             let operator = self.previous();
             let right = self.parse_comparison()?;
 
-            expr = Expr::Bimary(Box::new(expr), operator.clone(), Box::new(right));
+            expr = Expr::Binary {
+                location: expr.location(),
+                left: Box::new(expr),
+                operator: operator.clone(),
+                right: Box::new(right),
+            }
         }
 
         Ok(expr)
@@ -78,7 +84,12 @@ impl<'a> Parser<'a> {
             let operator = self.previous();
             let right = self.parse_term()?;
 
-            expr = Expr::Bimary(Box::new(expr), operator.clone(), Box::new(right));
+            expr = Expr::Binary {
+                location: self.previous().location,
+                left: Box::new(expr),
+                operator: operator.clone(),
+                right: Box::new(right),
+            }
         }
 
         Ok(expr)
@@ -91,7 +102,12 @@ impl<'a> Parser<'a> {
             let operator = self.previous();
             let right = self.parse_factor()?;
 
-            expr = Expr::Bimary(Box::new(expr), operator.clone(), Box::new(right));
+            expr = Expr::Binary {
+                location: self.previous().location,
+                left: Box::new(expr),
+                operator: operator.clone(),
+                right: Box::new(right),
+            }
         }
 
         Ok(expr)
@@ -103,7 +119,12 @@ impl<'a> Parser<'a> {
             let operator = self.previous();
             let right = self.parse_unary()?;
 
-            expr = Expr::Bimary(Box::new(expr), operator.clone(), Box::new(right));
+            expr = Expr::Binary {
+                location: self.previous().location,
+                left: Box::new(expr),
+                operator: operator.clone(),
+                right: Box::new(right),
+            }
         }
 
         Ok(expr)
@@ -113,7 +134,11 @@ impl<'a> Parser<'a> {
             let operator = self.previous();
             let right = self.parse_unary()?;
 
-            return Ok(Expr::Unary(operator.clone(),Box::new(right)));
+            return Ok(Expr::Unary {
+                location: self.peek().location,
+                operator: operator.clone(),
+                right: Box::new(right),
+            });
         }
 
         self.parse_primary()
@@ -121,31 +146,50 @@ impl<'a> Parser<'a> {
 
     fn parse_primary(&mut self) -> ParserResult<Expr> {
         if self.match_token(&[TokenType::False]) {
-            return Ok(Expr::Literal(LoxObject::Boolean(false)));
+            return Ok(Expr::Literal {
+                location: self.previous().location,
+                literal: LoxObject::Boolean(false),
+            });
         }
 
         if self.match_token(&[TokenType::True]) {
-            return Ok(Expr::Literal(LoxObject::Boolean(true)));
+            return Ok(Expr::Literal {
+                location: self.previous().location,
+                literal: LoxObject::Boolean(true),
+            });
         }
 
         if self.match_token(&[TokenType::Nil]) {
-            return Ok(Expr::Literal(LoxObject::Nil));
+            return Ok(Expr::Literal {
+                location: self.previous().location,
+                literal: LoxObject::Nil,
+            });
         }
 
         if self.match_token(&[TokenType::String, TokenType::Number]) {
-            return Ok(Expr::Literal(self.previous().literal.as_ref().unwrap().clone()));
+            return Ok(Expr::Literal {
+                location: self.previous().location,
+                literal: self.previous().literal.as_ref().unwrap().clone(),
+            });
         }
 
         if self.match_token(&[TokenType::LeftParen]) {
             let expr = self.parse_expression()?;
-            self.expect(TokenType::RightParen, ParserError::ExpectedToken(self.peek().source_location.clone(), ")".to_string()))?;
-            return Ok(Expr::Grouping(Box::new(expr)));
-            
+            self.expect(
+                TokenType::RightParen,
+                ParserError::ExpectedToken(self.peek().location, ")".to_string()),
+            )?;
+
+            return Ok(Expr::Grouping {
+                location: self.previous().location,
+                expression: Box::new(expr),
+            });
         }
 
-
-        Err(ParserError::UnexpectedToken(self.peek().source_location.clone(), self.peek().lexeme.clone()))
-
+        Err(ParserError::UnexpectedToken(
+            self.peek().location,
+            self.peek().lexeme.clone(),
+        ))
     }
 }
 
@@ -162,20 +206,18 @@ impl<'a> Parser<'a> {
     }
 
     fn expect(&mut self, expected: TokenType, error: ParserError) -> ParserResult<&'a Token> {
-
-        if self.check(&expected) { 
+        if self.check(&expected) {
             return Ok(self.advance());
         };
-         return Err(error);
+        return Err(error);
     }
 
     fn check(&self, expected: &TokenType) -> bool {
-        if self.is_at_end() { 
+        if self.is_at_end() {
             return false;
         };
 
         self.peek().kind == *expected
-
     }
 
     fn advance(&mut self) -> &'a Token {
@@ -221,5 +263,4 @@ mod internal_tests {
         assert!(parser.match_token(&[TokenType::RightBrace]));
         assert!(parser.match_token(&[TokenType::Number]));
     }
-
 }

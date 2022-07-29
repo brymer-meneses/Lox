@@ -24,7 +24,11 @@ impl LoxError for ScannerError {
     fn report(&self, is_on_repl: bool, source_code: &str) {
         let location = match self {
             ScannerError::UnexpectedChar(location, c) => {
-                eprintln!("{}: Unexpected character: {}", "error".red(), c.to_string().yellow());
+                eprintln!(
+                    "{}: Unexpected character: {}",
+                    "error".red(),
+                    c.to_string().yellow()
+                );
                 location
             }
             ScannerError::UnterminatedString(location) => {
@@ -72,5 +76,10 @@ pub fn highlight_location(is_on_repl: bool, source_code: &str, location: &Source
     );
 
     eprintln!("\n{}{}", " ".repeat(offset), prompt);
-    eprintln!("{}{}{}", " ".repeat(offset + 4), " ".repeat(location.start), "^".repeat(location.end - location.start+1).yellow());
+    eprintln!(
+        "{}{}{}",
+        " ".repeat(offset + 4),
+        " ".repeat(location.start),
+        "^".repeat(location.end - location.start + 1).yellow()
+    );
 }

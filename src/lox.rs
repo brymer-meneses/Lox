@@ -1,8 +1,8 @@
 use std::io::Write;
 
+use crate::error::LoxError;
 use crate::parser::Parser;
 use crate::scanner::Scanner;
-use crate::error::LoxError;
 
 pub fn run_prompt() {
     loop {

@@ -4,7 +4,7 @@ use crate::source_location::SourceLocation;
 #[derive(PartialEq, Debug, Clone)]
 pub struct Token {
     pub kind: TokenType,
-    pub source_location: SourceLocation,
+    pub location: SourceLocation,
     pub lexeme: String,
     pub literal: Option<LoxObject>,
 }
@@ -65,13 +65,13 @@ pub enum TokenType {
 impl Token {
     pub fn new(
         kind: TokenType,
-        source_location: SourceLocation,
+        location: SourceLocation,
         lexeme: String,
         literal: Option<LoxObject>,
     ) -> Self {
         return Token {
             kind,
-            source_location,
+            location,
             lexeme,
             literal,
         };
@@ -79,15 +79,15 @@ impl Token {
 
     pub fn keyword(keyword: &str) -> TokenType {
         match keyword {
-            "and" =>   TokenType::And,
+            "and" => TokenType::And,
             "class" => TokenType::Class,
-            "else" =>  TokenType::Else,
+            "else" => TokenType::Else,
             "false" => TokenType::False,
-            "for" =>   TokenType::For,
-            "fun" =>   TokenType::Function,
-            "if" =>    TokenType::If,
-            "nil" =>   TokenType::Nil,
-            "or" =>    TokenType::Or,
+            "for" => TokenType::For,
+            "fun" => TokenType::Function,
+            "if" => TokenType::If,
+            "nil" => TokenType::Nil,
+            "or" => TokenType::Or,
             "print" => TokenType::Print,
             "return" => TokenType::Return,
             "super" => TokenType::Super,

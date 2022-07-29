@@ -1,6 +1,6 @@
 use crate::{
-    object::LoxObject,
     error::ScannerError,
+    object::LoxObject,
     source_location::SourceLocation,
     token::{Token, TokenType},
 };
@@ -85,7 +85,7 @@ impl Scanner {
                     self.add_token(TokenType::Less, None)
                 }
             }
-            ' ' | '\t' | '\r' => {},
+            ' ' | '\t' | '\r' => {}
             '\n' => self.line += 1,
             '"' => self.scan_string()?,
             _ => {
@@ -95,7 +95,7 @@ impl Scanner {
                     self.scan_identifier()?;
                 } else {
                     return Err(ScannerError::UnexpectedChar(
-                        SourceLocation::new_single_line(self.line, self.start, self.current-1),
+                        SourceLocation::new_single_line(self.line, self.start, self.current - 1),
                         c,
                     ));
                 }
