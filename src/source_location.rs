@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct SourceLocation {
     // start and end position of lines
     pub line_start: usize,

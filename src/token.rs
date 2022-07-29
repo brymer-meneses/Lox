@@ -1,16 +1,15 @@
-
 use crate::object::LoxObject;
 use crate::source_location::SourceLocation;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Token {
-    pub token_type: TokenType,
+    pub kind: TokenType,
     pub source_location: SourceLocation,
     pub lexeme: String,
     pub literal: Option<LoxObject>,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum TokenType {
     // Single character tokens
     LeftBrace,
@@ -65,13 +64,13 @@ pub enum TokenType {
 
 impl Token {
     pub fn new(
-        token_type: TokenType,
+        kind: TokenType,
         source_location: SourceLocation,
         lexeme: String,
         literal: Option<LoxObject>,
     ) -> Self {
         return Token {
-            token_type,
+            kind,
             source_location,
             lexeme,
             literal,

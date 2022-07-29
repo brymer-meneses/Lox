@@ -1,5 +1,6 @@
 use crate::{
     object::LoxObject,
+    error::ScannerError,
     source_location::SourceLocation,
     token::{Token, TokenType},
 };
@@ -12,12 +13,7 @@ pub struct Scanner {
     pub tokens: Vec<Token>,
 }
 
-#[derive(PartialEq, Debug)]
-pub enum ScannerError {
-    UnterminatedString(SourceLocation),
-    UnexpectedChar(SourceLocation, char),
-}
-
+type ScannerResult<T> = Result<T, ScannerError>;
 
 impl Scanner {
     pub fn new(source_code: &str) -> Self {
@@ -30,7 +26,7 @@ impl Scanner {
         };
     }
 
-    pub fn scan(&mut self) -> Result<&Vec<Token>, ScannerError> {
+    pub fn scan(&mut self) -> ScannerResult<&Vec<Token>> {
         while !self.is_at_end() {
             self.start = self.current;
             self.scan_token()?
@@ -40,7 +36,7 @@ impl Scanner {
         return Ok(&self.tokens);
     }
 
-    fn scan_token(&mut self) -> Result<(), ScannerError>{
+    fn scan_token(&mut self) -> ScannerResult<()> {
         let c = self.advance();
         match c {
             ';' => self.add_token(TokenType::Semicolon, None),
@@ -89,9 +85,8 @@ impl Scanner {
                     self.add_token(TokenType::Less, None)
                 }
             }
-            ' ' | '\t' | '\r' => {}
+            ' ' | '\t' | '\r' => {},
             '\n' => self.line += 1,
-
             '"' => self.scan_string()?,
             _ => {
                 if c.is_digit(10) {
@@ -99,7 +94,10 @@ impl Scanner {
                 } else if c.is_alphabetic() || c == '_' {
                     self.scan_identifier()?;
                 } else {
-                    return Err(ScannerError::UnexpectedChar(SourceLocation::new_single_line(self.line, self.start, self.current), c));
+                    return Err(ScannerError::UnexpectedChar(
+                        SourceLocation::new_single_line(self.line, self.start, self.current-1),
+                        c,
+                    ));
                 }
             }
         }
@@ -107,7 +105,7 @@ impl Scanner {
         Ok(())
     }
 
-    fn scan_number(&mut self) -> Result<(), ScannerError> {
+    fn scan_number(&mut self) -> ScannerResult<()> {
         while self.peek().is_digit(10) {
             self.advance();
         }
@@ -131,7 +129,7 @@ impl Scanner {
         Ok(())
     }
 
-    fn scan_identifier(&mut self) -> Result<(), ScannerError>{
+    fn scan_identifier(&mut self) -> ScannerResult<()> {
         while self.peek().is_alphanumeric() || self.peek() == '_' {
             self.advance();
         }
@@ -142,7 +140,7 @@ impl Scanner {
         Ok(())
     }
 
-    fn scan_string(&mut self) -> Result<(), ScannerError> {
+    fn scan_string(&mut self) -> ScannerResult<()> {
         let line_start = self.line;
 
         while self.peek() != '"' && !self.is_at_end() {
@@ -155,8 +153,14 @@ impl Scanner {
         let line_end = self.line;
 
         if self.is_at_end() {
-            return Err(ScannerError::UnterminatedString(SourceLocation::new_multiple_line(line_start,
-                line_end, self.start, self.current-1)));
+            return Err(ScannerError::UnterminatedString(
+                SourceLocation::new_multiple_line(
+                    line_start,
+                    line_end,
+                    self.start,
+                    self.current - 1,
+                ),
+            ));
         }
 
         // consume last ending "
@@ -164,7 +168,7 @@ impl Scanner {
 
         let string = self
             .source_code
-            .get(self.start + 1..self.current-1)
+            .get(self.start + 1..self.current - 1)
             .unwrap()
             .to_string();
 

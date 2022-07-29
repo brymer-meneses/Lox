@@ -25,7 +25,7 @@ fn it_should_scan_single_char_tokens() {
     ];
 
     for (i, token) in tokens.iter().enumerate() {
-        assert_eq!(token.token_type, correct_types[i]);
+        assert_eq!(token.kind, correct_types[i]);
     }
 }
 
@@ -43,7 +43,7 @@ fn it_should_scan_double_char_tokens() {
     ];
 
     for (i, token) in tokens.iter().enumerate() {
-        assert_eq!(token.token_type, correct_types[i]);
+        assert_eq!(token.kind, correct_types[i]);
     }
 }
 
@@ -52,7 +52,7 @@ fn it_should_recognize_comments() {
     let mut scanner = Scanner::new("// hi there");
     let tokens = scanner.scan().unwrap();
 
-    assert_eq!(tokens[0].token_type, TokenType::EOF);
+    assert_eq!(tokens[0].kind, TokenType::EOF);
 }
 
 #[test]
@@ -60,18 +60,36 @@ fn it_should_scan_string() {
     let mut scanner = Scanner::new(" \"The quick brown fox jumped over the lazy cat.\" \"If you're reading this have a good day!\" ");
     let tokens = scanner.scan().unwrap();
 
-    assert_eq!(tokens[0].token_type, TokenType::String);
-    assert_eq!(tokens[0].literal, Some(LoxObject::String("The quick brown fox jumped over the lazy cat.".to_string())));
-    assert_eq!(tokens[0].lexeme, "\"The quick brown fox jumped over the lazy cat.\"");
+    assert_eq!(tokens[0].kind, TokenType::String);
+    assert_eq!(
+        tokens[0].literal,
+        Some(LoxObject::String(
+            "The quick brown fox jumped over the lazy cat.".to_string()
+        ))
+    );
+    assert_eq!(
+        tokens[0].lexeme,
+        "\"The quick brown fox jumped over the lazy cat.\""
+    );
 
-    assert_eq!(tokens[1].token_type, TokenType::String);
-    assert_eq!(tokens[1].literal, Some(LoxObject::String("If you're reading this have a good day!".to_string())));
-    assert_eq!(tokens[1].lexeme, "\"If you're reading this have a good day!\"");
+    assert_eq!(tokens[1].kind, TokenType::String);
+    assert_eq!(
+        tokens[1].literal,
+        Some(LoxObject::String(
+            "If you're reading this have a good day!".to_string()
+        ))
+    );
+    assert_eq!(
+        tokens[1].lexeme,
+        "\"If you're reading this have a good day!\""
+    );
 }
 
 #[test]
 fn it_should_scan_keywords() {
-    let mut scanner = Scanner::new("and class else false for fun if nil or print return super this true var while keyword");
+    let mut scanner = Scanner::new(
+        "and class else false for fun if nil or print return super this true var while keyword",
+    );
     let tokens = scanner.scan().unwrap();
 
     let correct_types = vec![
@@ -96,8 +114,8 @@ fn it_should_scan_keywords() {
     ];
 
     for (i, token) in tokens.iter().enumerate() {
-        assert_eq!(token.token_type, correct_types[i]);
-    };
+        assert_eq!(token.kind, correct_types[i]);
+    }
 }
 
 #[test]
