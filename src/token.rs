@@ -9,7 +9,7 @@ pub struct Token {
     pub literal: Option<LoxObject>,
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum TokenType {
     // Single character tokens
     LeftBrace,

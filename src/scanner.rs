@@ -93,7 +93,7 @@ impl Scanner {
             }
             '"' => self.scan_string()?,
             _ => {
-                if c.is_digit(10) {
+                if c.is_ascii_digit() {
                     self.scan_number()?;
                 } else if c.is_alphabetic() || c == '_' {
                     self.scan_identifier()?;
@@ -109,14 +109,14 @@ impl Scanner {
     }
 
     fn scan_number(&mut self) -> ScannerResult<()> {
-        while self.peek().is_digit(10) {
+        while self.peek().is_ascii_digit() {
             self.advance();
         }
 
-        if self.peek() == '.' && self.peek_next().is_digit(10) {
+        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
             self.advance();
 
-            while self.peek().is_digit(10) {
+            while self.peek().is_ascii_digit() {
                 self.advance();
             }
         }
@@ -127,13 +127,12 @@ impl Scanner {
             .unwrap()
             .parse()
             .unwrap();
-        let location = SourceLocation::new_single_line(
-                    self.line,
-                    self.start,
-                    self.current,
-                );
+        let location = SourceLocation::new_single_line(self.line, self.start, self.current);
 
-        self.add_token(TokenType::Number, Some(LoxObject::Number{location, value}));
+        self.add_token(
+            TokenType::Number,
+            Some(LoxObject::Number { location, value }),
+        );
         Ok(())
     }
 
@@ -159,12 +158,8 @@ impl Scanner {
         }
 
         let line_end = self.line;
-        let location = SourceLocation::new_multiple_line(
-                    line_start,
-                    line_end,
-                    self.start,
-                    self.current,
-                );
+        let location =
+            SourceLocation::new_multiple_line(line_start, line_end, self.start, self.current);
 
         if self.is_at_end() {
             return Err(ScannerError::UnterminatedString(location));
@@ -179,7 +174,13 @@ impl Scanner {
             .unwrap()
             .to_string();
 
-        self.add_token(TokenType::String, Some(LoxObject::String{ location, value: string}));
+        self.add_token(
+            TokenType::String,
+            Some(LoxObject::String {
+                location,
+                value: string,
+            }),
+        );
         Ok(())
     }
 

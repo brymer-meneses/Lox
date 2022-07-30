@@ -1,7 +1,7 @@
 use lox::object::LoxObject;
 use lox::scanner::Scanner;
-use lox::token::TokenType;
 use lox::source_location::SourceLocation;
+use lox::token::TokenType;
 
 #[test]
 fn it_should_scan_single_char_tokens() {
@@ -66,7 +66,7 @@ fn it_should_scan_string() {
     assert_eq!(tokens[0].kind, TokenType::String);
     assert_eq!(
         tokens[0].literal,
-        Some(LoxObject::String{
+        Some(LoxObject::String {
             location: location1,
             value: "The quick brown fox jumped over the lazy cat.".to_string()
         })
@@ -79,7 +79,7 @@ fn it_should_scan_string() {
     assert_eq!(tokens[1].kind, TokenType::String);
     assert_eq!(
         tokens[1].literal,
-        Some(LoxObject::String{
+        Some(LoxObject::String {
             location: location2,
             value: "If you're reading this have a good day!".to_string()
         })
@@ -131,6 +131,18 @@ fn it_should_scan_numbers() {
 
     let tokens = scanner.scan().unwrap();
 
-    assert_eq!(tokens[0].literal, Some(LoxObject::Number{location: location1, value: 3.1415926536}));
-    assert_eq!(tokens[1].literal, Some(LoxObject::Number{location: location2, value: 2.7182818284}));
+    assert_eq!(
+        tokens[0].literal,
+        Some(LoxObject::Number {
+            location: location1,
+            value: 3.1415926536
+        })
+    );
+    assert_eq!(
+        tokens[1].literal,
+        Some(LoxObject::Number {
+            location: location2,
+            value: 2.7182818284
+        })
+    );
 }

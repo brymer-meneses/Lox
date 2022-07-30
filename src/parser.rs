@@ -36,9 +36,8 @@ impl<'a> Parser<'a> {
 
 impl<'a> Parser<'a> {
     fn parse_statement(&mut self) -> ParserResult<Stmt> {
-
         if self.match_token(&[TokenType::Print]) {
-            return self.parse_print_statement()
+            return self.parse_print_statement();
         }
 
         self.parse_expression_statement()
@@ -55,12 +54,39 @@ impl<'a> Parser<'a> {
         let expression = self.parse_expression()?;
         Ok(Stmt::Print {
             location: self.find_location(TokenType::Print) + expression.location(),
-            expression
+            expression,
         })
     }
 
     fn parse_declaration(&mut self) -> ParserResult<Stmt> {
+        if self.match_token(&[TokenType::Var]) {
+            return self.parse_variable_declaration();
+        }
+
         self.parse_statement()
+    }
+
+    fn parse_variable_declaration(&mut self) -> ParserResult<Stmt> {
+        let identifier = self.expect(
+            TokenType::Identifier,
+            ParserError::ExpectedVariableName(self.peek().location),
+        )?;
+
+        let expression = match self.match_token(&[TokenType::Equal]) {
+            true => Some(self.parse_expression()?),
+            false => None,
+        };
+
+        self.expect(
+            TokenType::Semicolon,
+            ParserError::ExpectedToken(self.peek().location, ";".to_string()),
+        )?;
+
+        Ok(Stmt::VariableDeclaration {
+            location: identifier.location,
+            identifier: identifier.clone(),
+            expression,
+        })
     }
 }
 
@@ -169,7 +195,10 @@ impl<'a> Parser<'a> {
             let location = self.previous().location;
             return Ok(Expr::Literal {
                 location,
-                literal: LoxObject::Boolean { location, value: false },
+                literal: LoxObject::Boolean {
+                    location,
+                    value: false,
+                },
             });
         }
 
@@ -177,7 +206,10 @@ impl<'a> Parser<'a> {
             let location = self.previous().location;
             return Ok(Expr::Literal {
                 location,
-                literal: LoxObject::Boolean { location, value: true },
+                literal: LoxObject::Boolean {
+                    location,
+                    value: true,
+                },
             });
         }
 
@@ -209,6 +241,13 @@ impl<'a> Parser<'a> {
                     + expr.location()
                     + self.find_location(TokenType::RightParen),
                 expression: Box::new(expr),
+            });
+        }
+
+        if self.match_token(&[TokenType::Identifier]) {
+            return Ok(Expr::Variable {
+                location: self.previous().location,
+                identifier: self.previous().clone(),
             });
         }
 

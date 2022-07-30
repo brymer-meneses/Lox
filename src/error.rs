@@ -3,7 +3,7 @@ use crate::source_location::SourceLocation;
 use colored::*;
 
 pub trait LoxError {
-    fn report(&self, is_on_repl: bool, source_code: &str);
+    fn raise(&self, is_on_repl: bool, source_code: &str);
 }
 
 #[derive(PartialEq, Debug)]
@@ -17,17 +17,20 @@ pub enum ParserError {
     ExpectedToken(SourceLocation, String),
     ExpectedStatement(SourceLocation),
     ExpectedExpression(SourceLocation, String),
+    ExpectedVariableName(SourceLocation),
     UnexpectedToken(SourceLocation, String),
 }
 
 #[derive(PartialEq, Debug)]
 pub enum InterpreterError {
-    InvalidBinaryOperation(SourceLocation, String),
-    InvalidUnaryOperation(SourceLocation, String),
+    InvalidBinaryOperation(SourceLocation, String, String, String),
+    InvalidUnaryOperation(SourceLocation, String, String),
+    InvalidAssignment(SourceLocation, String),
+    UndefinedVariable(SourceLocation, String),
 }
 
 impl LoxError for ScannerError {
-    fn report(&self, is_on_repl: bool, source_code: &str) {
+    fn raise(&self, is_on_repl: bool, source_code: &str) {
         let location = match self {
             ScannerError::UnexpectedChar(location, c) => {
                 eprintln!(
@@ -47,7 +50,7 @@ impl LoxError for ScannerError {
 }
 
 impl LoxError for ParserError {
-    fn report(&self, is_on_repl: bool, source_code: &str) {
+    fn raise(&self, is_on_repl: bool, source_code: &str) {
         match self {
             ParserError::ExpectedToken(location, kind) => {
                 eprintln!("{}: Expected token {:?}", "error".red(), kind);
@@ -57,7 +60,54 @@ impl LoxError for ParserError {
                 eprintln!("{}: Unexpected token {:?}", "error".red(), lexeme);
                 highlight_location(is_on_repl, source_code, location)
             }
-            _ => {}
+            _ => {
+                todo!()
+            }
+        }
+    }
+}
+
+impl LoxError for InterpreterError {
+    fn raise(&self, is_on_repl: bool, source_code: &str) {
+        match self {
+            InterpreterError::InvalidBinaryOperation(location, left, operator, right) => {
+                eprintln!(
+                    "{}: The operation {} is invalid for {} and {}",
+                    "error".red(),
+                    operator,
+                    left,
+                    right
+                );
+                highlight_location(is_on_repl, source_code, location)
+            }
+            InterpreterError::InvalidUnaryOperation(location, operator, right) => {
+                eprintln!(
+                    "{}: The operation {} is invalid for {}",
+                    "error".red(),
+                    operator,
+                    right
+                );
+                highlight_location(is_on_repl, source_code, location)
+            }
+            InterpreterError::InvalidAssignment(location, variable) => {
+                eprintln!(
+                    "{}: Tried assigning value to {} which is undefined.",
+                    "error".red(),
+                    variable
+                );
+                highlight_location(is_on_repl, source_code, location)
+            }
+            InterpreterError::UndefinedVariable(location, variable) => {
+                eprintln!(
+                    "{}: Tried accessing the variable `{}` which is undefined.",
+                    "error".red(),
+                    variable
+                );
+                highlight_location(is_on_repl, source_code, location)
+            }
+            _ => {
+                todo!()
+            }
         }
     }
 }
