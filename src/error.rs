@@ -17,7 +17,7 @@ pub enum ParserError {
     ExpectedToken(SourceLocation, String),
     ExpectedStatement(SourceLocation),
     ExpectedExpression(SourceLocation, String),
-    ExpectedVariableName(SourceLocation),
+    ExpectedVariableName(SourceLocation, String),
     UnexpectedToken(SourceLocation, String),
     InvalidAssignmentTarget(SourceLocation, String),
 }
@@ -64,8 +64,12 @@ impl LoxError for ParserError {
             ParserError::InvalidAssignmentTarget(location, lexeme) => {
                 eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
                 highlight_location(is_on_repl, source_code, location)
+            },
+            ParserError::ExpectedVariableName(location, lexeme) => {
+                eprintln!("{}: Got invalid variable name: `{}`", "error".red(), lexeme);
+                highlight_location(is_on_repl, source_code, location)
             }
-            _ => {}
+            _ => { todo!() }
         }
     }
 }
@@ -137,7 +141,7 @@ pub fn highlight_location(is_on_repl: bool, source_code: &str, location: &Source
     eprintln!("\n{}{}", " ".repeat(offset), prompt);
     eprintln!(
         "{}{}{}",
-        " ".repeat(offset + 4),
+        " ".repeat(offset + 2 + line_num.to_string().len()),
         " ".repeat(location.start),
         "^".repeat(location.end - location.start + 1).yellow()
     );

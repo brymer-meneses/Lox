@@ -212,11 +212,15 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
 
     fn visit_variable_expression(&self, identifier: &Token) -> InterpreterResult<LoxObject> {
         let value = match self.environment.retrieve(identifier.lexeme.as_str()) {
-            Some(value) => Ok(value),
-            None => Err(InterpreterError::UndefinedVariable(
+            Some(value) => {
+                Ok(value)},
+            None => {
+
+                println!("{:#?}", identifier.location);
+                Err(InterpreterError::UndefinedVariable(
                 identifier.location,
                 identifier.lexeme.clone(),
-            )),
+            ))},
         };
 
         value
@@ -237,9 +241,15 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
 
 impl StmtVisitor<InterpreterResult<()>> for Interpreter {
     fn visit_block_statement(&mut self, statements: &[Stmt]) -> InterpreterResult<()> {
+        let previous_environment = self.environment.clone();
+
+        self.environment = Environment::new(Some(previous_environment.clone()));
+
         for statement in statements.iter() {
             self.execute(statement)?
         }
+
+        self.environment = previous_environment;
         Ok(())
     }
     fn visit_expression_statement(&mut self, expression: &Expr) -> InterpreterResult<()> {

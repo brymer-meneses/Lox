@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::object::LoxObject;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Environment {
     enclosing: Option<Box<Environment>>,
     values: HashMap<String, LoxObject>,

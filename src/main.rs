@@ -54,6 +54,11 @@ pub fn run(is_on_repl: bool, source_code: &str, interpreter: &mut Interpreter) {
         }
     };
 
+    // for token in tokens.iter() {
+    //     println!("{:#?}", token);
+    //
+    // }
+
     let mut parser = Parser::new(tokens);
     let statements = match parser.parse() {
         Ok(value) => value,

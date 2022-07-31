@@ -1,3 +1,4 @@
+use crate::environment::Environment;
 use crate::object::LoxObject;
 use crate::source_location::SourceLocation;
 use crate::token::Token;
@@ -126,6 +127,7 @@ pub trait StmtVisitor<T> {
             } => self.visit_variable_declaration_statement(identifier, expression),
         }
     }
+
     fn visit_block_statement(&mut self, statement: &[Stmt]) -> T;
     fn visit_expression_statement(&mut self, expression: &Expr) -> T;
     fn visit_print_statement(&mut self, expression: &Expr) -> T;

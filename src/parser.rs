@@ -37,7 +37,11 @@ impl<'a> Parser<'a> {
 impl<'a> Parser<'a> {
     fn parse_statement(&mut self) -> ParserResult<Stmt> {
         if self.match_token(&[TokenType::Print]) {
-            return self.parse_print_statement();
+            return self.parse_print_statement()
+        }
+
+        if self.match_token(&[TokenType::LeftBrace]) {
+            return self.parse_block_statement();
         }
 
         self.parse_expression_statement()
@@ -62,6 +66,26 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_block_statement(&mut self) -> ParserResult<Stmt> {
+        let mut statements: Vec<Stmt> = Vec::new();
+        let mut locations = self.find_location(TokenType::LeftBrace);
+
+        while !self.check(&TokenType::RightBrace) && !self.is_at_end() {
+            let statement = self.parse_declaration()?;
+            locations = locations + statement.location();
+            statements.push(statement);
+        }
+
+        let right_brace = self.expect(TokenType::RightBrace,
+            ParserError::ExpectedToken(self.peek().location, "}".to_string()))?;
+
+        // add location of the right brace
+        locations = locations + right_brace.location;
+
+        return Ok(Stmt::Block { location: locations , statements })
+
+    }
+
     fn parse_declaration(&mut self) -> ParserResult<Stmt> {
         if self.match_token(&[TokenType::Var]) {
             return self.parse_variable_declaration();
@@ -73,13 +97,17 @@ impl<'a> Parser<'a> {
     fn parse_variable_declaration(&mut self) -> ParserResult<Stmt> {
         let identifier = self.expect(
             TokenType::Identifier,
-            ParserError::ExpectedVariableName(self.peek().location),
+            ParserError::ExpectedVariableName(self.peek().location, 
+                self.peek().lexeme.clone()
+            ),
         )?;
+
 
         let expression = match self.match_token(&[TokenType::Equal]) {
             true => Some(self.parse_expression()?),
             false => None,
         };
+
 
         self.expect(
             TokenType::Semicolon,

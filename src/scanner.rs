@@ -10,7 +10,10 @@ pub struct Scanner {
     current: usize,
     start: usize,
     line: usize,
-    pub tokens: Vec<Token>,
+    // points to the next character after '\n', this is used to 
+    // track the positions of the tokens relative to their line.
+    last_line: usize, 
+    tokens: Vec<Token>,
 }
 
 type ScannerResult<T> = Result<T, ScannerError>;
@@ -22,6 +25,7 @@ impl Scanner {
             current: 0,
             start: 0,
             line: 1,
+            last_line: 0,
             tokens: Vec::new(),
         }
     }
@@ -88,7 +92,8 @@ impl Scanner {
             ' ' | '\t' | '\r' => {}
             '\n' => {
                 if !self.is_at_end() {
-                    self.line += 1
+                    self.last_line = self.current -1;
+                    self.line += 1;
                 };
             }
             '"' => self.scan_string()?,
@@ -158,8 +163,9 @@ impl Scanner {
         }
 
         let line_end = self.line;
+
         let location =
-            SourceLocation::new_multiple_line(line_start, line_end, self.start, self.current);
+            SourceLocation::new_multiple_line(line_start, line_end, self.start - self.last_line, self.current -1 - self.last_line);
 
         if self.is_at_end() {
             return Err(ScannerError::UnterminatedString(location));
@@ -216,7 +222,7 @@ impl Scanner {
             .unwrap_or("\0")
             .to_string();
 
-        let location = SourceLocation::new_single_line(self.line, self.start, self.current - 1);
+        let location = self.compute_location_relative_to_line();
 
         self.tokens
             .push(Token::new(kind, location, lexeme, literal));
@@ -238,5 +244,13 @@ impl Scanner {
         }
         self.current += 1;
         true
+    }
+    fn compute_location_relative_to_line(&self) -> SourceLocation {
+        SourceLocation {
+            line_start: self.line,
+            line_end: self.line,
+            start: self.start - self.last_line,
+            end:   self.current -1 - self.last_line,
+        }
     }
 }
