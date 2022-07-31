@@ -47,7 +47,7 @@ pub fn run_file(filename: &str) {
 pub fn run(is_on_repl: bool, source_code: &str, interpreter: &mut Interpreter) {
     let mut scanner = Scanner::new(source_code);
     let tokens = match scanner.scan() {
-        Ok(tok) => tok,
+        Ok(value) => value,
         Err(scanner_error) => {
             scanner_error.raise(is_on_repl, source_code);
             return;

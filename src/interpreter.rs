@@ -28,11 +28,11 @@ impl Interpreter {
 }
 
 impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
-    fn visit_grouping_expression(&self, expression: &Expr) -> InterpreterResult<LoxObject> {
+    fn visit_grouping_expression(&mut self, expression: &Expr) -> InterpreterResult<LoxObject> {
         self.evaluate(expression)
     }
     fn visit_binary_expression(
-        &self,
+        &mut self,
         left: &Expr,
         token: &Token,
         right: &Expr,
@@ -121,7 +121,7 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
                     location,
                     value: !LoxObject::is_equal(left, right),
                 });
-            },
+            }
             TokenType::GreaterEqual => {
                 if let (
                     LoxObject::Number { value: val1, .. },
@@ -134,7 +134,7 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
                     });
                 }
                 Err(error)
-            },
+            }
             TokenType::Greater => {
                 if let (
                     LoxObject::Number { value: val1, .. },
@@ -160,7 +160,7 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
                     });
                 }
                 Err(error)
-            },
+            }
             TokenType::Less => {
                 if let (
                     LoxObject::Number { value: val1, .. },
@@ -212,7 +212,7 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
 
     fn visit_variable_expression(&self, identifier: &Token) -> InterpreterResult<LoxObject> {
         let value = match self.environment.retrieve(identifier.lexeme.as_str()) {
-            Some(value) => Ok(value.clone()),
+            Some(value) => Ok(value),
             None => Err(InterpreterError::UndefinedVariable(
                 identifier.location,
                 identifier.lexeme.clone(),
@@ -221,22 +221,34 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
 
         value
     }
+    fn visit_assignment_expression(
+        &mut self,
+        identifier: &Token,
+        value: &Expr,
+    ) -> InterpreterResult<LoxObject> {
+        let value = self.evaluate(value)?;
+
+        self.environment
+            .assign(identifier.lexeme.clone(), value.clone());
+
+        Ok(value)
+    }
 }
 
 impl StmtVisitor<InterpreterResult<()>> for Interpreter {
-    fn visit_block_statement(&mut self, statements: &Vec<Stmt>) -> InterpreterResult<()> {
+    fn visit_block_statement(&mut self, statements: &[Stmt]) -> InterpreterResult<()> {
         for statement in statements.iter() {
             self.execute(statement)?
         }
         Ok(())
     }
-    fn visit_expression_statement(&self, expression: &Expr) -> InterpreterResult<()> {
+    fn visit_expression_statement(&mut self, expression: &Expr) -> InterpreterResult<()> {
         self.evaluate(expression)?;
         Ok(())
     }
-    fn visit_print_statement(&self, expression: &Expr) -> InterpreterResult<()> {
+    fn visit_print_statement(&mut self, expression: &Expr) -> InterpreterResult<()> {
         let expr = self.evaluate(expression)?;
-        print!("{}", expr);
+        println!("{}", expr);
         Ok(())
     }
     fn visit_variable_declaration_statement(

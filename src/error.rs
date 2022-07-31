@@ -19,6 +19,7 @@ pub enum ParserError {
     ExpectedExpression(SourceLocation, String),
     ExpectedVariableName(SourceLocation),
     UnexpectedToken(SourceLocation, String),
+    InvalidAssignmentTarget(SourceLocation, String),
 }
 
 #[derive(PartialEq, Debug)]
@@ -53,16 +54,18 @@ impl LoxError for ParserError {
     fn raise(&self, is_on_repl: bool, source_code: &str) {
         match self {
             ParserError::ExpectedToken(location, kind) => {
-                eprintln!("{}: Expected token {:?}", "error".red(), kind);
+                eprintln!("{}: Expected token `{}` here.", "error".red(), kind);
                 highlight_location(is_on_repl, source_code, location)
             }
             ParserError::UnexpectedToken(location, lexeme) => {
-                eprintln!("{}: Unexpected token {:?}", "error".red(), lexeme);
+                eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
                 highlight_location(is_on_repl, source_code, location)
             }
-            _ => {
-                todo!()
+            ParserError::InvalidAssignmentTarget(location, lexeme) => {
+                eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
+                highlight_location(is_on_repl, source_code, location)
             }
+            _ => {}
         }
     }
 }
@@ -72,7 +75,7 @@ impl LoxError for InterpreterError {
         match self {
             InterpreterError::InvalidBinaryOperation(location, left, operator, right) => {
                 eprintln!(
-                    "{}: The operation {} is invalid for {} and {}",
+                    "{}: The operation `{}` is invalid for `{}` and `{}",
                     "error".red(),
                     operator,
                     left,
@@ -82,7 +85,7 @@ impl LoxError for InterpreterError {
             }
             InterpreterError::InvalidUnaryOperation(location, operator, right) => {
                 eprintln!(
-                    "{}: The operation {} is invalid for {}",
+                    "{}: The operation `{}` is invalid for `{}`",
                     "error".red(),
                     operator,
                     right
@@ -91,7 +94,7 @@ impl LoxError for InterpreterError {
             }
             InterpreterError::InvalidAssignment(location, variable) => {
                 eprintln!(
-                    "{}: Tried assigning value to {} which is undefined.",
+                    "{}: Tried assigning value to `{}` which is undefined.",
                     "error".red(),
                     variable
                 );

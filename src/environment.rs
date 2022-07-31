@@ -10,12 +10,8 @@ pub struct Environment {
 
 impl Environment {
     pub fn new(enclosing: Option<Environment>) -> Self {
-        let enclosing = match enclosing {
-            Some(value) => Some(Box::new(value)),
-            None => None,
-        };
         Environment {
-            enclosing,
+            enclosing: enclosing.map(Box::new),
             values: HashMap::new(),
         }
     }

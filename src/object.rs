@@ -69,10 +69,10 @@ impl LoxObject {
 impl Display for LoxObject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            LoxObject::String { value, .. } => writeln!(f, "{}", value),
-            LoxObject::Number { value, .. } => writeln!(f, "{}", value),
-            LoxObject::Boolean { value, .. } => writeln!(f, "{}", value),
-            LoxObject::Nil { .. } => writeln!(f, "nil"),
+            LoxObject::String { value, .. } => write!(f, "{}", value),
+            LoxObject::Number { value, .. } => write!(f, "{}", value),
+            LoxObject::Boolean { value, .. } => write!(f, "{}", value),
+            LoxObject::Nil { .. } => write!(f, "nil"),
         }
     }
 }

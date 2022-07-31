@@ -15,7 +15,6 @@ fn it_should_define_variables() {
         value: 299792258.0,
     };
 
-
     env.define("PI_VALUE".to_string(), pi_value.clone());
     env.define("SPEED_OF_LIGHT".to_string(), speed_of_light.clone());
 
@@ -28,7 +27,7 @@ fn it_should_define_variables() {
 fn it_should_reassign_variables() {
     let mut env = Environment::new(None);
     let location = SourceLocation::new_single_line(0, 0, 0);
-    let num1 = LoxObject::Nil {location};
+    let num1 = LoxObject::Nil { location };
     let num2 = LoxObject::Number {
         location,
         value: 2.71828,
@@ -43,4 +42,3 @@ fn it_should_reassign_variables() {
     assert_eq!(env.retrieve("number").unwrap(), num2);
     assert_eq!(1, env.length());
 }
-

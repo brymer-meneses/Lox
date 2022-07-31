@@ -52,6 +52,10 @@ impl<'a> Parser<'a> {
 
     fn parse_print_statement(&mut self) -> ParserResult<Stmt> {
         let expression = self.parse_expression()?;
+        self.expect(
+            TokenType::Semicolon,
+            ParserError::ExpectedToken(self.peek().location, ";".to_string()),
+        )?;
         Ok(Stmt::Print {
             location: self.find_location(TokenType::Print) + expression.location(),
             expression,
@@ -93,11 +97,33 @@ impl<'a> Parser<'a> {
 // parsing expressions
 impl<'a> Parser<'a> {
     fn parse_expression(&mut self) -> ParserResult<Expr> {
-        self.parse_equality()
+        self.parse_assignment()
     }
 
     fn parse_assignment(&mut self) -> ParserResult<Expr> {
-        todo!()
+        let expr = self.parse_equality()?;
+
+        if self.match_token(&[TokenType::Equal]) {
+            let equals = self.previous();
+            let value = self.parse_assignment()?;
+
+            let location = expr.location() + equals.location + value.location();
+
+            if let Expr::Variable { identifier, .. } = expr {
+                return Ok(Expr::Assignment {
+                    location,
+                    identifier,
+                    value: Box::new(value),
+                });
+            }
+
+            return Err(ParserError::InvalidAssignmentTarget(
+                location,
+                expr.to_string(),
+            ));
+        };
+
+        Ok(expr)
     }
 
     fn parse_equality(&mut self) -> ParserResult<Expr> {

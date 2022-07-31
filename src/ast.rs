@@ -1,6 +1,7 @@
 use crate::object::LoxObject;
 use crate::source_location::SourceLocation;
 use crate::token::Token;
+use std::fmt::Display;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expr {
@@ -26,6 +27,11 @@ pub enum Expr {
     Variable {
         location: SourceLocation,
         identifier: Token,
+    },
+    Assignment {
+        location: SourceLocation,
+        identifier: Token,
+        value: Box<Expr>,
     },
 }
 
@@ -68,6 +74,41 @@ impl Expr {
             Expr::Literal { location, .. } => *location,
             Expr::Grouping { location, .. } => *location,
             Expr::Variable { location, .. } => *location,
+            Expr::Assignment { location, .. } => *location,
+        }
+    }
+}
+
+impl Display for Expr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Expr::Binary {
+                left,
+                operator,
+                right,
+                ..
+            } => {
+                write!(f, "{} {} {}", left, operator.lexeme, right)
+            }
+            Expr::Unary {
+                operator, right, ..
+            } => {
+                write!(f, "{} {}", operator.lexeme, right)
+            }
+            Expr::Literal { literal, .. } => {
+                write!(f, "{}", literal)
+            }
+            Expr::Grouping { expression, .. } => {
+                write!(f, "{}", expression)
+            }
+            Expr::Variable { identifier, .. } => {
+                write!(f, "{}", identifier.lexeme)
+            }
+            Expr::Assignment {
+                identifier, value, ..
+            } => {
+                write!(f, "{} = {}", identifier.lexeme, value)
+            }
         }
     }
 }
@@ -85,9 +126,9 @@ pub trait StmtVisitor<T> {
             } => self.visit_variable_declaration_statement(identifier, expression),
         }
     }
-    fn visit_block_statement(&mut self, statement: &Vec<Stmt>) -> T;
-    fn visit_expression_statement(&self, expression: &Expr) -> T;
-    fn visit_print_statement(&self, expression: &Expr) -> T;
+    fn visit_block_statement(&mut self, statement: &[Stmt]) -> T;
+    fn visit_expression_statement(&mut self, expression: &Expr) -> T;
+    fn visit_print_statement(&mut self, expression: &Expr) -> T;
     fn visit_variable_declaration_statement(
         &mut self,
         identifer: &Token,
@@ -96,7 +137,7 @@ pub trait StmtVisitor<T> {
 }
 
 pub trait ExpressionVisitor<T> {
-    fn evaluate(&self, expression: &Expr) -> T {
+    fn evaluate(&mut self, expression: &Expr) -> T {
         match expression {
             Expr::Binary {
                 left,
@@ -110,11 +151,15 @@ pub trait ExpressionVisitor<T> {
             Expr::Grouping { expression, .. } => self.visit_grouping_expression(expression),
             Expr::Literal { literal, .. } => self.visit_literal_expression(literal.clone()),
             Expr::Variable { identifier, .. } => self.visit_variable_expression(identifier),
+            Expr::Assignment {
+                identifier, value, ..
+            } => self.visit_assignment_expression(identifier, value),
         }
     }
-    fn visit_grouping_expression(&self, expression: &Expr) -> T;
+    fn visit_grouping_expression(&mut self, expression: &Expr) -> T;
     fn visit_variable_expression(&self, expression: &Token) -> T;
-    fn visit_binary_expression(&self, left: &Expr, token: &Token, right: &Expr) -> T;
-    fn visit_unary_expression(&self, operator: &Token, right: &Expr) -> T;
+    fn visit_binary_expression(&mut self, left: &Expr, token: &Token, right: &Expr) -> T;
+    fn visit_unary_expression(&mut self, operator: &Token, right: &Expr) -> T;
     fn visit_literal_expression(&self, literal: LoxObject) -> T;
+    fn visit_assignment_expression(&mut self, identifier: &Token, value: &Expr) -> T;
 }
