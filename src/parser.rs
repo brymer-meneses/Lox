@@ -37,7 +37,7 @@ impl<'a> Parser<'a> {
 impl<'a> Parser<'a> {
     fn parse_statement(&mut self) -> ParserResult<Stmt> {
         if self.match_token(&[TokenType::Print]) {
-            return self.parse_print_statement()
+            return self.parse_print_statement();
         }
 
         if self.match_token(&[TokenType::LeftBrace]) {
@@ -76,14 +76,18 @@ impl<'a> Parser<'a> {
             statements.push(statement);
         }
 
-        let right_brace = self.expect(TokenType::RightBrace,
-            ParserError::ExpectedToken(self.peek().location, "}".to_string()))?;
+        let right_brace = self.expect(
+            TokenType::RightBrace,
+            ParserError::ExpectedToken(self.peek().location, "}".to_string()),
+        )?;
 
         // add location of the right brace
         locations = locations + right_brace.location;
 
-        return Ok(Stmt::Block { location: locations , statements })
-
+        return Ok(Stmt::Block {
+            location: locations,
+            statements,
+        });
     }
 
     fn parse_declaration(&mut self) -> ParserResult<Stmt> {
@@ -97,17 +101,13 @@ impl<'a> Parser<'a> {
     fn parse_variable_declaration(&mut self) -> ParserResult<Stmt> {
         let identifier = self.expect(
             TokenType::Identifier,
-            ParserError::ExpectedVariableName(self.peek().location, 
-                self.peek().lexeme.clone()
-            ),
+            ParserError::ExpectedVariableName(self.peek().location, self.peek().lexeme.clone()),
         )?;
-
 
         let expression = match self.match_token(&[TokenType::Equal]) {
             true => Some(self.parse_expression()?),
             false => None,
         };
-
 
         self.expect(
             TokenType::Semicolon,

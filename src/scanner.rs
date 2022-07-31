@@ -10,9 +10,9 @@ pub struct Scanner {
     current: usize,
     start: usize,
     line: usize,
-    // points to the next character after '\n', this is used to 
+    // points to the next character after '\n', this is used to
     // track the positions of the tokens relative to their line.
-    last_line: usize, 
+    last_line: usize,
     tokens: Vec<Token>,
 }
 
@@ -92,7 +92,7 @@ impl Scanner {
             ' ' | '\t' | '\r' => {}
             '\n' => {
                 if !self.is_at_end() {
-                    self.last_line = self.current -1;
+                    self.last_line = self.current;
                     self.line += 1;
                 };
             }
@@ -164,8 +164,12 @@ impl Scanner {
 
         let line_end = self.line;
 
-        let location =
-            SourceLocation::new_multiple_line(line_start, line_end, self.start - self.last_line, self.current -1 - self.last_line);
+        let location = SourceLocation::new_multiple_line(
+            line_start,
+            line_end,
+            self.start - self.last_line,
+            self.current - 1 - self.last_line,
+        );
 
         if self.is_at_end() {
             return Err(ScannerError::UnterminatedString(location));

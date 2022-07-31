@@ -64,12 +64,14 @@ impl LoxError for ParserError {
             ParserError::InvalidAssignmentTarget(location, lexeme) => {
                 eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
                 highlight_location(is_on_repl, source_code, location)
-            },
+            }
             ParserError::ExpectedVariableName(location, lexeme) => {
                 eprintln!("{}: Got invalid variable name: `{}`", "error".red(), lexeme);
                 highlight_location(is_on_repl, source_code, location)
             }
-            _ => { todo!() }
+            _ => {
+                todo!()
+            }
         }
     }
 }
@@ -119,30 +121,47 @@ impl LoxError for InterpreterError {
     }
 }
 
+// struct ErrorMessage<'a> {
+//     is_on_repl: bool,
+//     source: &'a str,
+//     location;''
+//
+// }
+fn format_arrows(start: usize, end: usize) -> String {
+    let mut retval = String::new();
+
+    for i in 0..end+1 {
+        if i < start {
+            retval.push(' ');
+            continue;
+        }
+        retval.push('^');
+    }
+    retval
+}
+
+
 pub fn highlight_location(is_on_repl: bool, source_code: &str, location: &SourceLocation) {
-    let offset = 1;
-
-    // let is_multiline = location.line_start != location.line_end;
-    // if is_multiline { return };
-
     let line_num = location.line_start;
-    let prompt = if is_on_repl {
-        ">".to_string().cyan()
-    } else {
-        line_num.to_string().cyan()
-    };
-    let prompt = format!(
-        "{} {} {}",
-        prompt,
-        "|".cyan(),
-        source_code.lines().nth(line_num - 1).unwrap()
-    );
+    let line_num_string_length = line_num.to_string().len();
 
-    eprintln!("\n{}{}", " ".repeat(offset), prompt);
-    eprintln!(
-        "{}{}{}",
-        " ".repeat(offset + 2 + line_num.to_string().len()),
-        " ".repeat(location.start),
-        "^".repeat(location.end - location.start + 1).yellow()
-    );
+
+    let source = source_code.lines().nth(line_num-1).unwrap();
+
+    let sep = "|".cyan();
+    let repl_col_offset = 3;
+    let file_col_offset = 2;
+    let repl_context = "  >".cyan();
+    let file_context = format!("  {}", line_num.to_string()).cyan();
+
+    let column = if is_on_repl { " ".repeat(repl_col_offset) } else { " ".repeat(file_col_offset + line_num_string_length)};
+    let context = if is_on_repl { repl_context } else { file_context };
+    let arrows = format_arrows(location.start, location.end).yellow();
+
+    eprint!("\n");
+    eprintln!( "{column} {sep}");
+    eprintln!("{context} {sep} {source}");
+    eprintln!( "{column} {sep} {arrows}");
+    eprint!("\n");
+
 }

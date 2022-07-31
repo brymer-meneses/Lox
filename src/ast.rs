@@ -1,4 +1,3 @@
-use crate::environment::Environment;
 use crate::object::LoxObject;
 use crate::source_location::SourceLocation;
 use crate::token::Token;
