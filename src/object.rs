@@ -38,6 +38,32 @@ impl LoxObject {
             LoxObject::Nil { .. } => "nil".to_string(),
         }
     }
+
+    pub fn is_equal(left: LoxObject, right: LoxObject) -> bool {
+        if let (LoxObject::String { value: val1, .. }, LoxObject::String { value: val2, .. }) =
+            (&left, &right)
+        {
+            return val1 == val2;
+        }
+
+        if let (LoxObject::Number { value: val1, .. }, LoxObject::Number { value: val2, .. }) =
+            (&left, &right)
+        {
+            return val1 == val2;
+        }
+
+        if let (LoxObject::Boolean { value: val1, .. }, LoxObject::Boolean { value: val2, .. }) =
+            (&left, &right)
+        {
+            return val1 == val2;
+        }
+
+        if let (LoxObject::Nil { .. }, LoxObject::Nil { .. }) = (&left, &right) {
+            return true;
+        }
+
+        false
+    }
 }
 
 impl Display for LoxObject {

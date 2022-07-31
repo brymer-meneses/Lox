@@ -110,11 +110,75 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
                 }
                 Err(error)
             }
+            TokenType::EqualEqual => {
+                return Ok(LoxObject::Boolean {
+                    location,
+                    value: LoxObject::is_equal(left, right),
+                });
+            }
+            TokenType::BangEqual => {
+                return Ok(LoxObject::Boolean {
+                    location,
+                    value: !LoxObject::is_equal(left, right),
+                });
+            },
+            TokenType::GreaterEqual => {
+                if let (
+                    LoxObject::Number { value: val1, .. },
+                    LoxObject::Number { value: val2, .. },
+                ) = (&left, &right)
+                {
+                    return Ok(LoxObject::Boolean {
+                        location,
+                        value: val1 >= val2,
+                    });
+                }
+                Err(error)
+            },
+            TokenType::Greater => {
+                if let (
+                    LoxObject::Number { value: val1, .. },
+                    LoxObject::Number { value: val2, .. },
+                ) = (&left, &right)
+                {
+                    return Ok(LoxObject::Boolean {
+                        location,
+                        value: val1 > val2,
+                    });
+                }
+                Err(error)
+            }
+            TokenType::LessEqual => {
+                if let (
+                    LoxObject::Number { value: val1, .. },
+                    LoxObject::Number { value: val2, .. },
+                ) = (&left, &right)
+                {
+                    return Ok(LoxObject::Boolean {
+                        location,
+                        value: val1 <= val2,
+                    });
+                }
+                Err(error)
+            },
+            TokenType::Less => {
+                if let (
+                    LoxObject::Number { value: val1, .. },
+                    LoxObject::Number { value: val2, .. },
+                ) = (&left, &right)
+                {
+                    return Ok(LoxObject::Boolean {
+                        location,
+                        value: val1 < val2,
+                    });
+                }
+                Err(error)
+            }
             _ => Err(error),
         }
     }
     fn visit_unary_expression(
-        &self,
+        &mut self,
         operator: &Token,
         right: &Expr,
     ) -> InterpreterResult<LoxObject> {
