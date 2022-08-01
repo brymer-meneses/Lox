@@ -254,7 +254,7 @@ impl Scanner {
             line_start: self.line,
             line_end: self.line,
             start: self.start - self.last_line,
-            end:   self.current -1 - self.last_line,
+            end: self.current - 1 - self.last_line,
         }
     }
 }

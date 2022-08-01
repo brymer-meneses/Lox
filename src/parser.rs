@@ -254,7 +254,7 @@ impl<'a> Parser<'a> {
                     value: false,
                 },
             });
-        }
+        };
 
         if self.match_token(&[TokenType::True]) {
             let location = self.previous().location;
@@ -305,10 +305,11 @@ impl<'a> Parser<'a> {
             });
         }
 
-        Err(ParserError::UnexpectedToken(
-            self.peek().location,
-            self.peek().lexeme.clone(),
-        ))
+        let location = self.peek().location;
+        Ok(Expr::Literal {
+            location,
+            literal: LoxObject::Nil { location },
+        })
     }
 }
 

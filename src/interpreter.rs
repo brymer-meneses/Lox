@@ -213,12 +213,10 @@ impl ExpressionVisitor<InterpreterResult<LoxObject>> for Interpreter {
     fn visit_variable_expression(&self, identifier: &Token) -> InterpreterResult<LoxObject> {
         let value = match self.environment.retrieve(identifier.lexeme.as_str()) {
             Some(value) => Ok(value),
-            None => {
-                Err(InterpreterError::UndefinedVariable(
-                    identifier.location,
-                    identifier.lexeme.clone(),
-                ))
-            }
+            None => Err(InterpreterError::UndefinedVariable(
+                identifier.location,
+                identifier.lexeme.clone(),
+            )),
         };
 
         value
