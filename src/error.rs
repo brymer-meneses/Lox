@@ -2,88 +2,94 @@ use crate::source_location::SourceLocation;
 
 use colored::*;
 
-pub trait LoxError {
-    fn raise(&self, is_on_repl: bool, source_code: &str);
+pub type LoxResult<T> = Result<T, LoxError>;
+
+#[derive(Debug)]
+pub struct LoxError {
+    pub location: SourceLocation,
+    pub kind: LoxErrorKind,
 }
 
-#[derive(PartialEq, Debug)]
-pub enum ScannerError {
-    UnterminatedString(SourceLocation),
-    UnexpectedChar(SourceLocation, char),
+#[derive(Debug)]
+pub enum LoxErrorKind {
+    // scanner errors
+    UnterminatedString,
+    UnexpectedChar {
+        char: char,
+    },
+    // parser errors
+    ExpectedStatement,
+    ExpectedExpression,
+    ExpectedToken {
+        token: String,
+    },
+    ExpectedVariableName {
+        variable: String,
+    },
+    UnexpectedToken {
+        token: String,
+    },
+    InvalidAssignmentTarget {
+        lexeme: String,
+    },
+    // interpreter errors
+    InvalidBinaryOperation {
+        left: String,
+        operator: String,
+        right: String,
+    },
+    InvalidUnaryOperation {
+        operator: String,
+        right: String,
+    },
+    InvalidAssignment {
+        identifier: String,
+    },
+    UndefinedVariable {
+        variable: String,
+    },
 }
 
-#[derive(PartialEq, Debug)]
-pub enum ParserError {
-    ExpectedToken(SourceLocation, String),
-    ExpectedStatement(SourceLocation),
-    ExpectedExpression(SourceLocation),
-    ExpectedVariableName(SourceLocation, String),
-    UnexpectedToken(SourceLocation, String),
-    InvalidAssignmentTarget(SourceLocation, String),
-}
-
-#[derive(PartialEq, Debug)]
-pub enum InterpreterError {
-    InvalidBinaryOperation(SourceLocation, String, String, String),
-    InvalidUnaryOperation(SourceLocation, String, String),
-    InvalidAssignment(SourceLocation, String),
-    UndefinedVariable(SourceLocation, String),
-}
-
-impl LoxError for ScannerError {
-    fn raise(&self, is_on_repl: bool, source_code: &str) {
-        let location = match self {
-            ScannerError::UnexpectedChar(location, c) => {
+impl LoxError {
+    pub fn new(kind: LoxErrorKind, location: SourceLocation) -> Self {
+        LoxError { location, kind }
+    }
+    pub fn raise(&self, is_on_repl: bool, source_code: &str) {
+        match &self.kind {
+            LoxErrorKind::UnexpectedChar { char } => {
                 eprintln!(
                     "{}: Unexpected character: {}",
                     "error".red(),
-                    c.to_string().yellow()
+                    char.to_string().yellow()
                 );
-                location
             }
-            ScannerError::UnterminatedString(location) => {
+            LoxErrorKind::UnterminatedString => {
                 eprintln!("{}: Unterminated string here.", "error".red());
-                location
             }
-        };
-        highlight_location(is_on_repl, source_code, location)
-    }
-}
-
-impl LoxError for ParserError {
-    fn raise(&self, is_on_repl: bool, source_code: &str) {
-        match self {
-            ParserError::ExpectedToken(location, kind) => {
-                eprintln!("{}: Expected token `{}` here.", "error".red(), kind);
-                highlight_location(is_on_repl, source_code, location)
+            LoxErrorKind::ExpectedToken { token } => {
+                eprintln!("{}: Expected token `{}` here.", "error".red(), token);
             }
-            ParserError::ExpectedExpression(location) => {
+            LoxErrorKind::ExpectedExpression => {
                 eprintln!("{}: Expected expression here.", "error".red());
-                highlight_location(is_on_repl, source_code, location)
             }
-            ParserError::UnexpectedToken(location, lexeme) => {
+            LoxErrorKind::UnexpectedToken { token } => {
+                eprintln!("{}: Unexpected token `{}`", "error".red(), token);
+            }
+            LoxErrorKind::InvalidAssignmentTarget { lexeme } => {
                 eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
-                highlight_location(is_on_repl, source_code, location)
             }
-            ParserError::InvalidAssignmentTarget(location, lexeme) => {
-                eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
-                highlight_location(is_on_repl, source_code, location)
+            LoxErrorKind::ExpectedVariableName { variable } => {
+                eprintln!(
+                    "{}: Got invalid variable name: `{}`",
+                    "error".red(),
+                    variable
+                );
             }
-            ParserError::ExpectedVariableName(location, lexeme) => {
-                eprintln!("{}: Got invalid variable name: `{}`", "error".red(), lexeme);
-                highlight_location(is_on_repl, source_code, location)
-            }
-            _ => {
-                todo!()
-            }
-        }
-    }
-}
-
-impl LoxError for InterpreterError {
-    fn raise(&self, is_on_repl: bool, source_code: &str) {
-        match self {
-            InterpreterError::InvalidBinaryOperation(location, left, operator, right) => {
+            LoxErrorKind::InvalidBinaryOperation {
+                left,
+                operator,
+                right,
+            } => {
                 eprintln!(
                     "{}: The operation `{}` is invalid for `{}` and `{}",
                     "error".red(),
@@ -91,46 +97,37 @@ impl LoxError for InterpreterError {
                     left,
                     right
                 );
-                highlight_location(is_on_repl, source_code, location)
             }
-            InterpreterError::InvalidUnaryOperation(location, operator, right) => {
+            LoxErrorKind::InvalidUnaryOperation { operator, right } => {
                 eprintln!(
                     "{}: The operation `{}` is invalid for `{}`",
                     "error".red(),
                     operator,
                     right
                 );
-                highlight_location(is_on_repl, source_code, location)
             }
-            InterpreterError::InvalidAssignment(location, variable) => {
+            LoxErrorKind::InvalidAssignment { identifier } => {
                 eprintln!(
                     "{}: Tried assigning value to `{}` which is undefined.",
                     "error".red(),
-                    variable
+                    identifier
                 );
-                highlight_location(is_on_repl, source_code, location)
             }
-            InterpreterError::UndefinedVariable(location, variable) => {
+            LoxErrorKind::UndefinedVariable { variable } => {
                 eprintln!(
                     "{}: Tried accessing the variable `{}` which is undefined.",
                     "error".red(),
                     variable
                 );
-                highlight_location(is_on_repl, source_code, location)
             }
             _ => {
                 todo!()
             }
-        }
+        };
+        highlight_location(is_on_repl, source_code, &self.location);
     }
 }
 
-// struct ErrorMessage<'a> {
-//     is_on_repl: bool,
-//     source: &'a str,
-//     location;''
-//
-// }
 fn format_arrows(start: usize, end: usize) -> String {
     let mut retval = String::new();
 
@@ -154,7 +151,7 @@ pub fn highlight_location(is_on_repl: bool, source_code: &str, location: &Source
     let repl_col_offset = 3;
     let file_col_offset = 2;
     let repl_context = "  >".cyan();
-    let file_context = format!("  {}", line_num.to_string()).cyan();
+    let file_context = format!("  {}", line_num).cyan();
 
     let column = if is_on_repl {
         " ".repeat(repl_col_offset)
@@ -168,9 +165,9 @@ pub fn highlight_location(is_on_repl: bool, source_code: &str, location: &Source
     };
     let arrows = format_arrows(location.start, location.end).yellow();
 
-    eprint!("\n");
+    eprintln!();
     eprintln!("{column} {sep}");
     eprintln!("{context} {sep} {source}");
     eprintln!("{column} {sep} {arrows}");
-    eprint!("\n");
+    eprintln!();
 }

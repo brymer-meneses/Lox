@@ -11,7 +11,7 @@ pub mod token;
 use std::io::Write;
 
 use colored::{Color, Colorize};
-use error::{ParserError, ScannerError};
+use error::LoxErrorKind;
 
 use crate::error::LoxError;
 use crate::interpreter::Interpreter;
@@ -21,19 +21,23 @@ use crate::scanner::Scanner;
 use crate::ast::Stmt;
 
 pub fn run_prompt() {
-    let mut interpreter = Interpreter::new(None);
+    let mut interpreter = Interpreter::new();
     loop {
         let mut line = line_input(">>> ", Color::BrightBlue);
         if line.trim().is_empty() {
             break;
         };
 
-        while let Err(Error::ParserError(parser_error)) = check_syntax(&line) {
-            if let ParserError::ExpectedToken(..) = parser_error {
+        while let Err(lox_error) = check_syntax(&line) {
+            if let LoxErrorKind::ExpectedToken { .. } = lox_error.kind {
                 let extension_line = line_input("... ", Color::Black);
-                if extension_line.trim().is_empty() { break; };
+                if extension_line.trim().is_empty() {
+                    break;
+                };
                 line.push_str(&extension_line);
+                continue;
             }
+            break;
         }
 
         run(true, &line, &mut interpreter);
@@ -41,7 +45,7 @@ pub fn run_prompt() {
 }
 
 pub fn run_file(filename: &str) {
-    let mut interpreter = Interpreter::new(None);
+    let mut interpreter = Interpreter::new();
     let contents = std::fs::read_to_string(filename).unwrap_or_else(|err| {
         eprintln!("ERROR: {}", err);
         std::process::exit(1);
@@ -57,40 +61,20 @@ fn run(is_on_repl: bool, source_code: &str, interpreter: &mut Interpreter) {
                 interpreter_error.raise(is_on_repl, source_code);
             }
         }
-        Err(error) => match error {
-            Error::ParserError(parser_error) => {
-                parser_error.raise(is_on_repl, source_code);
-            }
-            Error::ScannerError(scanner_error) => {
-                scanner_error.raise(is_on_repl, source_code);
-            }
-        },
+        Err(error) => {
+            error.raise(is_on_repl, source_code);
+        }
     }
 }
 
-enum Error {
-    ParserError(ParserError),
-    ScannerError(ScannerError),
-}
-
-fn check_syntax(source_code: &str) -> Result<Vec<Stmt>, Error> {
+fn check_syntax(source_code: &str) -> Result<Vec<Stmt>, LoxError> {
     let mut scanner = Scanner::new(source_code);
-    let tokens = match scanner.scan() {
-        Ok(value) => value,
-        Err(scanner_error) => {
-            return Err(Error::ScannerError(scanner_error));
-        }
-    };
+    let tokens = scanner.scan()?;
 
     let mut parser = Parser::new(tokens);
-    let statements = match parser.parse() {
-        Ok(value) => value,
-        Err(parser_error) => {
-            return Err(Error::ParserError(parser_error));
-        }
-    };
+    let statements = parser.parse()?;
 
-    return Ok(statements.to_vec());
+    Ok(statements.to_vec())
 }
 
 fn line_input(prompt: &str, color: Color) -> String {

@@ -1,5 +1,4 @@
 use crate::{
-    error::ScannerError,
     object::LoxObject,
     source_location::SourceLocation,
     token::{Token, TokenType},
@@ -16,7 +15,7 @@ pub struct Scanner {
     tokens: Vec<Token>,
 }
 
-type ScannerResult<T> = Result<T, ScannerError>;
+use crate::error::{LoxError, LoxErrorKind, LoxResult};
 
 impl Scanner {
     pub fn new(source_code: &str) -> Self {
@@ -30,7 +29,7 @@ impl Scanner {
         }
     }
 
-    pub fn scan(&mut self) -> ScannerResult<&Vec<Token>> {
+    pub fn scan(&mut self) -> LoxResult<&Vec<Token>> {
         while !self.is_at_end() {
             self.start = self.current;
             self.scan_token()?
@@ -40,7 +39,7 @@ impl Scanner {
         Ok(&self.tokens)
     }
 
-    fn scan_token(&mut self) -> ScannerResult<()> {
+    fn scan_token(&mut self) -> LoxResult<()> {
         let c = self.advance();
         match c {
             ';' => self.add_token(TokenType::Semicolon, None),
@@ -103,9 +102,9 @@ impl Scanner {
                 } else if c.is_alphabetic() || c == '_' {
                     self.scan_identifier()?;
                 } else {
-                    return Err(ScannerError::UnexpectedChar(
+                    return Err(LoxError::new(
+                        LoxErrorKind::UnexpectedChar { char: c },
                         SourceLocation::new_single_line(self.line, self.start, self.current - 1),
-                        c,
                     ));
                 }
             }
@@ -113,7 +112,7 @@ impl Scanner {
         Ok(())
     }
 
-    fn scan_number(&mut self) -> ScannerResult<()> {
+    fn scan_number(&mut self) -> LoxResult<()> {
         while self.peek().is_ascii_digit() {
             self.advance();
         }
@@ -141,7 +140,7 @@ impl Scanner {
         Ok(())
     }
 
-    fn scan_identifier(&mut self) -> ScannerResult<()> {
+    fn scan_identifier(&mut self) -> LoxResult<()> {
         while self.peek().is_alphanumeric() || self.peek() == '_' {
             self.advance();
         }
@@ -152,7 +151,7 @@ impl Scanner {
         Ok(())
     }
 
-    fn scan_string(&mut self) -> ScannerResult<()> {
+    fn scan_string(&mut self) -> LoxResult<()> {
         let line_start = self.line;
 
         while self.peek() != '"' && !self.is_at_end() {
@@ -172,7 +171,7 @@ impl Scanner {
         );
 
         if self.is_at_end() {
-            return Err(ScannerError::UnterminatedString(location));
+            return Err(LoxError::new(LoxErrorKind::UnterminatedString, location));
         }
 
         // consume last ending "

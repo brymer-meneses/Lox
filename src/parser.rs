@@ -2,7 +2,6 @@ use std::usize;
 
 use crate::ast::Expr;
 use crate::ast::Stmt;
-use crate::error::ParserError;
 use crate::object::LoxObject;
 use crate::source_location::SourceLocation;
 use crate::token::{Token, TokenType};
@@ -13,7 +12,9 @@ pub struct Parser<'a> {
     statements: Vec<Stmt>,
 }
 
-type ParserResult<T> = Result<T, ParserError>;
+use crate::error::LoxError;
+use crate::error::LoxErrorKind;
+use crate::error::LoxResult;
 
 // API
 impl<'a> Parser<'a> {
@@ -24,7 +25,7 @@ impl<'a> Parser<'a> {
             statements: Vec::new(),
         }
     }
-    pub fn parse(&mut self) -> ParserResult<&Vec<Stmt>> {
+    pub fn parse(&mut self) -> LoxResult<&Vec<Stmt>> {
         while !self.is_at_end() {
             let statement = self.parse_declaration()?;
             self.statements.push(statement);
@@ -35,7 +36,7 @@ impl<'a> Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    fn parse_statement(&mut self) -> ParserResult<Stmt> {
+    fn parse_statement(&mut self) -> LoxResult<Stmt> {
         if self.match_token(&[TokenType::Print]) {
             return self.parse_print_statement();
         }
@@ -47,18 +48,23 @@ impl<'a> Parser<'a> {
         self.parse_expression_statement()
     }
 
-    fn parse_expression_statement(&mut self) -> ParserResult<Stmt> {
+    fn parse_expression_statement(&mut self) -> LoxResult<Stmt> {
         Ok(Stmt::Expression {
             location: self.peek().location,
             expression: self.parse_expression()?,
         })
     }
 
-    fn parse_print_statement(&mut self) -> ParserResult<Stmt> {
+    fn parse_print_statement(&mut self) -> LoxResult<Stmt> {
         let expression = self.parse_expression()?;
         self.expect(
             TokenType::Semicolon,
-            ParserError::ExpectedToken(self.peek().location, ";".to_string()),
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: ";".to_string(),
+                },
+                self.peek().location,
+            ),
         )?;
         Ok(Stmt::Print {
             location: self.find_location(TokenType::Print) + expression.location(),
@@ -66,7 +72,7 @@ impl<'a> Parser<'a> {
         })
     }
 
-    fn parse_block_statement(&mut self) -> ParserResult<Stmt> {
+    fn parse_block_statement(&mut self) -> LoxResult<Stmt> {
         let mut statements: Vec<Stmt> = Vec::new();
         let mut locations = self.find_location(TokenType::LeftBrace);
 
@@ -78,19 +84,24 @@ impl<'a> Parser<'a> {
 
         let right_brace = self.expect(
             TokenType::RightBrace,
-            ParserError::ExpectedToken(self.peek().location, "}".to_string()),
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: "}".to_string(),
+                },
+                self.peek().location,
+            ),
         )?;
 
         // add location of the right brace
         locations = locations + right_brace.location;
 
-        return Ok(Stmt::Block {
+        Ok(Stmt::Block {
             location: locations,
             statements,
-        });
+        })
     }
 
-    fn parse_declaration(&mut self) -> ParserResult<Stmt> {
+    fn parse_declaration(&mut self) -> LoxResult<Stmt> {
         if self.match_token(&[TokenType::Var]) {
             return self.parse_variable_declaration();
         }
@@ -98,10 +109,15 @@ impl<'a> Parser<'a> {
         self.parse_statement()
     }
 
-    fn parse_variable_declaration(&mut self) -> ParserResult<Stmt> {
+    fn parse_variable_declaration(&mut self) -> LoxResult<Stmt> {
         let identifier = self.expect(
             TokenType::Identifier,
-            ParserError::ExpectedVariableName(self.peek().location, self.peek().lexeme.clone()),
+            LoxError::new(
+                LoxErrorKind::ExpectedVariableName {
+                    variable: ";".to_string(),
+                },
+                self.peek().location,
+            ),
         )?;
 
         let expression = match self.match_token(&[TokenType::Equal]) {
@@ -111,7 +127,12 @@ impl<'a> Parser<'a> {
 
         self.expect(
             TokenType::Semicolon,
-            ParserError::ExpectedToken(self.peek().location, ";".to_string()),
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: ";".to_string(),
+                },
+                self.peek().location,
+            ),
         )?;
 
         Ok(Stmt::VariableDeclaration {
@@ -124,11 +145,11 @@ impl<'a> Parser<'a> {
 
 // parsing expressions
 impl<'a> Parser<'a> {
-    fn parse_expression(&mut self) -> ParserResult<Expr> {
+    fn parse_expression(&mut self) -> LoxResult<Expr> {
         self.parse_assignment()
     }
 
-    fn parse_assignment(&mut self) -> ParserResult<Expr> {
+    fn parse_assignment(&mut self) -> LoxResult<Expr> {
         let expr = self.parse_equality()?;
 
         if self.match_token(&[TokenType::Equal]) {
@@ -145,16 +166,18 @@ impl<'a> Parser<'a> {
                 });
             }
 
-            return Err(ParserError::InvalidAssignmentTarget(
+            return Err(LoxError::new(
+                LoxErrorKind::InvalidAssignmentTarget {
+                    lexeme: expr.to_string(),
+                },
                 location,
-                expr.to_string(),
             ));
         };
 
         Ok(expr)
     }
 
-    fn parse_equality(&mut self) -> ParserResult<Expr> {
+    fn parse_equality(&mut self) -> LoxResult<Expr> {
         let mut expr = self.parse_comparison()?;
 
         while self.match_token(&[TokenType::BangEqual, TokenType::EqualEqual]) {
@@ -172,7 +195,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn parse_comparison(&mut self) -> ParserResult<Expr> {
+    fn parse_comparison(&mut self) -> LoxResult<Expr> {
         let mut expr = self.parse_term()?;
 
         while self.match_token(&[
@@ -195,7 +218,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn parse_term(&mut self) -> ParserResult<Expr> {
+    fn parse_term(&mut self) -> LoxResult<Expr> {
         let mut expr = self.parse_factor()?;
 
         while self.match_token(&[TokenType::Minus, TokenType::Plus]) {
@@ -212,7 +235,7 @@ impl<'a> Parser<'a> {
 
         Ok(expr)
     }
-    fn parse_factor(&mut self) -> ParserResult<Expr> {
+    fn parse_factor(&mut self) -> LoxResult<Expr> {
         let mut expr = self.parse_unary()?;
 
         while self.match_token(&[TokenType::Slash, TokenType::Star]) {
@@ -229,7 +252,7 @@ impl<'a> Parser<'a> {
 
         Ok(expr)
     }
-    fn parse_unary(&mut self) -> ParserResult<Expr> {
+    fn parse_unary(&mut self) -> LoxResult<Expr> {
         if self.match_token(&[TokenType::Bang, TokenType::Minus]) {
             let operator = self.previous();
             let right = self.parse_unary()?;
@@ -244,7 +267,7 @@ impl<'a> Parser<'a> {
         self.parse_primary()
     }
 
-    fn parse_primary(&mut self) -> ParserResult<Expr> {
+    fn parse_primary(&mut self) -> LoxResult<Expr> {
         if self.match_token(&[TokenType::False]) {
             let location = self.previous().location;
             return Ok(Expr::Literal {
@@ -287,7 +310,12 @@ impl<'a> Parser<'a> {
             let expr = self.parse_expression()?;
             self.expect(
                 TokenType::RightParen,
-                ParserError::ExpectedToken(self.peek().location, ")".to_string()),
+                LoxError::new(
+                    LoxErrorKind::ExpectedToken {
+                        token: ")".to_string(),
+                    },
+                    self.peek().location,
+                ),
             )?;
 
             return Ok(Expr::Grouping {
@@ -325,7 +353,7 @@ impl<'a> Parser<'a> {
         false
     }
 
-    fn expect(&mut self, expected: TokenType, error: ParserError) -> ParserResult<&'a Token> {
+    fn expect(&mut self, expected: TokenType, error: LoxError) -> LoxResult<&'a Token> {
         if self.check(&expected) {
             return Ok(self.advance());
         };
