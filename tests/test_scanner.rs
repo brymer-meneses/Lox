@@ -58,8 +58,8 @@ fn it_should_recognize_comments() {
 
 #[test]
 fn it_should_scan_string() {
-    let location1 = SourceLocation::new_single_line(1, 1, 47);
-    let location2 = SourceLocation::new_single_line(1, 49, 89);
+    let location1 = SourceLocation::new_single_line(1, 1, 46);
+    let location2 = SourceLocation::new_single_line(1, 49, 88);
     let mut scanner = Scanner::new(" \"The quick brown fox jumped over the lazy cat.\" \"If you're reading this have a good day!\" ");
     let tokens = scanner.scan().unwrap();
 

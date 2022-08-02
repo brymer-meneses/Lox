@@ -1,21 +1,22 @@
 use std::collections::HashMap;
 
 use crate::object::LoxObject;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Environment {
-    enclosing: Option<Box<Environment>>,
+    enclosing: Option<Rc<RefCell<Environment>>>,
     values: HashMap<String, LoxObject>,
 }
 
 impl Environment {
-    pub fn new(enclosing: Option<Environment>) -> Self {
+    pub fn new(enclosing: Option<&Rc<RefCell<Environment>>>) -> Self {
         Environment {
-            enclosing: enclosing.map(Box::new),
+            enclosing: enclosing.map(Rc::clone),
             values: HashMap::new(),
         }
     }
-
     pub fn define(&mut self, lexeme: String, object: LoxObject) {
         self.values.insert(lexeme, object);
     }
@@ -29,7 +30,7 @@ impl Environment {
         }
 
         if let Some(enclosing) = &mut self.enclosing {
-            enclosing.assign(lexeme, object);
+            enclosing.borrow_mut().assign(lexeme, object);
         }
     }
 
@@ -39,7 +40,7 @@ impl Environment {
         };
 
         if let Some(enclosing) = &self.enclosing {
-            return enclosing.retrieve(lexeme);
+            return enclosing.borrow().retrieve(lexeme);
         }
 
         None
@@ -47,5 +48,13 @@ impl Environment {
 
     pub fn length(&self) -> usize {
         self.values.len()
+    }
+
+    pub fn wrap(enclosing: Rc<RefCell<Environment>>) -> Rc<RefCell<Environment>> {
+        let environment = Environment {
+            enclosing: Some(enclosing),
+            values: HashMap::new(),
+        };
+        Rc::new(RefCell::new(environment))
     }
 }

@@ -7,8 +7,11 @@ use crate::{
     token::TokenType,
 };
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 pub struct Interpreter {
-    environment: Environment,
+    environment: Rc<RefCell<Environment>>,
 }
 
 use crate::error::LoxResult;
@@ -22,7 +25,7 @@ impl Interpreter {
     }
     pub fn new() -> Self {
         Interpreter {
-            environment: Environment::new(None),
+            environment: Rc::new(RefCell::new(Environment::new(None))),
         }
     }
 }
@@ -211,7 +214,7 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
     }
 
     fn visit_variable_expression(&self, identifier: &Token) -> LoxResult<LoxObject> {
-        let value = match self.environment.retrieve(identifier.lexeme.as_str()) {
+        let value = match self.environment.borrow().retrieve(identifier.lexeme.as_str()) {
             Some(value) => Ok(value),
             None => Err(LoxError::new(
                 LoxErrorKind::UndefinedVariable {
@@ -231,6 +234,7 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
         let value = self.evaluate(value)?;
 
         self.environment
+            .borrow_mut()
             .assign(identifier.lexeme.clone(), value.clone());
 
         Ok(value)
@@ -241,7 +245,7 @@ impl StmtVisitor<LoxResult<()>> for Interpreter {
     fn visit_block_statement(&mut self, statements: &[Stmt]) -> LoxResult<()> {
         let previous_environment = self.environment.clone();
 
-        self.environment = Environment::new(Some(previous_environment.clone()));
+        self.environment = Environment::wrap(self.environment.clone());
 
         for statement in statements.iter() {
             self.execute(statement)?
@@ -271,7 +275,7 @@ impl StmtVisitor<LoxResult<()>> for Interpreter {
             },
         };
 
-        self.environment.define(identifier.lexeme.clone(), value);
+        self.environment.borrow_mut().define(identifier.lexeme.clone(), value);
         Ok(())
     }
 }
