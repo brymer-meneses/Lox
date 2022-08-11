@@ -231,7 +231,7 @@ impl<'a> Parser<'a> {
     fn parse_and(&mut self) -> LoxResult<Expr> {
         let mut expr = self.parse_equality()?;
 
-        while self.match_token(&[TokenType::Or]) {
+        while self.match_token(&[TokenType::And]) {
             let operator = self.previous();
             let right = self.parse_equality()?;
 
