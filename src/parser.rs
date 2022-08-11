@@ -193,6 +193,16 @@ impl<'a> Parser<'a> {
 
             let location = expr.location() + equals.location + value.location();
 
+            self.expect(
+                TokenType::Semicolon,
+                LoxError::new(
+                    LoxErrorKind::ExpectedToken {
+                        token: ";".to_string(),
+                    },
+                    self.peek().location,
+                ),
+            )?;
+
             if let Expr::Variable { identifier, .. } = expr {
                 return Ok(Expr::Assignment {
                     location,
