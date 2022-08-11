@@ -23,14 +23,14 @@ use crate::ast::Stmt;
 pub fn run_prompt() {
     let mut interpreter = Interpreter::new();
     loop {
-        let mut line = line_input(">>> ", Color::BrightBlue);
+        let mut line = readline(">>> ", Color::BrightBlue);
         if line.trim().is_empty() {
             break;
         };
 
         while let Err(lox_error) = check_syntax(&line) {
             if let LoxErrorKind::ExpectedToken { .. } = lox_error.kind {
-                let extension_line = line_input("... ", Color::Black);
+                let extension_line = readline("... ", Color::Black);
                 if extension_line.trim().is_empty() {
                     break;
                 };
@@ -74,10 +74,10 @@ fn check_syntax(source_code: &str) -> Result<Vec<Stmt>, LoxError> {
     let mut parser = Parser::new(tokens);
     let statements = parser.parse()?;
 
-    Ok(statements.to_vec())
+    Ok(statements)
 }
 
-fn line_input(prompt: &str, color: Color) -> String {
+fn readline(prompt: &str, color: Color) -> String {
     let mut line = String::new();
     print!("{}", prompt.color(color));
 

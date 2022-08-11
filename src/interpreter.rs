@@ -115,18 +115,14 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
                 }
                 Err(error)
             }
-            TokenType::EqualEqual => {
-                Ok(LoxObject::Boolean {
-                    location,
-                    value: LoxObject::is_equal(left, right),
-                })
-            }
-            TokenType::BangEqual => {
-                Ok(LoxObject::Boolean {
-                    location,
-                    value: !LoxObject::is_equal(left, right),
-                })
-            }
+            TokenType::EqualEqual => Ok(LoxObject::Boolean {
+                location,
+                value: LoxObject::is_equal(left, right),
+            }),
+            TokenType::BangEqual => Ok(LoxObject::Boolean {
+                location,
+                value: !LoxObject::is_equal(left, right),
+            }),
             TokenType::GreaterEqual => {
                 if let (
                     LoxObject::Number { value: val1, .. },
@@ -214,7 +210,11 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
     }
 
     fn visit_variable_expression(&self, identifier: &Token) -> LoxResult<LoxObject> {
-        let value = match self.environment.borrow().retrieve(identifier.lexeme.as_str()) {
+        let value = match self
+            .environment
+            .borrow()
+            .retrieve(identifier.lexeme.as_str())
+        {
             Some(value) => Ok(value),
             None => Err(LoxError::new(
                 LoxErrorKind::UndefinedVariable {
@@ -238,6 +238,25 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
             .assign(identifier.lexeme.clone(), value.clone());
 
         Ok(value)
+    }
+    fn visit_logical_expression(
+        &mut self,
+        left: &Expr,
+        token: &Token,
+        right: &Expr,
+    ) -> LoxResult<LoxObject> {
+        let left = self.evaluate(left)?;
+        if token.kind == TokenType::Or {
+            if left.is_truthy() {
+                return Ok(left);
+            };
+        } else {
+            if !left.is_truthy() {
+                return Ok(left);
+            };
+        }
+
+        Ok(self.evaluate(right)?)
     }
 }
 
@@ -275,7 +294,23 @@ impl StmtVisitor<LoxResult<()>> for Interpreter {
             },
         };
 
-        self.environment.borrow_mut().define(identifier.lexeme.clone(), value);
+        self.environment
+            .borrow_mut()
+            .define(identifier.lexeme.clone(), value);
+        Ok(())
+    }
+    fn visit_if_statement(
+        &mut self,
+        condition: &Expr,
+        then_branch: &Stmt,
+        else_branch: Option<&Box<Stmt>>,
+    ) -> LoxResult<()> {
+        if self.evaluate(condition)?.is_truthy() {
+            self.execute(then_branch)?;
+        } else if else_branch.is_some() {
+            self.execute(&else_branch.unwrap())?;
+        }
+
         Ok(())
     }
 }

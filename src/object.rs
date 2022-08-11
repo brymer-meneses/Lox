@@ -39,6 +39,20 @@ impl LoxObject {
         }
     }
 
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            LoxObject::Number { value, .. } => {
+                if *value == 0.0 {
+                    return false;
+                }
+                return true;
+            }
+            LoxObject::Boolean { value, .. } => *value,
+            LoxObject::String { .. } => true,
+            LoxObject::Nil { .. } => false,
+        }
+    }
+
     pub fn is_equal(left: LoxObject, right: LoxObject) -> bool {
         if let (LoxObject::String { value: val1, .. }, LoxObject::String { value: val2, .. }) =
             (&left, &right)

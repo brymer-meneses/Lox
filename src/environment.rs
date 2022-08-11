@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::collections::{hash_map::Entry, HashMap};
 
 use crate::object::LoxObject;
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Environment {
@@ -22,9 +22,7 @@ impl Environment {
     }
 
     pub fn assign(&mut self, lexeme: String, object: LoxObject) {
-        if let std::collections::hash_map::Entry::Occupied(mut e) =
-            self.values.entry(lexeme.clone())
-        {
+        if let Entry::Occupied(mut e) = self.values.entry(lexeme.clone()) {
             e.insert(object);
             return;
         }

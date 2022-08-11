@@ -20,6 +20,12 @@ pub enum Expr {
         location: SourceLocation,
         literal: LoxObject,
     },
+    Logical {
+        location: SourceLocation,
+        left: Box<Expr>,
+        operator: Token,
+        right: Box<Expr>,
+    },
     Grouping {
         location: SourceLocation,
         expression: Box<Expr>,
@@ -54,6 +60,12 @@ pub enum Stmt {
         identifier: Token,
         expression: Option<Expr>,
     },
+    If {
+        location: SourceLocation,
+        condition: Expr,
+        then_branch: Box<Stmt>,
+        else_branch: Option<Box<Stmt>>,
+    },
 }
 
 impl Stmt {
@@ -63,6 +75,7 @@ impl Stmt {
             Stmt::Expression { location, .. } => *location,
             Stmt::Print { location, .. } => *location,
             Stmt::VariableDeclaration { location, .. } => *location,
+            Stmt::If { location, .. } => *location,
         }
     }
 }
@@ -75,6 +88,7 @@ impl Expr {
             Expr::Grouping { location, .. } => *location,
             Expr::Variable { location, .. } => *location,
             Expr::Assignment { location, .. } => *location,
+            Expr::Logical { location, .. } => *location,
         }
     }
 }
@@ -109,6 +123,14 @@ impl Display for Expr {
             } => {
                 write!(f, "{} = {}", identifier.lexeme, value)
             }
+            Expr::Logical {
+                left,
+                operator,
+                right,
+                ..
+            } => {
+                write!(f, "{} {} {}", left, operator.lexeme, right)
+            }
         }
     }
 }
@@ -124,6 +146,12 @@ pub trait StmtVisitor<T> {
                 expression,
                 ..
             } => self.visit_variable_declaration_statement(identifier, expression),
+            Stmt::If {
+                condition,
+                then_branch,
+                else_branch,
+                ..
+            } => self.visit_if_statement(condition, then_branch, else_branch.as_ref()),
         }
     }
 
@@ -134,6 +162,12 @@ pub trait StmtVisitor<T> {
         &mut self,
         identifer: &Token,
         value: &Option<Expr>,
+    ) -> T;
+    fn visit_if_statement(
+        &mut self,
+        condition: &Expr,
+        then_branch: &Stmt,
+        else_branch: Option<&Box<Stmt>>,
     ) -> T;
 }
 
@@ -149,6 +183,12 @@ pub trait ExpressionVisitor<T> {
             Expr::Unary {
                 operator, right, ..
             } => self.visit_unary_expression(operator, right),
+            Expr::Logical {
+                left,
+                operator,
+                right,
+                ..
+            } => self.visit_logical_expression(left, operator, right),
             Expr::Grouping { expression, .. } => self.visit_grouping_expression(expression),
             Expr::Literal { literal, .. } => self.visit_literal_expression(literal.clone()),
             Expr::Variable { identifier, .. } => self.visit_variable_expression(identifier),
@@ -161,6 +201,7 @@ pub trait ExpressionVisitor<T> {
     fn visit_variable_expression(&self, expression: &Token) -> T;
     fn visit_binary_expression(&mut self, left: &Expr, token: &Token, right: &Expr) -> T;
     fn visit_unary_expression(&mut self, operator: &Token, right: &Expr) -> T;
+    fn visit_logical_expression(&mut self, left: &Expr, token: &Token, right: &Expr) -> T;
     fn visit_literal_expression(&self, literal: LoxObject) -> T;
     fn visit_assignment_expression(&mut self, identifier: &Token, value: &Expr) -> T;
 }
