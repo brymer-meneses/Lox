@@ -66,6 +66,11 @@ pub enum Stmt {
         then_branch: Box<Stmt>,
         else_branch: Option<Box<Stmt>>,
     },
+    While {
+        location: SourceLocation,
+        condition: Expr,
+        body: Box<Stmt>
+    }
 }
 
 impl Stmt {
@@ -152,6 +157,11 @@ pub trait StmtVisitor<T> {
                 else_branch,
                 ..
             } => self.visit_if_statement(condition, then_branch, else_branch.as_ref()),
+            Stmt::While {
+                condition,
+                body,
+                ..
+            } => self.visit_while_loop_statement(condition, body),
         }
     }
 
@@ -169,6 +179,7 @@ pub trait StmtVisitor<T> {
         then_branch: &Stmt,
         else_branch: Option<&Box<Stmt>>,
     ) -> T;
+    fn visit_while_loop_statement(&mut self, condition: &Expr, body: &Stmt ) -> T;
 }
 
 pub trait ExpressionVisitor<T> {

@@ -313,4 +313,11 @@ impl StmtVisitor<LoxResult<()>> for Interpreter {
 
         Ok(())
     }
+    fn visit_while_loop_statement(&mut self, condition: &Expr, body: &Stmt) -> LoxResult<()> {
+        while self.evaluate(condition)?.is_truthy() {
+            self.execute(body)?;
+        }
+
+        Ok(())
+    }
 }

@@ -176,6 +176,19 @@ impl<'a> Parser<'a> {
             expression,
         })
     }
+    fn parse_while_loop_statement(&mut self) -> LoxResult<Stmt>{
+        self.expect(TokenType::LeftParen, LoxError::new(LoxErrorKind::ExpectedToken { token:
+            "(".to_string() }, self.peek().location))?;
+
+        let condition = self.parse_expression()?;
+
+        self.expect(TokenType::RightParen, LoxError::new(LoxErrorKind::ExpectedToken { token:
+            ")".to_string() }, self.peek().location))?;
+
+        let body = self.parse_statement()?;
+
+        Ok(Stmt::While { location: condition.location() + body.location(), condition, body: Box::new(body) })
+    }
 }
 
 // parsing expressions
