@@ -28,7 +28,7 @@ pub fn run_prompt() {
             break;
         };
 
-        while let Err(lox_error) = check_syntax(&line) {
+        while let Err(lox_error) = parse_statements(&line) {
             if let LoxErrorKind::ExpectedToken { .. } = lox_error.kind {
                 let extension_line = readline("... ", Color::Black);
                 if extension_line.trim().is_empty() {
@@ -55,7 +55,7 @@ pub fn run_file(filename: &str) {
 }
 
 fn run(is_on_repl: bool, source_code: &str, interpreter: &mut Interpreter) {
-    match check_syntax(source_code) {
+    match parse_statements(source_code) {
         Ok(statements) => {
             if let Err(interpreter_error) = interpreter.interpret(&statements) {
                 interpreter_error.raise(is_on_repl, source_code);
@@ -67,7 +67,7 @@ fn run(is_on_repl: bool, source_code: &str, interpreter: &mut Interpreter) {
     }
 }
 
-fn check_syntax(source_code: &str) -> Result<Vec<Stmt>, LoxError> {
+fn parse_statements(source_code: &str) -> Result<Vec<Stmt>, LoxError> {
     let mut scanner = Scanner::new(source_code);
     let tokens = scanner.scan()?;
 
