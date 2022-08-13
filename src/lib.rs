@@ -8,8 +8,6 @@ pub mod scanner;
 pub mod source_location;
 pub mod token;
 
-use std::io::Write;
-
 use colored::{Color, Colorize};
 use error::LoxErrorKind;
 
@@ -20,17 +18,29 @@ use crate::scanner::Scanner;
 
 use crate::ast::Stmt;
 
+use rustyline::Editor;
+
 pub fn run_prompt() {
     let mut interpreter = Interpreter::new();
+    let mut rl = Editor::<()>::new().expect("Something went wrong starting prompt.");
+
     loop {
-        let mut line = readline(">>> ", Color::BrightBlue);
+        let mut line = match readline(&mut rl, ">>> ", Color::BrightBlue) {
+            Some(line) => line,
+            None => break,
+        };
+
         if line.trim().is_empty() {
             break;
         };
 
         while let Err(lox_error) = parse_statements(&line) {
             if let LoxErrorKind::ExpectedToken { .. } = lox_error.kind {
-                let extension_line = readline("... ", Color::Black);
+                let extension_line = match readline(&mut rl, "... ", Color::Black) {
+                    Some(line) => line,
+                    None => break,
+                };
+
                 if extension_line.trim().is_empty() {
                     break;
                 };
@@ -77,14 +87,16 @@ fn parse_statements(source_code: &str) -> Result<Vec<Stmt>, LoxError> {
     Ok(statements)
 }
 
-fn readline(prompt: &str, color: Color) -> String {
-    let mut line = String::new();
-    print!("{}", prompt.color(color));
+fn readline(rl: &mut Editor<()>, prompt: &str, color: Color) -> Option<String> {
+    let prompt = prompt.color(color).to_string();
 
-    let _ = std::io::stdout().flush();
-    std::io::stdin()
-        .read_line(&mut line)
-        .expect("ERROR: did not enter a correct string");
-
-    line
+    let result = rl.readline(&prompt);
+    match result {
+        Ok(mut line) => {
+            rl.add_history_entry(line.as_str());
+            line.push_str("\n");
+            Some(line)
+        }
+        _ => None
+    }
 }
