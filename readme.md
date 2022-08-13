@@ -20,8 +20,8 @@ use another programming language to follow the book.
 
 To build this application, you will need to [install](https://rust-lang.org/learn/get-started) the Rust Toolchain.
 Then, clone this repo, ensure you're on the root-directory of this project, and run the following command.
+
 ```
 cargo run
-
 ```
 
