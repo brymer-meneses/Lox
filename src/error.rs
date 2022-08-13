@@ -5,87 +5,101 @@ use colored::*;
 pub type LoxResult<T> = Result<T, LoxError>;
 
 #[derive(Debug)]
-pub struct LoxError {
-    pub location: SourceLocation,
-    pub kind: LoxErrorKind,
-}
-
-#[derive(Debug)]
-pub enum LoxErrorKind {
+pub enum LoxError {
     // scanner errors
-    UnterminatedString,
+    UnterminatedString {
+        location: SourceLocation,
+    },
     UnexpectedChar {
+        location: SourceLocation,
         char: char,
     },
     // parser errors
-    ExpectedStatement,
-    ExpectedExpression,
+    ExpectedStatement {
+        location: SourceLocation,
+    },
+    ExpectedExpression {
+        location: SourceLocation,
+    },
     ExpectedToken {
+        location: SourceLocation,
         token: String,
     },
     ExpectedVariableName {
+        location: SourceLocation,
         variable: String,
     },
     UnexpectedToken {
+        location: SourceLocation,
         token: String,
     },
     InvalidAssignmentTarget {
+        location: SourceLocation,
         lexeme: String,
     },
     // interpreter errors
     InvalidBinaryOperation {
+        location: SourceLocation,
         left: String,
         operator: String,
         right: String,
     },
     InvalidUnaryOperation {
+        location: SourceLocation,
         operator: String,
         right: String,
     },
     InvalidAssignment {
+        location: SourceLocation,
         identifier: String,
     },
     UndefinedVariable {
+        location: SourceLocation,
         variable: String,
     },
 }
 
 impl LoxError {
-    pub fn new(kind: LoxErrorKind, location: SourceLocation) -> Self {
-        LoxError { location, kind }
-    }
     pub fn raise(&self, is_on_repl: bool, source_code: &str) {
-        match &self.kind {
-            LoxErrorKind::UnexpectedChar { char } => {
+        match &self {
+            LoxError::UnexpectedChar { char, location } => {
                 eprintln!(
                     "{}: Unexpected character: {}",
                     "error".red(),
                     char.to_string().yellow()
                 );
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::UnterminatedString => {
+            LoxError::UnterminatedString { location } => {
                 eprintln!("{}: Unterminated string here.", "error".red());
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::ExpectedToken { token } => {
+            LoxError::ExpectedToken { token, location } => {
                 eprintln!("{}: Expected token `{}` here.", "error".red(), token);
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::ExpectedExpression => {
+            LoxError::ExpectedExpression { location } => {
                 eprintln!("{}: Expected expression here.", "error".red());
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::UnexpectedToken { token } => {
+            LoxError::UnexpectedToken { token, location } => {
                 eprintln!("{}: Unexpected token `{}`", "error".red(), token);
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::InvalidAssignmentTarget { lexeme } => {
+            LoxError::InvalidAssignmentTarget { lexeme, location } => {
                 eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::ExpectedVariableName { variable } => {
+            LoxError::ExpectedVariableName { variable, location } => {
                 eprintln!(
                     "{}: Got invalid variable name: `{}`",
                     "error".red(),
                     variable
                 );
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::InvalidBinaryOperation {
+            LoxError::InvalidBinaryOperation {
+                location,
                 left,
                 operator,
                 right,
@@ -97,34 +111,44 @@ impl LoxError {
                     left,
                     right
                 );
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::InvalidUnaryOperation { operator, right } => {
+            LoxError::InvalidUnaryOperation {
+                operator,
+                right,
+                location,
+            } => {
                 eprintln!(
                     "{}: The operation `{}` is invalid for `{}`",
                     "error".red(),
                     operator,
                     right
                 );
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::InvalidAssignment { identifier } => {
+            LoxError::InvalidAssignment {
+                identifier,
+                location,
+            } => {
                 eprintln!(
                     "{}: Tried assigning value to `{}` which is undefined.",
                     "error".red(),
                     identifier
                 );
+                highlight_location(is_on_repl, source_code, location);
             }
-            LoxErrorKind::UndefinedVariable { variable } => {
+            LoxError::UndefinedVariable { variable, location } => {
                 eprintln!(
                     "{}: Tried accessing the variable `{}` which is undefined.",
                     "error".red(),
                     variable
                 );
+                highlight_location(is_on_repl, source_code, location);
             }
             _ => {
                 todo!()
             }
         };
-        highlight_location(is_on_repl, source_code, &self.location);
     }
 }
 

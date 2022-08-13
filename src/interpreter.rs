@@ -2,7 +2,7 @@ use crate::environment::Environment;
 use crate::token::Token;
 use crate::{
     ast::{Expr, ExpressionVisitor, Stmt, StmtVisitor},
-    error::{LoxError, LoxErrorKind},
+    error::LoxError,
     object::LoxObject,
     token::TokenType,
 };
@@ -43,14 +43,12 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
         let left = self.evaluate(left)?;
         let right = self.evaluate(right)?;
         let location = left.location() + token.location + right.location();
-        let error = LoxError::new(
-            LoxErrorKind::InvalidBinaryOperation {
-                left: left.to_string(),
-                operator: token.lexeme.to_owned(),
-                right: right.to_string(),
-            },
+        let error = LoxError::InvalidBinaryOperation {
             location,
-        );
+            left: left.to_string(),
+            operator: token.lexeme.to_owned(),
+            right: right.to_string(),
+        };
 
         match token.kind {
             TokenType::Plus => {
@@ -197,13 +195,11 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
             });
         }
 
-        Err(LoxError::new(
-            LoxErrorKind::InvalidUnaryOperation {
-                operator: operator.lexeme.clone(),
-                right: right.type_to_string(),
-            },
-            operator.location + right.location(),
-        ))
+        Err(LoxError::InvalidUnaryOperation {
+            location: operator.location + right.location(),
+            operator: operator.lexeme.clone(),
+            right: right.type_to_string(),
+        })
     }
     fn visit_literal_expression(&self, literal: LoxObject) -> LoxResult<LoxObject> {
         Ok(literal)
@@ -216,12 +212,10 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
             .retrieve(identifier.lexeme.as_str())
         {
             Some(value) => Ok(value),
-            None => Err(LoxError::new(
-                LoxErrorKind::UndefinedVariable {
-                    variable: identifier.lexeme.clone(),
-                },
-                identifier.location,
-            )),
+            None => Err(LoxError::UndefinedVariable {
+                location: identifier.location,
+                variable: identifier.lexeme.clone(),
+            }),
         };
 
         value

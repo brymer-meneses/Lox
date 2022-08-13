@@ -15,7 +15,7 @@ pub struct Scanner {
     tokens: Vec<Token>,
 }
 
-use crate::error::{LoxError, LoxErrorKind, LoxResult};
+use crate::error::{LoxError, LoxResult};
 
 impl Scanner {
     pub fn new(source_code: &str) -> Self {
@@ -102,10 +102,14 @@ impl Scanner {
                 } else if c.is_alphabetic() || c == '_' {
                     self.scan_identifier()?;
                 } else {
-                    return Err(LoxError::new(
-                        LoxErrorKind::UnexpectedChar { char: c },
-                        SourceLocation::new_single_line(self.line, self.start, self.current - 1),
-                    ));
+                    return Err(LoxError::UnexpectedChar {
+                        char: c,
+                        location: SourceLocation::new_single_line(
+                            self.line,
+                            self.start,
+                            self.current - 1,
+                        ),
+                    });
                 }
             }
         }
@@ -171,7 +175,7 @@ impl Scanner {
         );
 
         if self.is_at_end() {
-            return Err(LoxError::new(LoxErrorKind::UnterminatedString, location));
+            return Err(LoxError::UnterminatedString { location });
         }
 
         // consume last ending "

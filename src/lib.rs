@@ -9,7 +9,6 @@ pub mod source_location;
 pub mod token;
 
 use colored::{Color, Colorize};
-use error::LoxErrorKind;
 
 use crate::error::LoxError;
 use crate::interpreter::Interpreter;
@@ -34,20 +33,17 @@ pub fn run_prompt() {
             break;
         };
 
-        while let Err(lox_error) = parse_statements(&line) {
-            if let LoxErrorKind::ExpectedToken { .. } = lox_error.kind {
-                let extension_line = match readline(&mut rl, "... ", Color::Black) {
-                    Some(line) => line,
-                    None => break,
-                };
+        while let Err(LoxError::ExpectedToken { .. }) = parse_statements(&line) {
+            let extension_line = match readline(&mut rl, "... ", Color::Black) {
+                Some(line) => line,
+                None => break,
+            };
 
-                if extension_line.trim().is_empty() {
-                    break;
-                };
-                line.push_str(&extension_line);
-                continue;
-            }
-            break;
+            if extension_line.trim().is_empty() {
+                break;
+            };
+            line.push_str(&extension_line);
+            continue;
         }
 
         run(true, &line, &mut interpreter);

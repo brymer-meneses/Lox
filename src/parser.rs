@@ -12,7 +12,6 @@ pub struct Parser<'a> {
 }
 
 use crate::error::LoxError;
-use crate::error::LoxErrorKind;
 use crate::error::LoxResult;
 
 // API
@@ -59,22 +58,18 @@ impl<'a> Parser<'a> {
     fn parse_if_statement(&mut self) -> LoxResult<Stmt> {
         self.expect(
             TokenType::LeftParen,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: "(".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: "(".to_string(),
+            },
         )?;
         let condition = self.parse_expression()?;
         self.expect(
             TokenType::RightParen,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: ")".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: ")".to_string(),
+            },
         )?;
 
         let then_branch = Box::new(self.parse_statement()?);
@@ -95,17 +90,15 @@ impl<'a> Parser<'a> {
         let expression = self.parse_expression()?;
         self.expect(
             TokenType::Semicolon,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: ";".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: ";".to_string(),
+            },
         )?;
 
         Ok(Stmt::Expression {
             location: expression.location() + self.previous().location,
-            expression
+            expression,
         })
     }
 
@@ -113,12 +106,10 @@ impl<'a> Parser<'a> {
         let expression = self.parse_expression()?;
         self.expect(
             TokenType::Semicolon,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: ";".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: ";".to_string(),
+            },
         )?;
         Ok(Stmt::Print {
             location: self.find_location(TokenType::Print) + expression.location(),
@@ -138,12 +129,10 @@ impl<'a> Parser<'a> {
 
         let right_brace = self.expect(
             TokenType::RightBrace,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: "}".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: "}".to_string(),
+            },
         )?;
 
         // add location of the right brace
@@ -166,12 +155,10 @@ impl<'a> Parser<'a> {
     fn parse_variable_declaration(&mut self) -> LoxResult<Stmt> {
         let identifier = self.expect(
             TokenType::Identifier,
-            LoxError::new(
-                LoxErrorKind::ExpectedVariableName {
-                    variable: ";".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedVariableName {
+                location: self.peek().location,
+                variable: ";".to_string(),
+            },
         )?;
 
         let expression = match self.match_token(&[TokenType::Equal]) {
@@ -181,12 +168,10 @@ impl<'a> Parser<'a> {
 
         self.expect(
             TokenType::Semicolon,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: ";".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: ";".to_string(),
+            },
         )?;
 
         Ok(Stmt::VariableDeclaration {
@@ -198,24 +183,20 @@ impl<'a> Parser<'a> {
     fn parse_while_loop_statement(&mut self) -> LoxResult<Stmt> {
         self.expect(
             TokenType::LeftParen,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: "(".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: "(".to_string(),
+            },
         )?;
 
         let condition = self.parse_expression()?;
 
         self.expect(
             TokenType::RightParen,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: ")".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: ")".to_string(),
+            },
         )?;
 
         let body = self.parse_statement()?;
@@ -239,12 +220,10 @@ impl<'a> Parser<'a> {
         //
         self.expect(
             TokenType::LeftParen,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: "(".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: "(".to_string(),
+            },
         )?;
 
         // Parse initializer
@@ -266,12 +245,10 @@ impl<'a> Parser<'a> {
 
         self.expect(
             TokenType::Semicolon,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: ";".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: ";".to_string(),
+            },
         )?;
 
         // Parse increment
@@ -282,12 +259,10 @@ impl<'a> Parser<'a> {
 
         self.expect(
             TokenType::RightParen,
-            LoxError::new(
-                LoxErrorKind::ExpectedToken {
-                    token: ")".to_string(),
-                },
-                self.peek().location,
-            ),
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                token: ")".to_string(),
+            },
         )?;
 
         let mut body = self.parse_statement()?;
@@ -336,7 +311,6 @@ impl<'a> Parser<'a> {
 
             let location = expr.location() + equals.location + value.location();
 
-
             if let Expr::Variable { identifier, .. } = expr {
                 return Ok(Expr::Assignment {
                     location,
@@ -345,12 +319,10 @@ impl<'a> Parser<'a> {
                 });
             }
 
-            return Err(LoxError::new(
-                LoxErrorKind::InvalidAssignmentTarget {
-                    lexeme: expr.to_string(),
-                },
+            return Err(LoxError::InvalidAssignmentTarget {
                 location,
-            ));
+                lexeme: expr.to_string(),
+            });
         };
 
         Ok(expr)
@@ -532,12 +504,10 @@ impl<'a> Parser<'a> {
 
             self.expect(
                 TokenType::RightParen,
-                LoxError::new(
-                    LoxErrorKind::ExpectedToken {
-                        token: ")".to_string(),
-                    },
-                    self.peek().location,
-                ),
+                LoxError::ExpectedToken {
+                    location: self.peek().location,
+                    token: ")".to_string(),
+                },
             )?;
 
             return Ok(Expr::Grouping {
@@ -555,12 +525,10 @@ impl<'a> Parser<'a> {
             });
         }
 
-        Err(LoxError::new(
-            LoxErrorKind::UnexpectedToken {
-                token: self.peek().lexeme.clone(),
-            },
-            self.peek().location,
-        ))
+        Err(LoxError::UnexpectedToken {
+            location: self.peek().location,
+            token: self.peek().lexeme.clone(),
+        })
     }
 }
 
