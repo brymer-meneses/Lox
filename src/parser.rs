@@ -84,9 +84,20 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_expression_statement(&mut self) -> LoxResult<Stmt> {
+        let expression = self.parse_expression()?;
+        self.expect(
+            TokenType::Semicolon,
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: ";".to_string(),
+                },
+                self.peek().location,
+            ),
+        )?;
+
         Ok(Stmt::Expression {
-            location: self.peek().location,
-            expression: self.parse_expression()?,
+            location: expression.location() + self.previous().location,
+            expression
         })
     }
 
