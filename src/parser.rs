@@ -45,6 +45,14 @@ impl<'a> Parser<'a> {
             return self.parse_if_statement();
         }
 
+        if self.match_token(&[TokenType::While]) {
+            return self.parse_while_loop_statement();
+        }
+
+        if self.match_token(&[TokenType::For]) {
+            return self.parse_for_loop_statement();
+        }
+
         self.parse_expression_statement()
     }
 
@@ -187,18 +195,129 @@ impl<'a> Parser<'a> {
             expression,
         })
     }
-    fn parse_while_loop_statement(&mut self) -> LoxResult<Stmt>{
-        self.expect(TokenType::LeftParen, LoxError::new(LoxErrorKind::ExpectedToken { token:
-            "(".to_string() }, self.peek().location))?;
+    fn parse_while_loop_statement(&mut self) -> LoxResult<Stmt> {
+        self.expect(
+            TokenType::LeftParen,
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: "(".to_string(),
+                },
+                self.peek().location,
+            ),
+        )?;
 
         let condition = self.parse_expression()?;
 
-        self.expect(TokenType::RightParen, LoxError::new(LoxErrorKind::ExpectedToken { token:
-            ")".to_string() }, self.peek().location))?;
+        self.expect(
+            TokenType::RightParen,
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: ")".to_string(),
+                },
+                self.peek().location,
+            ),
+        )?;
 
         let body = self.parse_statement()?;
 
-        Ok(Stmt::While { location: condition.location() + body.location(), condition, body: Box::new(body) })
+        Ok(Stmt::While {
+            location: condition.location() + body.location(),
+            condition,
+            body: Box::new(body),
+        })
+    }
+
+    fn parse_for_loop_statement(&mut self) -> LoxResult<Stmt> {
+        // for (initializer; condition; increment) body
+
+        // NOTE:
+        //   desugar for loop into a while loop
+        //   {
+        //      initializer
+        //      while (condition) body
+        //   }
+        //
+        self.expect(
+            TokenType::LeftParen,
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: "(".to_string(),
+                },
+                self.peek().location,
+            ),
+        )?;
+
+        // Parse initializer
+        let initializer: Option<Stmt>;
+        if self.match_token(&[TokenType::Semicolon]) {
+            initializer = None;
+        } else if self.match_token(&[TokenType::Var]) {
+            initializer = Some(self.parse_variable_declaration()?);
+        } else {
+            initializer = Some(self.parse_expression_statement()?);
+        }
+
+        // Parse condition
+        let mut condition: Option<Expr> = None;
+
+        if !self.match_token(&[TokenType::Semicolon]) {
+            condition = Some(self.parse_expression()?);
+        }
+
+        self.expect(
+            TokenType::Semicolon,
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: ";".to_string(),
+                },
+                self.peek().location,
+            ),
+        )?;
+
+        // Parse increment
+        let mut increment: Option<Expr> = None;
+        if !self.match_token(&[TokenType::RightParen]) {
+            increment = Some(self.parse_expression()?);
+        }
+
+        self.expect(
+            TokenType::RightParen,
+            LoxError::new(
+                LoxErrorKind::ExpectedToken {
+                    token: ")".to_string(),
+                },
+                self.peek().location,
+            ),
+        )?;
+
+        let mut body = self.parse_statement()?;
+
+        if increment.is_some() {
+            let location = body.location() + increment.as_ref().unwrap().location();
+            body = Stmt::Block { location ,
+                statements: vec![
+                    body,
+                    Stmt::Expression { location: increment.as_ref().unwrap().location() ,
+                        expression: increment.unwrap() }
+
+                ]
+
+            }
+        }
+
+        if condition.is_none() {
+            let location = condition.as_ref().unwrap().location();
+            condition = Some(Expr::Literal { location, literal:
+                LoxObject::Boolean { location, value: true }  })
+
+        }
+        body = Stmt::While { location: body.location(), condition: condition.unwrap(), body: Box::new(body)};
+
+        if initializer.is_some() {
+            body = Stmt::Block { location: body.location(), statements: vec![initializer.unwrap(), body] };
+        }
+
+        Ok(body)
     }
 }
 
@@ -217,15 +336,6 @@ impl<'a> Parser<'a> {
 
             let location = expr.location() + equals.location + value.location();
 
-            self.expect(
-                TokenType::Semicolon,
-                LoxError::new(
-                    LoxErrorKind::ExpectedToken {
-                        token: ";".to_string(),
-                    },
-                    self.peek().location,
-                ),
-            )?;
 
             if let Expr::Variable { identifier, .. } = expr {
                 return Ok(Expr::Assignment {
