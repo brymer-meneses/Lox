@@ -165,28 +165,17 @@ fn format_arrows(start: usize, end: usize) -> String {
     retval
 }
 
-pub fn highlight_location(is_on_repl: bool, source_code: &str, location: &SourceLocation) {
+pub fn highlight_location(source_code: &str, location: &SourceLocation) {
     let line_num = location.line_start;
     let line_num_string_length = line_num.to_string().len();
 
     let source = source_code.lines().nth(line_num - 1).unwrap();
 
     let sep = "|".cyan();
-    let repl_col_offset = 3;
-    let file_col_offset = 2;
-    let repl_context = "  >".cyan();
-    let file_context = format!("  {}", line_num).cyan();
+    let offset = 2;
+    let context = format!("  {}", line_num).cyan();
+    let column = " ".repeat(offset + line_num_string_length);
 
-    let column = if is_on_repl {
-        " ".repeat(repl_col_offset)
-    } else {
-        " ".repeat(file_col_offset + line_num_string_length)
-    };
-    let context = if is_on_repl {
-        repl_context
-    } else {
-        file_context
-    };
     let arrows = format_arrows(location.start, location.end).yellow();
 
     eprintln!();
