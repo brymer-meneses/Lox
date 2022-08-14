@@ -1,6 +1,7 @@
 pub mod ast;
 pub mod environment;
 pub mod error;
+pub mod function;
 pub mod interpreter;
 pub mod object;
 pub mod parser;
@@ -23,12 +24,7 @@ pub fn run_prompt() {
     let mut interpreter = Interpreter::new();
     let mut rl = Editor::<()>::new().expect("Something went wrong starting prompt.");
 
-    loop {
-        let mut line = match readline(&mut rl, ">>> ", Color::BrightBlue) {
-            Some(line) => line,
-            None => break,
-        };
-
+    while let Some(mut line) = readline(&mut rl, ">>> ", Color::BrightBlue) {
         if line.trim().is_empty() {
             break;
         };
@@ -46,7 +42,7 @@ pub fn run_prompt() {
             continue;
         }
 
-        run(true, &line, &mut interpreter);
+        run(&line, &mut interpreter);
     }
 }
 
@@ -57,18 +53,18 @@ pub fn run_file(filename: &str) {
         std::process::exit(1);
     });
 
-    run(false, &contents, &mut interpreter);
+    run(&contents, &mut interpreter);
 }
 
-fn run(is_on_repl: bool, source_code: &str, interpreter: &mut Interpreter) {
+fn run(source_code: &str, interpreter: &mut Interpreter) {
     match parse_statements(source_code) {
         Ok(statements) => {
             if let Err(interpreter_error) = interpreter.interpret(&statements) {
-                interpreter_error.raise(is_on_repl, source_code);
+                interpreter_error.raise(source_code);
             }
         }
         Err(error) => {
-            error.raise(is_on_repl, source_code);
+            error.raise(source_code);
         }
     }
 }
@@ -90,9 +86,9 @@ fn readline(rl: &mut Editor<()>, prompt: &str, color: Color) -> Option<String> {
     match result {
         Ok(mut line) => {
             rl.add_history_entry(line.as_str());
-            line.push_str("\n");
+            line.push('\n');
             Some(line)
         }
-        _ => None
+        _ => None,
     }
 }

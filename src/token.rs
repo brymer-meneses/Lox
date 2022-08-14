@@ -1,7 +1,9 @@
+use std::default;
+
 use crate::object::LoxObject;
 use crate::source_location::SourceLocation;
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub kind: TokenType,
     pub location: SourceLocation,
@@ -9,7 +11,7 @@ pub struct Token {
     pub literal: Option<LoxObject>,
 }
 
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone, Default)]
 pub enum TokenType {
     // Single character tokens
     LeftBrace,
@@ -58,7 +60,7 @@ pub enum TokenType {
     Var,
     While,
 
-    // One or two character tokens
+    #[default]
     EOF,
 }
 

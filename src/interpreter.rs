@@ -1,4 +1,6 @@
 use crate::environment::Environment;
+use crate::function::Function;
+use crate::source_location::SourceLocation;
 use crate::token::Token;
 use crate::{
     ast::{Expr, ExpressionVisitor, Stmt, StmtVisitor},
@@ -10,7 +12,10 @@ use crate::{
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use std::time::{SystemTime, UNIX_EPOCH};
+
 pub struct Interpreter {
+    pub globals: Rc<RefCell<Environment>>,
     environment: Rc<RefCell<Environment>>,
 }
 
@@ -24,9 +29,43 @@ impl Interpreter {
         Ok(())
     }
     pub fn new() -> Self {
+        let globals = Rc::new(RefCell::new(Environment::new(None)));
+
+        let clock = LoxObject::Callable {
+            function: Function::Native {
+                arity: 0,
+                body: |_| LoxObject::Number {
+                    location: SourceLocation::dummy(),
+                    value: SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .expect("Could not retrieve time.")
+                        .as_millis() as f64,
+                },
+            },
+        };
+
+        globals.borrow_mut().define("clock".to_string(), clock);
+
         Interpreter {
-            environment: Rc::new(RefCell::new(Environment::new(None))),
+            environment: globals.clone(),
+            globals,
         }
+    }
+    pub fn execute_block(
+        &mut self,
+        statements: &[Stmt],
+        environment: Rc<RefCell<Environment>>,
+    ) -> LoxResult<()> {
+        let previous_environment = self.environment.clone();
+
+        self.environment = environment;
+
+        for statement in statements.iter() {
+            self.execute(statement)?
+        }
+
+        self.environment = previous_environment;
+        Ok(())
     }
 }
 
@@ -197,7 +236,7 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
 
         Err(LoxError::InvalidUnaryOperation {
             location: operator.location + right.location(),
-            operator: operator.lexeme.clone(),
+            operator: operator.lexeme.to_owned(),
             right: right.type_to_string(),
         })
     }
@@ -227,9 +266,17 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
     ) -> LoxResult<LoxObject> {
         let value = self.evaluate(value)?;
 
-        self.environment
+        let assignment_status = self
+            .environment
             .borrow_mut()
             .assign(identifier.lexeme.clone(), value.clone());
+
+        if assignment_status.is_err() {
+            return Err(LoxError::InvalidAssignment {
+                location: identifier.location,
+                identifier: identifier.lexeme.to_owned(),
+            });
+        }
 
         Ok(value)
     }
@@ -244,31 +291,61 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
             if left.is_truthy() {
                 return Ok(left);
             };
-        } else {
-            if !left.is_truthy() {
-                return Ok(left);
-            };
+        } else if !left.is_truthy() {
+            return Ok(left);
         }
 
-        Ok(self.evaluate(right)?)
+        self.evaluate(right)
+    }
+    fn visit_call_expression(&mut self, callee: &Expr, arguments: &[Expr]) -> LoxResult<LoxObject> {
+        let callee = self.evaluate(callee)?;
+
+        let mut args = Vec::new();
+        for argument in arguments.iter() {
+            args.push(self.evaluate(argument)?);
+        }
+
+        match callee {
+            LoxObject::Callable { function } => Ok(function.call(self, &args)),
+            _ => Err(LoxError::InvalidCall {
+                location: callee.location(),
+            }),
+        }
     }
 }
 
 impl StmtVisitor<LoxResult<()>> for Interpreter {
     fn visit_block_statement(&mut self, statements: &[Stmt]) -> LoxResult<()> {
-        let previous_environment = self.environment.clone();
+        let environment = Environment::wrap(self.environment.clone());
 
-        self.environment = Environment::wrap(self.environment.clone());
-
-        for statement in statements.iter() {
-            self.execute(statement)?
-        }
-
-        self.environment = previous_environment;
-        Ok(())
+        self.execute_block(statements, environment)
     }
     fn visit_expression_statement(&mut self, expression: &Expr) -> LoxResult<()> {
         self.evaluate(expression)?;
+        Ok(())
+    }
+    fn visit_function_statement(
+        &mut self,
+        name: &Token,
+        parameters: &[Token],
+        body: &Stmt,
+    ) -> LoxResult<()> {
+        let body = match body {
+            Stmt::Block { statements, .. } => statements,
+            _ => panic!("Expected a block statement for function definition"),
+        };
+
+        let function = LoxObject::Callable {
+            function: Function::User {
+                name: Box::new(name.clone()),
+                params: parameters.to_vec(),
+                body: body.to_vec(),
+            },
+        };
+
+        self.environment
+            .borrow_mut()
+            .define(name.lexeme.clone(), function);
         Ok(())
     }
     fn visit_print_statement(&mut self, expression: &Expr) -> LoxResult<()> {
@@ -302,7 +379,7 @@ impl StmtVisitor<LoxResult<()>> for Interpreter {
         if self.evaluate(condition)?.is_truthy() {
             self.execute(then_branch)?;
         } else if else_branch.is_some() {
-            self.execute(&else_branch.unwrap())?;
+            self.execute(else_branch.unwrap())?;
         }
 
         Ok(())

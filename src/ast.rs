@@ -3,7 +3,7 @@ use crate::source_location::SourceLocation;
 use crate::token::Token;
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Binary {
         location: SourceLocation,
@@ -30,6 +30,12 @@ pub enum Expr {
         location: SourceLocation,
         expression: Box<Expr>,
     },
+    Call {
+        location: SourceLocation,
+        callee: Box<Expr>,
+        paren: Token,
+        arguments: Vec<Expr>,
+    },
     Variable {
         location: SourceLocation,
         identifier: Token,
@@ -41,7 +47,7 @@ pub enum Expr {
     },
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Stmt {
     Block {
         location: SourceLocation,
@@ -71,6 +77,12 @@ pub enum Stmt {
         condition: Expr,
         body: Box<Stmt>,
     },
+    Function {
+        location: SourceLocation,
+        name: Token,
+        parameters: Vec<Token>,
+        body: Box<Stmt>,
+    },
 }
 
 impl Stmt {
@@ -82,6 +94,7 @@ impl Stmt {
             Stmt::VariableDeclaration { location, .. } => *location,
             Stmt::If { location, .. } => *location,
             Stmt::While { location, .. } => *location,
+            _ => todo!(),
         }
     }
 }
@@ -95,6 +108,7 @@ impl Expr {
             Expr::Variable { location, .. } => *location,
             Expr::Assignment { location, .. } => *location,
             Expr::Logical { location, .. } => *location,
+            Expr::Call { location, .. } => *location,
         }
     }
 }
@@ -137,6 +151,9 @@ impl Display for Expr {
             } => {
                 write!(f, "{} {} {}", left, operator.lexeme, right)
             }
+            _ => {
+                todo!()
+            }
         }
     }
 }
@@ -161,6 +178,12 @@ pub trait StmtVisitor<T> {
             Stmt::While {
                 condition, body, ..
             } => self.visit_while_loop_statement(condition, body),
+            Stmt::Function {
+                name,
+                parameters,
+                body,
+                ..
+            } => self.visit_function_statement(name, parameters, body),
         }
     }
 
@@ -179,6 +202,7 @@ pub trait StmtVisitor<T> {
         else_branch: Option<&Box<Stmt>>,
     ) -> T;
     fn visit_while_loop_statement(&mut self, condition: &Expr, body: &Stmt) -> T;
+    fn visit_function_statement(&mut self, name: &Token, parameters: &[Token], body: &Stmt) -> T;
 }
 
 pub trait ExpressionVisitor<T> {
@@ -205,6 +229,9 @@ pub trait ExpressionVisitor<T> {
             Expr::Assignment {
                 identifier, value, ..
             } => self.visit_assignment_expression(identifier, value),
+            Expr::Call {
+                callee, arguments, ..
+            } => self.visit_call_expression(&callee, arguments),
         }
     }
     fn visit_grouping_expression(&mut self, expression: &Expr) -> T;
@@ -214,4 +241,5 @@ pub trait ExpressionVisitor<T> {
     fn visit_logical_expression(&mut self, left: &Expr, token: &Token, right: &Expr) -> T;
     fn visit_literal_expression(&self, literal: LoxObject) -> T;
     fn visit_assignment_expression(&mut self, identifier: &Token, value: &Expr) -> T;
+    fn visit_call_expression(&mut self, callee: &Expr, arguments: &[Expr]) -> T;
 }

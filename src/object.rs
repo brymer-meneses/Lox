@@ -1,7 +1,9 @@
-use crate::source_location::SourceLocation;
+use crate::ast::Stmt;
+use crate::token::Token;
+use crate::{function::Function, source_location::SourceLocation};
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum LoxObject {
     String {
         location: SourceLocation,
@@ -18,6 +20,9 @@ pub enum LoxObject {
     Nil {
         location: SourceLocation,
     },
+    Callable {
+        function: Function,
+    },
 }
 
 impl LoxObject {
@@ -27,6 +32,7 @@ impl LoxObject {
             LoxObject::Number { location, .. } => *location,
             LoxObject::Boolean { location, .. } => *location,
             LoxObject::Nil { location, .. } => *location,
+            LoxObject::Callable { function } => todo!(),
         }
     }
 
@@ -36,6 +42,7 @@ impl LoxObject {
             LoxObject::Number { .. } => "number".to_string(),
             LoxObject::Boolean { .. } => "boolean".to_string(),
             LoxObject::Nil { .. } => "nil".to_string(),
+            LoxObject::Callable { .. } => "callable".to_string(),
         }
     }
 
@@ -45,38 +52,53 @@ impl LoxObject {
                 if *value == 0.0 {
                     return false;
                 }
-                return true;
+                true
             }
             LoxObject::Boolean { value, .. } => *value,
             LoxObject::String { .. } => true,
+            LoxObject::Callable { .. } => true,
             LoxObject::Nil { .. } => false,
         }
     }
 
     pub fn is_equal(left: LoxObject, right: LoxObject) -> bool {
-        if let (LoxObject::String { value: val1, .. }, LoxObject::String { value: val2, .. }) =
-            (&left, &right)
-        {
-            return val1 == val2;
+        match (left, right) {
+            (LoxObject::String { value: val1, .. }, LoxObject::String { value: val2, .. }) => {
+                val1 == val2
+            }
+            (LoxObject::Number { value: val1, .. }, LoxObject::Number { value: val2, .. }) => {
+                val1 == val2
+            }
+            (LoxObject::Boolean { value: val1, .. }, LoxObject::Boolean { value: val2, .. }) => {
+                val1 == val2
+            }
+            (LoxObject::Nil { .. }, LoxObject::Nil { .. }) => true,
+            _ => false,
         }
+    }
+    pub fn define_user_function(function: &Stmt) -> Self {
+        let (name, params, body) = match function {
+            Stmt::Function {
+                name,
+                parameters,
+                body,
+                ..
+            } => (name, parameters, body),
+            _ => panic!("Expected function statement."),
+        };
 
-        if let (LoxObject::Number { value: val1, .. }, LoxObject::Number { value: val2, .. }) =
-            (&left, &right)
-        {
-            return val1 == val2;
+        let body = match body.as_ref() {
+            Stmt::Block { statements, .. } => statements,
+            _ => panic!("Expected block statement as a body for a function."),
+        };
+
+        LoxObject::Callable {
+            function: Function::User {
+                name: Box::new(name.clone()),
+                params: params.to_vec(),
+                body: body.to_vec(),
+            },
         }
-
-        if let (LoxObject::Boolean { value: val1, .. }, LoxObject::Boolean { value: val2, .. }) =
-            (&left, &right)
-        {
-            return val1 == val2;
-        }
-
-        if let (LoxObject::Nil { .. }, LoxObject::Nil { .. }) = (&left, &right) {
-            return true;
-        }
-
-        false
     }
 }
 
@@ -87,6 +109,7 @@ impl Display for LoxObject {
             LoxObject::Number { value, .. } => write!(f, "{}", value),
             LoxObject::Boolean { value, .. } => write!(f, "{}", value),
             LoxObject::Nil { .. } => write!(f, "nil"),
+            LoxObject::Callable { .. } => write!(f, "callable"),
         }
     }
 }

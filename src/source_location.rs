@@ -1,7 +1,7 @@
 use std::cmp::{max, min};
 use std::ops;
 
-#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone, Default)]
 pub struct SourceLocation {
     // start and end position of lines
     pub line_start: usize,
@@ -27,6 +27,14 @@ impl SourceLocation {
             line_start: line,
             start,
             end,
+        }
+    }
+    pub fn dummy() -> Self {
+        SourceLocation {
+            line_end: 0,
+            line_start: 0,
+            start: 0,
+            end: 0,
         }
     }
 }

@@ -4,7 +4,7 @@ use crate::object::LoxObject;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Environment {
     enclosing: Option<Rc<RefCell<Environment>>>,
     values: HashMap<String, LoxObject>,
@@ -21,15 +21,18 @@ impl Environment {
         self.values.insert(lexeme, object);
     }
 
-    pub fn assign(&mut self, lexeme: String, object: LoxObject) {
-        if let Entry::Occupied(mut e) = self.values.entry(lexeme.clone()) {
+    pub fn assign(&mut self, lexeme: String, object: LoxObject) -> Result<(), ()> {
+        if let Entry::Occupied(mut e) = self.values.entry(lexeme.to_owned()) {
             e.insert(object);
-            return;
+            return Ok(());
         }
 
         if let Some(enclosing) = &mut self.enclosing {
-            enclosing.borrow_mut().assign(lexeme, object);
+            enclosing.borrow_mut().assign(lexeme, object)?;
+            return Ok(());
         }
+
+        Err(())
     }
 
     pub fn retrieve(&self, lexeme: &str) -> Option<LoxObject> {

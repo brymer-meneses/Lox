@@ -23,9 +23,16 @@ pub enum LoxError {
     },
     ExpectedToken {
         location: SourceLocation,
-        token: String,
+        message: String,
     },
-    ExpectedVariableName {
+    ExpectedSemicolon {
+        location: SourceLocation,
+    },
+    InvalidVariableName {
+        location: SourceLocation,
+        variable: String,
+    },
+    InvalidFunctionName {
         location: SourceLocation,
         variable: String,
     },
@@ -57,46 +64,49 @@ pub enum LoxError {
         location: SourceLocation,
         variable: String,
     },
+    ExceededMaximumArity {
+        location: SourceLocation,
+    },
+    InvalidCall {
+        location: SourceLocation,
+    },
 }
 
 impl LoxError {
-    pub fn raise(&self, is_on_repl: bool, source_code: &str) {
+    pub fn raise(&self, source_code: &str) {
+        let error: ColoredString = "error".red();
+
         match &self {
             LoxError::UnexpectedChar { char, location } => {
                 eprintln!(
-                    "{}: Unexpected character: {}",
-                    "error".red(),
+                    "{error}: Unexpected character: {}",
                     char.to_string().yellow()
                 );
-                highlight_location(is_on_repl, source_code, location);
+                highlight_location(source_code, location);
             }
             LoxError::UnterminatedString { location } => {
-                eprintln!("{}: Unterminated string here.", "error".red());
-                highlight_location(is_on_repl, source_code, location);
+                eprintln!("{error}: Unterminated string here.");
+                highlight_location(source_code, location);
             }
-            LoxError::ExpectedToken { token, location } => {
-                eprintln!("{}: Expected token `{}` here.", "error".red(), token);
-                highlight_location(is_on_repl, source_code, location);
+            LoxError::ExpectedToken { message, location } => {
+                eprintln!("{error}: {}", message);
+                highlight_location(source_code, location);
             }
             LoxError::ExpectedExpression { location } => {
-                eprintln!("{}: Expected expression here.", "error".red());
-                highlight_location(is_on_repl, source_code, location);
+                eprintln!("{error}: Expected expression here.");
+                highlight_location(source_code, location);
             }
             LoxError::UnexpectedToken { token, location } => {
-                eprintln!("{}: Unexpected token `{}`", "error".red(), token);
-                highlight_location(is_on_repl, source_code, location);
+                eprintln!("{error}: Unexpected token `{token}`");
+                highlight_location(source_code, location);
             }
             LoxError::InvalidAssignmentTarget { lexeme, location } => {
-                eprintln!("{}: Unexpected token `{}`", "error".red(), lexeme);
-                highlight_location(is_on_repl, source_code, location);
+                eprintln!("{error}: Unexpected token `{lexeme}`");
+                highlight_location(source_code, location);
             }
-            LoxError::ExpectedVariableName { variable, location } => {
-                eprintln!(
-                    "{}: Got invalid variable name: `{}`",
-                    "error".red(),
-                    variable
-                );
-                highlight_location(is_on_repl, source_code, location);
+            LoxError::InvalidVariableName { variable, location } => {
+                eprintln!("{error}: Got invalid variable name: `{}`", variable);
+                highlight_location(source_code, location);
             }
             LoxError::InvalidBinaryOperation {
                 location,
@@ -105,13 +115,10 @@ impl LoxError {
                 right,
             } => {
                 eprintln!(
-                    "{}: The operation `{}` is invalid for `{}` and `{}",
-                    "error".red(),
-                    operator,
-                    left,
-                    right
+                    "{error}: The operation `{}` is invalid for `{}` and `{}",
+                    operator, left, right
                 );
-                highlight_location(is_on_repl, source_code, location);
+                highlight_location(source_code, location);
             }
             LoxError::InvalidUnaryOperation {
                 operator,
@@ -119,35 +126,33 @@ impl LoxError {
                 location,
             } => {
                 eprintln!(
-                    "{}: The operation `{}` is invalid for `{}`",
-                    "error".red(),
-                    operator,
-                    right
+                    "{error}: The operation `{}` is invalid for `{}`",
+                    operator, right
                 );
-                highlight_location(is_on_repl, source_code, location);
+                highlight_location(source_code, location);
             }
             LoxError::InvalidAssignment {
                 identifier,
                 location,
             } => {
                 eprintln!(
-                    "{}: Tried assigning value to `{}` which is undefined.",
-                    "error".red(),
+                    "{error}: Tried assigning value to `{}` which is undefined.",
                     identifier
                 );
-                highlight_location(is_on_repl, source_code, location);
+                highlight_location(source_code, location);
             }
             LoxError::UndefinedVariable { variable, location } => {
                 eprintln!(
-                    "{}: Tried accessing the variable `{}` which is undefined.",
-                    "error".red(),
+                    "{error}: Tried accessing the variable `{}` which is undefined.",
                     variable
                 );
-                highlight_location(is_on_repl, source_code, location);
+                highlight_location(source_code, location);
             }
-            _ => {
-                todo!()
+            LoxError::ExpectedSemicolon { location } => {
+                eprintln!("{error}: Expected semicolon here.");
+                highlight_location(source_code, location);
             }
+            _ => todo!(),
         };
     }
 }

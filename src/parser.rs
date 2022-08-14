@@ -60,7 +60,7 @@ impl<'a> Parser<'a> {
             TokenType::LeftParen,
             LoxError::ExpectedToken {
                 location: self.peek().location,
-                token: "(".to_string(),
+                message: "Expected ( after for loop declaration".to_string(),
             },
         )?;
         let condition = self.parse_expression()?;
@@ -68,7 +68,7 @@ impl<'a> Parser<'a> {
             TokenType::RightParen,
             LoxError::ExpectedToken {
                 location: self.peek().location,
-                token: ")".to_string(),
+                message: "Expected ) after condition.".to_string(),
             },
         )?;
 
@@ -90,9 +90,8 @@ impl<'a> Parser<'a> {
         let expression = self.parse_expression()?;
         self.expect(
             TokenType::Semicolon,
-            LoxError::ExpectedToken {
+            LoxError::ExpectedSemicolon {
                 location: self.peek().location,
-                token: ";".to_string(),
             },
         )?;
 
@@ -106,9 +105,8 @@ impl<'a> Parser<'a> {
         let expression = self.parse_expression()?;
         self.expect(
             TokenType::Semicolon,
-            LoxError::ExpectedToken {
+            LoxError::ExpectedSemicolon {
                 location: self.peek().location,
-                token: ";".to_string(),
             },
         )?;
         Ok(Stmt::Print {
@@ -131,7 +129,7 @@ impl<'a> Parser<'a> {
             TokenType::RightBrace,
             LoxError::ExpectedToken {
                 location: self.peek().location,
-                token: "}".to_string(),
+                message: "Expected { after block statement".to_string(),
             },
         )?;
 
@@ -145,6 +143,10 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_declaration(&mut self) -> LoxResult<Stmt> {
+        if self.match_token(&[TokenType::Function]) {
+            return self.parse_function();
+        }
+
         if self.match_token(&[TokenType::Var]) {
             return self.parse_variable_declaration();
         }
@@ -152,12 +154,81 @@ impl<'a> Parser<'a> {
         self.parse_statement()
     }
 
+    fn parse_function(&mut self) -> LoxResult<Stmt> {
+        let name = self.expect(
+            TokenType::Identifier,
+            LoxError::InvalidFunctionName {
+                location: self.peek().location,
+                variable: "".to_string(),
+            },
+        )?;
+
+        self.expect(
+            TokenType::LeftParen,
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                message: "(".to_string(),
+            },
+        )?;
+
+        let mut parameters = Vec::new();
+        if !self.check(&TokenType::RightParen) {
+            loop {
+                if parameters.len() >= 255 {
+                    return Err(LoxError::ExceededMaximumArity {
+                        location: name.location,
+                    });
+                }
+
+                parameters.push(
+                    self.expect(
+                        TokenType::Identifier,
+                        LoxError::InvalidFunctionName {
+                            location: self.peek().location,
+                            variable: "".to_string(),
+                        },
+                    )?
+                    .clone(),
+                );
+
+                if !self.match_token(&[TokenType::Comma]) {
+                    break;
+                }
+            }
+        }
+
+        self.expect(
+            TokenType::RightParen,
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                message: ")".to_string(),
+            },
+        )?;
+
+        self.expect(
+            TokenType::LeftBrace,
+            LoxError::ExpectedToken {
+                location: self.peek().location,
+                message: "{".to_string(),
+            },
+        )?;
+
+        let body = self.parse_block_statement()?;
+
+        Ok(Stmt::Function {
+            location: name.location,
+            name: name.to_owned(),
+            parameters,
+            body: Box::new(body),
+        })
+    }
+
     fn parse_variable_declaration(&mut self) -> LoxResult<Stmt> {
         let identifier = self.expect(
             TokenType::Identifier,
-            LoxError::ExpectedVariableName {
+            LoxError::InvalidVariableName {
                 location: self.peek().location,
-                variable: ";".to_string(),
+                variable: self.peek().lexeme.to_owned(),
             },
         )?;
 
@@ -168,9 +239,8 @@ impl<'a> Parser<'a> {
 
         self.expect(
             TokenType::Semicolon,
-            LoxError::ExpectedToken {
+            LoxError::ExpectedSemicolon {
                 location: self.peek().location,
-                token: ";".to_string(),
             },
         )?;
 
@@ -185,7 +255,7 @@ impl<'a> Parser<'a> {
             TokenType::LeftParen,
             LoxError::ExpectedToken {
                 location: self.peek().location,
-                token: "(".to_string(),
+                message: "Expected ( after while keyword.".to_string(),
             },
         )?;
 
@@ -195,7 +265,7 @@ impl<'a> Parser<'a> {
             TokenType::RightParen,
             LoxError::ExpectedToken {
                 location: self.peek().location,
-                token: ")".to_string(),
+                message: "Expected ) after the condition.".to_string(),
             },
         )?;
 
@@ -222,7 +292,7 @@ impl<'a> Parser<'a> {
             TokenType::LeftParen,
             LoxError::ExpectedToken {
                 location: self.peek().location,
-                token: "(".to_string(),
+                message: "Expected ( after `for` keyword".to_string(),
             },
         )?;
 
@@ -245,9 +315,8 @@ impl<'a> Parser<'a> {
 
         self.expect(
             TokenType::Semicolon,
-            LoxError::ExpectedToken {
+            LoxError::ExpectedSemicolon {
                 location: self.peek().location,
-                token: ";".to_string(),
             },
         )?;
 
@@ -261,7 +330,7 @@ impl<'a> Parser<'a> {
             TokenType::RightParen,
             LoxError::ExpectedToken {
                 location: self.peek().location,
-                token: ")".to_string(),
+                message: "Expected )".to_string(),
             },
         )?;
 
@@ -269,27 +338,39 @@ impl<'a> Parser<'a> {
 
         if increment.is_some() {
             let location = body.location() + increment.as_ref().unwrap().location();
-            body = Stmt::Block { location ,
+            body = Stmt::Block {
+                location,
                 statements: vec![
                     body,
-                    Stmt::Expression { location: increment.as_ref().unwrap().location() ,
-                        expression: increment.unwrap() }
-
-                ]
-
+                    Stmt::Expression {
+                        location: increment.as_ref().unwrap().location(),
+                        expression: increment.unwrap(),
+                    },
+                ],
             }
         }
 
         if condition.is_none() {
             let location = condition.as_ref().unwrap().location();
-            condition = Some(Expr::Literal { location, literal:
-                LoxObject::Boolean { location, value: true }  })
-
+            condition = Some(Expr::Literal {
+                location,
+                literal: LoxObject::Boolean {
+                    location,
+                    value: true,
+                },
+            })
         }
-        body = Stmt::While { location: body.location(), condition: condition.unwrap(), body: Box::new(body)};
+        body = Stmt::While {
+            location: body.location(),
+            condition: condition.unwrap(),
+            body: Box::new(body),
+        };
 
         if initializer.is_some() {
-            body = Stmt::Block { location: body.location(), statements: vec![initializer.unwrap(), body] };
+            body = Stmt::Block {
+                location: body.location(),
+                statements: vec![initializer.unwrap(), body],
+            };
         }
 
         Ok(body)
@@ -435,6 +516,7 @@ impl<'a> Parser<'a> {
 
         Ok(expr)
     }
+
     fn parse_unary(&mut self) -> LoxResult<Expr> {
         if self.match_token(&[TokenType::Bang, TokenType::Minus]) {
             let operator = self.previous();
@@ -447,9 +529,61 @@ impl<'a> Parser<'a> {
             });
         }
 
-        self.parse_primary()
+        self.parse_call()
     }
 
+    fn finish_call(&mut self, callee: Expr) -> LoxResult<Expr> {
+        let mut arguments: Vec<Expr> = Vec::new();
+        let mut location = self.peek().location;
+
+        if !self.check(&TokenType::RightParen) {
+            loop {
+                let arg = self.parse_expression()?;
+                location = location + arg.location();
+
+                if arguments.len() >= 255 {
+                    return Err(LoxError::ExceededMaximumArity { location });
+                }
+
+                arguments.push(arg);
+
+                if !self.match_token(&[TokenType::Comma]) {
+                    break;
+                };
+            }
+        }
+
+        let paren = self
+            .expect(
+                TokenType::RightParen,
+                LoxError::ExpectedToken {
+                    location: self.peek().location,
+                    message: "Expected after call )".to_string(),
+                },
+            )?
+            .clone();
+
+        Ok(Expr::Call {
+            location,
+            callee: Box::new(callee),
+            paren,
+            arguments,
+        })
+    }
+
+    fn parse_call(&mut self) -> LoxResult<Expr> {
+        let mut expr = self.parse_primary()?;
+
+        loop {
+            if self.match_token(&[TokenType::LeftParen]) {
+                expr = self.finish_call(expr)?;
+            } else {
+                break;
+            }
+        }
+
+        Ok(expr)
+    }
     fn parse_primary(&mut self) -> LoxResult<Expr> {
         if self.match_token(&[TokenType::False]) {
             let location = self.previous().location;
@@ -490,23 +624,21 @@ impl<'a> Parser<'a> {
         }
 
         if self.match_token(&[TokenType::LeftParen]) {
-            let expr: Expr;
-
             if self.match_token(&[TokenType::RightParen]) {
                 let location = self.previous().location;
                 return Ok(Expr::Literal {
                     location,
                     literal: LoxObject::Nil { location },
                 });
-            } else {
-                expr = self.parse_expression()?;
-            }
+            };
+
+            let expr = self.parse_expression()?;
 
             self.expect(
                 TokenType::RightParen,
                 LoxError::ExpectedToken {
                     location: self.peek().location,
-                    token: ")".to_string(),
+                    message: "Expected enclosing ) after grouping expression.".to_string(),
                 },
             )?;
 
@@ -525,9 +657,8 @@ impl<'a> Parser<'a> {
             });
         }
 
-        Err(LoxError::UnexpectedToken {
+        Err(LoxError::ExpectedExpression {
             location: self.peek().location,
-            token: self.peek().lexeme.clone(),
         })
     }
 }
@@ -568,10 +699,6 @@ impl<'a> Parser<'a> {
 
     fn peek(&self) -> &'a Token {
         &self.tokens[self.current]
-    }
-
-    fn peek_next(&self) -> &'a Token {
-        &self.tokens[self.current + 1]
     }
 
     fn previous(&self) -> &'a Token {
