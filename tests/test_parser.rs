@@ -18,6 +18,7 @@ fn it_should_parse_primary() {
                 value: 5.55,
             }),
         ),
+        Token::new(TokenType::Semicolon, location, ";".to_string(), None),
         Token::new(TokenType::EOF, location, "".to_string(), None),
     ];
     let mut parser = Parser::new(&tokens);
@@ -54,6 +55,7 @@ fn it_should_parse_grouping() {
             Some(literal.clone()),
         ),
         Token::new(TokenType::RightParen, location, ")".to_string(), None),
+        Token::new(TokenType::Semicolon, location, ";".to_string(), None),
         Token::new(TokenType::EOF, location, "".to_string(), None),
     ];
     let mut parser = Parser::new(&tokens);
