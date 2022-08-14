@@ -44,6 +44,7 @@ impl Scanner {
         match c {
             ';' => self.add_token(TokenType::Semicolon, None),
             '.' => self.add_token(TokenType::Dot, None),
+            ',' => self.add_token(TokenType::Comma, None),
             '*' => self.add_token(TokenType::Star, None),
             '+' => self.add_token(TokenType::Plus, None),
             '-' => self.add_token(TokenType::Minus, None),

@@ -5,7 +5,7 @@ use lox::token::TokenType;
 
 #[test]
 fn it_should_scan_single_char_tokens() {
-    let mut scanner = Scanner::new("{ } ( ) / . ! + - * > < =");
+    let mut scanner = Scanner::new("{ } ( ) / . ! + - * > < = ,");
     let tokens = scanner.scan().unwrap();
 
     let correct_types = vec![
@@ -22,6 +22,7 @@ fn it_should_scan_single_char_tokens() {
         TokenType::Greater,
         TokenType::Less,
         TokenType::Equal,
+        TokenType::Comma,
         TokenType::EOF,
     ];
 
