@@ -36,6 +36,10 @@ impl<'a> Parser<'a> {
             return self.parse_print_statement();
         }
 
+        if self.match_token(&[TokenType::Return]) {
+            return self.parse_return_statement();
+        }
+
         if self.match_token(&[TokenType::LeftBrace]) {
             return self.parse_block_statement();
         }
@@ -112,6 +116,26 @@ impl<'a> Parser<'a> {
         Ok(Stmt::Print {
             location: self.find_location(TokenType::Print) + expression.location(),
             expression,
+        })
+    }
+
+    fn parse_return_statement(&mut self) -> LoxResult<Stmt> {
+        let _ = self.previous();
+        let mut value = None;
+        if !self.check(&TokenType::Semicolon) {
+            value = Some(self.parse_expression()?);
+        }
+
+        self.expect(
+            TokenType::Semicolon,
+            LoxError::ExpectedSemicolon {
+                location: self.peek().location,
+            },
+        )?;
+
+        Ok(Stmt::Return {
+            location: self.find_location(TokenType::Return) + self.previous().location,
+            value,
         })
     }
 
@@ -415,7 +439,7 @@ impl<'a> Parser<'a> {
             let operator = self.previous();
             let right = self.parse_and()?;
 
-            expr = Expr::Binary {
+            expr = Expr::Logical {
                 location: expr.location() + operator.location + right.location(),
                 left: Box::new(expr),
                 operator: operator.clone(),

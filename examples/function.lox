@@ -4,7 +4,7 @@ fun gauss(n) {
   for (var i=1; i<=n; i=i+1) {
     sum = sum + i;
   }
-  print sum;
+  return sum;
 }
 
 fun sayHi(first, last) {
@@ -12,4 +12,5 @@ fun sayHi(first, last) {
 }
 
 sayHi("Dear", "Reader");
-gauss(100);
+print gauss(100);
+

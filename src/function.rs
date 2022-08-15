@@ -1,4 +1,6 @@
-use crate::{ ast::Stmt, interpreter::Interpreter, object::LoxObject, token::Token, };
+use crate::{
+    ast::Stmt, error::LoxError, interpreter::Interpreter, object::LoxObject, token::Token,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Function {
@@ -31,7 +33,8 @@ impl Function {
                     Ok(..) => LoxObject::Nil {
                         location: name.location,
                     },
-                    _ => panic!("Error!"),
+                    Err(LoxError::Return { value }) => value,
+                    Err(e) => panic!("{:#?}",e),
                 }
             }
         }

@@ -391,4 +391,14 @@ impl StmtVisitor<LoxResult<()>> for Interpreter {
 
         Ok(())
     }
+    fn visit_return_statement(&mut self, value: Option<&Expr>) -> LoxResult<()> {
+        let mut result = LoxObject::Nil {
+            location: SourceLocation::dummy(),
+        };
+        if let Some(value) = value {
+            result = self.evaluate(value)?;
+        }
+
+        Err(LoxError::Return { value: result })
+    }
 }

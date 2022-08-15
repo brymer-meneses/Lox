@@ -83,6 +83,10 @@ pub enum Stmt {
         parameters: Vec<Token>,
         body: Box<Stmt>,
     },
+    Return {
+        location: SourceLocation,
+        value: Option<Expr>,
+    },
 }
 
 impl Stmt {
@@ -94,7 +98,8 @@ impl Stmt {
             Stmt::VariableDeclaration { location, .. } => *location,
             Stmt::If { location, .. } => *location,
             Stmt::While { location, .. } => *location,
-            _ => todo!(),
+            Stmt::Return { location, .. } => *location,
+            Stmt::Function { location, .. } => *location,
         }
     }
 }
@@ -184,6 +189,7 @@ pub trait StmtVisitor<T> {
                 body,
                 ..
             } => self.visit_function_statement(name, parameters, body),
+            Stmt::Return { value, .. } => self.visit_return_statement(value.as_ref()),
         }
     }
 
@@ -203,6 +209,7 @@ pub trait StmtVisitor<T> {
     ) -> T;
     fn visit_while_loop_statement(&mut self, condition: &Expr, body: &Stmt) -> T;
     fn visit_function_statement(&mut self, name: &Token, parameters: &[Token], body: &Stmt) -> T;
+    fn visit_return_statement(&mut self, value: Option<&Expr>) -> T;
 }
 
 pub trait ExpressionVisitor<T> {

@@ -1,4 +1,4 @@
-use crate::source_location::SourceLocation;
+use crate::{object::LoxObject, source_location::SourceLocation};
 
 use colored::*;
 
@@ -69,6 +69,10 @@ pub enum LoxError {
     },
     InvalidCall {
         location: SourceLocation,
+    },
+
+    Return {
+        value: LoxObject,
     },
 }
 
