@@ -155,16 +155,24 @@ impl Display for Expr {
                 ..
             } => {
                 write!(f, "{} {} {}", left, operator.lexeme, right)
+            },
+            Expr::Call { callee, arguments, .. } => {
+                let mut result = String::new();
+                result.push_str(&format!("{}(",callee));
+                for arg in arguments {
+                   result.push_str(&format!("{}", arg));
+                }
+                result.push_str(&format!(")"));
+
+                write!(f, "{result}")
             }
-            _ => {
-                todo!()
-            }
+
         }
     }
 }
 
 pub trait StmtVisitor<T> {
-    fn execute(&mut self, statement: &Stmt) -> T {
+    fn accept_statement(&mut self, statement: &Stmt) -> T {
         match statement {
             Stmt::Block { statements, .. } => self.visit_block_statement(statements),
             Stmt::Expression { expression, .. } => self.visit_expression_statement(expression),
@@ -213,7 +221,7 @@ pub trait StmtVisitor<T> {
 }
 
 pub trait ExpressionVisitor<T> {
-    fn evaluate(&mut self, expression: &Expr) -> T {
+    fn accept_expression(&mut self, expression: &Expr) -> T {
         match expression {
             Expr::Binary {
                 left,

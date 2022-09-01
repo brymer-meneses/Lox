@@ -1,3 +1,4 @@
+use core::fmt;
 use std::collections::{hash_map::Entry, HashMap};
 
 use crate::object::LoxObject;
@@ -7,7 +8,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug)]
 pub struct Environment {
     enclosing: Option<Rc<RefCell<Environment>>>,
-    values: HashMap<String, LoxObject>,
+    pub values: HashMap<String, LoxObject>,
 }
 
 impl Environment {
@@ -51,11 +52,17 @@ impl Environment {
         self.values.len()
     }
 
-    pub fn wrap(enclosing: Rc<RefCell<Environment>>) -> Rc<RefCell<Environment>> {
+    pub fn wrap(enclosing: &Rc<RefCell<Environment>>) -> Rc<RefCell<Environment>> {
         let environment = Environment {
-            enclosing: Some(enclosing),
+            enclosing: Some(enclosing.clone()),
             values: HashMap::new(),
         };
         Rc::new(RefCell::new(environment))
+    }
+}
+
+impl fmt::Display for Environment {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "hello there")
     }
 }

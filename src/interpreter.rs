@@ -48,24 +48,33 @@ impl Interpreter {
 
         Interpreter {
             environment: globals.clone(),
-            globals,
+            globals: globals.clone(),
         }
     }
+    pub fn execute(&mut self, statement: &Stmt) -> LoxResult<()> {
+        self.accept_statement(statement)
+    }
+
+    pub fn evaluate(&mut self, expression: &Expr) -> LoxResult<LoxObject> {
+        self.accept_expression(expression)
+    }
+
     pub fn execute_block(
         &mut self,
         statements: &[Stmt],
         environment: Rc<RefCell<Environment>>,
     ) -> LoxResult<()> {
-        let previous_environment = self.environment.clone();
-
-        self.environment = environment;
-
-        for statement in statements.iter() {
-            self.execute(statement)?
-        }
-
-        self.environment = previous_environment;
-        Ok(())
+        let previous = self.environment.clone();
+        let steps = || -> LoxResult<()> {
+            self.environment = environment;
+            for statement in statements {
+                self.execute(statement)?
+            }
+            Ok(())
+        };
+        let result = steps();
+        self.environment = previous;
+        result
     }
 }
 
@@ -96,6 +105,7 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
                     LoxObject::Number { value: val2, .. },
                 ) = (&left, &right)
                 {
+                   // println!("{} +  {}", left, right);
                     return Ok(LoxObject::Number {
                         location,
                         value: val1 + val2,
@@ -110,8 +120,12 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
                         location,
                         value: val1.to_owned() + val2,
                     });
-                }
-                Err(error)
+                };
+
+                Ok(LoxObject::String {
+                        location,
+                        value: left.to_string() + &right.to_string()
+                })
             }
             TokenType::Minus => {
                 if let (
@@ -305,8 +319,9 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
             args.push(self.evaluate(argument)?);
         }
 
+
         match callee {
-            LoxObject::Callable { function } => Ok(function.call(self, &args)),
+            LoxObject::Callable { function } => function.call(self, &args),
             _ => Err(LoxError::InvalidCall {
                 location: callee.location(),
             }),
@@ -316,7 +331,7 @@ impl ExpressionVisitor<LoxResult<LoxObject>> for Interpreter {
 
 impl StmtVisitor<LoxResult<()>> for Interpreter {
     fn visit_block_statement(&mut self, statements: &[Stmt]) -> LoxResult<()> {
-        let environment = Environment::wrap(self.environment.clone());
+        let environment = Environment::wrap(&self.environment);
 
         self.execute_block(statements, environment)
     }
@@ -395,8 +410,10 @@ impl StmtVisitor<LoxResult<()>> for Interpreter {
         let mut result = LoxObject::Nil {
             location: SourceLocation::dummy(),
         };
-        if let Some(value) = value {
-            result = self.evaluate(value)?;
+
+        if let Some(val) = value {
+            result = self.evaluate(val)?;
+            // println!("{} = {}", value.unwrap(), result);
         }
 
         Err(LoxError::Return { value: result })

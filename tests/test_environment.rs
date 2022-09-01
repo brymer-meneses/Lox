@@ -37,7 +37,7 @@ fn it_should_reassign_variables() {
 
     assert_eq!(env.retrieve("number").unwrap(), num1);
 
-    env.assign("number".to_string(), num2.clone());
+    env.assign("number".to_string(), num2.clone()).unwrap();
 
     assert_eq!(env.retrieve("number").unwrap(), num2);
     assert_eq!(1, env.length());

@@ -1,5 +1,4 @@
 use crate::ast::Stmt;
-use crate::token::Token;
 use crate::{function::Function, source_location::SourceLocation};
 use std::fmt::Display;
 
@@ -109,7 +108,10 @@ impl Display for LoxObject {
             LoxObject::Number { value, .. } => write!(f, "{}", value),
             LoxObject::Boolean { value, .. } => write!(f, "{}", value),
             LoxObject::Nil { .. } => write!(f, "nil"),
-            LoxObject::Callable { .. } => write!(f, "callable"),
+            LoxObject::Callable { function } => match function {
+                Function::User { name, .. } => write!(f, "<user fn {}>", name.lexeme),
+                Function::Native { .. } => write!(f, "<builtin fn>"),
+            },
         }
     }
 }

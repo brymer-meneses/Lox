@@ -1,6 +1,9 @@
+use crate::environment::Environment;
 use crate::{
     ast::Stmt, error::LoxError, interpreter::Interpreter, object::LoxObject, token::Token,
 };
+
+use crate::error::LoxResult;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Function {
@@ -17,11 +20,15 @@ pub enum Function {
 }
 
 impl Function {
-    pub fn call(&self, interpreter: &mut Interpreter, arguments: &[LoxObject]) -> LoxObject {
+    pub fn call(
+        &self,
+        interpreter: &mut Interpreter,
+        arguments: &[LoxObject],
+    ) -> LoxResult<LoxObject> {
         match self {
-            Function::Native { body, .. } => body(arguments.to_vec()),
+            Function::Native { body, .. } => Ok(body(arguments.to_vec())),
             Function::User { name, params, body } => {
-                let environment = interpreter.globals.clone();
+                let environment = Environment::wrap(&interpreter.globals);
 
                 for (param, argument) in params.iter().zip(arguments.iter()) {
                     environment
@@ -30,11 +37,11 @@ impl Function {
                 }
 
                 match interpreter.execute_block(body, environment) {
-                    Ok(..) => LoxObject::Nil {
+                    Ok(..) => Ok(LoxObject::Nil {
                         location: name.location,
-                    },
-                    Err(LoxError::Return { value }) => value,
-                    Err(e) => panic!("{:#?}",e),
+                    }),
+                    Err(LoxError::Return { value }) => Ok(value),
+                    Err(e) => Err(e),
                 }
             }
         }

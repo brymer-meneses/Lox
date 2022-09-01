@@ -6,6 +6,101 @@ use lox::token::Token;
 use lox::token::TokenType;
 
 #[test]
+fn it_should_parse_unary() {
+    let location = SourceLocation::dummy();
+    let tokens = vec![
+        Token::new(TokenType::Minus, location, "-".to_string(), None),
+        Token::new(
+            TokenType::Number,
+            location,
+            "".to_string(),
+            Some(LoxObject::Number {
+                location,
+                value: 5.55,
+            }),
+        ),
+        Token::new(TokenType::Semicolon, location, ";".to_string(), None),
+        Token::new(TokenType::EOF, location, "".to_string(), None),
+    ];
+    let mut parser = Parser::new(&tokens);
+    let statements = parser.parse().unwrap();
+
+    let expr = match &statements[0] {
+        Stmt::Expression { expression, .. } => expression,
+        _ => panic!("Wrong"),
+    };
+
+    let expected = Expr::Unary {
+        location,
+        operator: Token::new(TokenType::Minus, location, "-".to_owned(), None),
+        right: Box::new(Expr::Literal {
+            location,
+            literal: LoxObject::Number {
+                location,
+                value: 5.55,
+            },
+        }),
+    };
+    assert_eq!(expr, &expected);
+}
+
+#[test]
+fn it_should_parse_binary() {
+    let location = SourceLocation::dummy();
+    let tokens = vec![
+        Token::new(
+            TokenType::Number,
+            location,
+            "5.55".to_string(),
+            Some(LoxObject::Number {
+                location,
+                value: 5.55,
+            }),
+        ),
+        Token::new(TokenType::Plus, location, "+".to_string(), None),
+        Token::new(
+            TokenType::Number,
+            location,
+            "5.55".to_string(),
+            Some(LoxObject::Number {
+                location,
+                value: 5.55,
+            }),
+        ),
+        Token::new(TokenType::Semicolon, location, ";".to_string(), None),
+        Token::new(TokenType::EOF, location, "".to_string(), None),
+    ];
+    let mut parser = Parser::new(&tokens);
+    let statements = parser.parse().unwrap();
+
+    let expr = match &statements[0] {
+        Stmt::Expression { expression, .. } => expression,
+        _ => panic!("Wrong"),
+    };
+
+    let expected = Expr::Binary {
+        location,
+        left: Box::new(Expr::Literal {
+            location,
+            literal: LoxObject::Number {
+                location,
+                value: 5.55,
+            },
+        }),
+        operator: Token::new(TokenType::Plus, location, "+".to_string(), None),
+        right: Box::new(Expr::Literal {
+            location,
+            literal: LoxObject::Number {
+                location,
+                value: 5.55,
+            },
+        }),
+    };
+
+    assert_eq!(expr, &expected);
+}
+
+#[test]
 fn it_should_parse_primary() {
     let location = SourceLocation::new_single_line(1, 0, 0);
     let tokens = vec![

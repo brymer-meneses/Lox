@@ -69,7 +69,7 @@ fn run(source_code: &str, interpreter: &mut Interpreter) {
     }
 }
 
-fn parse_statements(source_code: &str) -> Result<Vec<Stmt>, LoxError> {
+pub fn parse_statements(source_code: &str) -> Result<Vec<Stmt>, LoxError> {
     let mut scanner = Scanner::new(source_code);
     let tokens = scanner.scan()?;
 
